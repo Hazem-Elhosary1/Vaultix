@@ -3,7 +3,7 @@
     <shortcut
         android:shortcutId="add_password"
         android:enabled="true"
-        android:icon="@drawable/ic_vaultix_logo_static"
+        android:icon="@drawable/ic_shortcut_password"
         android:shortcutShortLabel="@string/shortcut_add_password_short"
         android:shortcutLongLabel="@string/shortcut_add_password_long">
         <intent
@@ -14,7 +14,7 @@
     <shortcut
         android:shortcutId="add_note"
         android:enabled="true"
-        android:icon="@drawable/ic_vaultix_logo_static"
+        android:icon="@drawable/ic_shortcut_note"
         android:shortcutShortLabel="@string/shortcut_add_note_short"
         android:shortcutLongLabel="@string/shortcut_add_note_long">
         <intent

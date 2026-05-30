@@ -42,9 +42,12 @@ fun VaultixNavGraph(
     val isSetupComplete by authViewModel.isSetupComplete.collectAsStateWithLifecycle()
     val isOnboardingComplete by authViewModel.isOnboardingComplete.collectAsStateWithLifecycle()
 
-    LaunchedEffect(authState) {
+    val pendingShortcutAction by authViewModel.pendingShortcutAction.collectAsStateWithLifecycle()
+    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = currentBackStackEntry?.destination?.route
+
+    LaunchedEffect(authState, currentRoute) {
         if (authState is AuthState.Unauthenticated) {
-            val currentRoute = navController.currentBackStackEntry?.destination?.route
             val bypassScreens = listOf(
                 Screen.Splash.route,
                 Screen.Onboarding.route,
@@ -54,6 +57,28 @@ fun VaultixNavGraph(
             if (currentRoute !in bypassScreens && currentRoute != null) {
                 navController.navigate(Screen.Lock.route) {
                     popUpTo(Screen.Home.route) { inclusive = true }
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(pendingShortcutAction, currentRoute) {
+        pendingShortcutAction?.let { action ->
+            val bypassScreens = listOf(
+                Screen.Splash.route,
+                Screen.Onboarding.route,
+                Screen.Setup.route,
+                Screen.Lock.route
+            )
+            if (currentRoute !in bypassScreens && currentRoute != null) {
+                authViewModel.setPendingShortcutAction(null)
+                val targetType = when (action) {
+                    "com.vaultix.app.ACTION_ADD_PASSWORD" -> "passwords"
+                    "com.vaultix.app.ACTION_ADD_NOTE" -> "notes"
+                    else -> null
+                }
+                if (targetType != null) {
+                    navController.navigate(Screen.AddEdit.createRoute(targetType))
                 }
             }
         }
@@ -133,23 +158,6 @@ fun VaultixNavGraph(
             LockScreen(
                 authViewModel = authViewModel,
                 onAuthenticated = {
-                    val pendingAction = authViewModel.pendingShortcutAction.value
-                    if (pendingAction != null) {
-                        authViewModel.setPendingShortcutAction(null)
-                        val targetType = when (pendingAction) {
-                            "com.vaultix.app.ACTION_ADD_PASSWORD" -> "passwords"
-                            "com.vaultix.app.ACTION_ADD_NOTE" -> "notes"
-                            else -> null
-                        }
-                        if (targetType != null) {
-                            navController.navigate(Screen.Home.route) {
-                                popUpTo(Screen.Lock.route) { inclusive = true }
-                            }
-                            navController.navigate(Screen.AddEdit.createRoute(targetType))
-                            return@LockScreen
-                        }
-                    }
-
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Lock.route) { inclusive = true }
                     }
@@ -159,23 +167,6 @@ fun VaultixNavGraph(
 
         // Home / Dashboard
         composable(Screen.Home.route) {
-            val pendingShortcutAction by authViewModel.pendingShortcutAction.collectAsStateWithLifecycle()
-
-            LaunchedEffect(pendingShortcutAction) {
-                pendingShortcutAction?.let { action ->
-                    kotlinx.coroutines.delay(300L) // Wait for transition animations to fully settle
-                    authViewModel.setPendingShortcutAction(null)
-                    when (action) {
-                        "com.vaultix.app.ACTION_ADD_PASSWORD" -> {
-                            navController.navigate(Screen.AddEdit.createRoute("passwords"))
-                        }
-                        "com.vaultix.app.ACTION_ADD_NOTE" -> {
-                            navController.navigate(Screen.AddEdit.createRoute("notes"))
-                        }
-                    }
-                }
-            }
-
             DashboardScreen(
                 authViewModel = authViewModel,
                 onNavigateToCategory = { type ->
