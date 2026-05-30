@@ -275,6 +275,9 @@ fun VaultixNavGraph(
                 },
                 onNavigateToQRCodeRestore = {
                     navController.navigate(Screen.QRCodeRestore.route)
+                },
+                onNavigateToDevelopment = {
+                    navController.navigate(Screen.Development.route)
                 }
             )
         }
@@ -410,6 +413,13 @@ fun VaultixNavGraph(
             val configViewModel: com.vaultix.app.ui.viewmodel.AppConfigViewModel = hiltViewModel()
             PremiumScreen(
                 viewModel = configViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        // ── Dev Tools (develop branch only) ──
+        composable(Screen.Development.route) {
+            DevelopmentScreen(
                 onBack = { navController.popBackStack() }
             )
         }

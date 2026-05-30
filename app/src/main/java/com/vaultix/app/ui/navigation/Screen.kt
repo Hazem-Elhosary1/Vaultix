@@ -60,4 +60,7 @@ sealed class Screen(val route: String) {
     }
 
     object Premium : Screen("premium")
+
+    // ── Dev-only Screen (develop branch) ──
+    object Development : Screen("development")
 }

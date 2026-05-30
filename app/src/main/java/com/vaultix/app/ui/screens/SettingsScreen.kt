@@ -50,6 +50,7 @@ fun SettingsScreen(
     onNavigateToPremium: () -> Unit,
     onNavigateToQRCodeBackup: (String) -> Unit = {},
     onNavigateToQRCodeRestore: () -> Unit = {},
+    onNavigateToDevelopment: () -> Unit = {},
     appConfigViewModel: AppConfigViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -486,6 +487,18 @@ fun SettingsScreen(
                             }
                         }
                     }
+                }
+            }
+
+            // Dev Tools (develop branch only)
+            SettingsSection(title = "\uD83D\uDD27 Developer") {
+                SettingsClickItem(
+                    icon = Icons.Default.Code,
+                    title = "Development Tools",
+                    subtitle = "Seed mock data, clear database & more",
+                    iconTint = VaultInfo
+                ) {
+                    onNavigateToDevelopment()
                 }
             }
 
