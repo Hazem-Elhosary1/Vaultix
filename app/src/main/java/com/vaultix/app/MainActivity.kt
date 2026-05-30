@@ -53,6 +53,28 @@ class MainActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
         ProcessLifecycleOwner.get().lifecycle.addObserver(lifecycleObserver)
 
+        // Request POST_NOTIFICATIONS permission for Android 13+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            val requestPermissionLauncher = registerForActivityResult(
+                androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
+            ) { isGranted: Boolean ->
+                com.vaultix.app.debug.DebugEventBus.log(
+                    category  = com.vaultix.app.debug.DebugCategory.SYSTEM,
+                    eventType = "NOTIFICATION_PERMISSION_RESULT",
+                    details   = "granted=$isGranted",
+                    source    = "MainActivity"
+                )
+            }
+
+            if (androidx.core.content.ContextCompat.checkSelfPermission(
+                    this,
+                    android.Manifest.permission.POST_NOTIFICATIONS
+                ) != android.content.pm.PackageManager.PERMISSION_GRANTED
+            ) {
+                requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+
         // Prevent screenshots and screen recording (allowed only in debug builds)
         if (!BuildConfig.DEBUG) {
             window.setFlags(
