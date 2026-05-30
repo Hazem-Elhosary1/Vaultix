@@ -1,0 +1,34 @@
+# Gradle files
+.gradle/
+build/
+app/build/
+/build
+/*/build
+
+# Android Studio / IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+.navigation/
+
+# Kotlin
+.kotlin/
+*.class
+*.klib
+*.kotlin_metadata
+*.kotlin_module
+
+# VS Code
+.vscode/
+
+# Local configuration files
+local.properties
+
+# Log files and build reports
+build-result.txt
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db

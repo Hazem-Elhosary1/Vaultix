@@ -1,0 +1,342 @@
+package com.vaultix.app.util
+
+import android.content.Context
+import android.net.Uri
+import android.util.Base64
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import com.vaultix.app.data.local.dao.*
+import com.vaultix.app.data.local.entity.*
+import com.vaultix.app.data.repository.*
+import com.vaultix.app.security.CryptoManager
+import com.vaultix.app.security.KeystoreManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
+import java.io.File
+import javax.inject.Inject
+import javax.inject.Singleton
+
+/**
+ * Handles encrypted backup export and import.
+ * All data is serialized to JSON, then encrypted with AES-256-GCM
+ * using a dedicated Keystore key before being written to disk.
+ *
+ * Backup format: IV (12 bytes) + AES-GCM ciphertext
+ * The backup is fully self-contained and offline.
+ */
+@Singleton
+class BackupManager @Inject constructor(
+    private val passwordRepository: PasswordRepository,
+    private val cardRepository: CardRepository,
+    private val noteRepository: NoteRepository,
+    private val fileRepository: FileRepository,
+    private val identityRepository: IdentityRepository,
+    private val cryptoManager: CryptoManager,
+    private val context: Context
+) {
+    private val gson = Gson()
+
+    /**
+     * Portable data container for all vault records.
+     * Contains DECRYPTED data that will be encrypted with the backup password.
+     */
+    data class BackupPayload(
+        val scopes: Set<BackupScope>? = setOf(BackupScope.FULL),
+        val passwords: List<com.vaultix.app.data.model.Password>? = emptyList(),
+        val cards: List<com.vaultix.app.data.model.Card>? = emptyList(),
+        val notes: List<com.vaultix.app.data.model.Note>? = emptyList(),
+        val files: List<com.vaultix.app.data.model.VaultFile>? = emptyList(),
+        val folders: List<com.vaultix.app.data.model.VaultFolder>? = emptyList(),
+        val identities: List<com.vaultix.app.data.model.Identity>? = emptyList(),
+        val exportedAt: Long = 0,
+        val appVersion: Int = 4,
+        val checksum: String? = ""
+    )
+
+    suspend fun exportBackup(password: CharArray, scopes: Set<BackupScope>): Result<File> = withContext(Dispatchers.IO) {
+        try {
+            val rawPayload = buildBackupPayload(scopes)
+            val rawJson = gson.toJson(rawPayload)
+            
+            val salt = cryptoManager.generateSalt()
+            val derivedKey = cryptoManager.deriveKey(password, salt)
+            
+            val checksum = calculateHmac(rawJson, derivedKey)
+            val finalPayload = rawPayload.copy(checksum = checksum)
+            val finalJson = gson.toJson(finalPayload)
+            val jsonBytes = finalJson.toByteArray(Charsets.UTF_8)
+
+            val encryptedBytes = cryptoManager.encryptBytes(jsonBytes, derivedKey)
+            jsonBytes.fill(0)
+            password.fill('\u0000')
+
+            val combined = salt + encryptedBytes
+            val backupDir = File(context.filesDir, "backups").also { it.mkdirs() }
+            val backupFile = File(backupDir, "vaultix_backup_${System.currentTimeMillis()}.vbk")
+            backupFile.writeBytes(combined)
+
+            Result.success(backupFile)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun exportBackupToUri(uri: Uri, password: CharArray, scopes: Set<BackupScope>): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            val backupResult = exportBackup(password, scopes).getOrThrow()
+            context.contentResolver.openOutputStream(uri)?.use { out ->
+                out.write(backupResult.readBytes())
+            } ?: return@withContext Result.failure(Exception("Cannot open output stream"))
+            backupResult.delete()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun importBackupFromUri(uri: Uri, password: CharArray): Result<Int> = withContext(Dispatchers.IO) {
+        try {
+            val inputStream = context.contentResolver.openInputStream(uri)
+                ?: return@withContext Result.failure(Exception("Cannot open backup file"))
+            val combined = inputStream.readBytes()
+            inputStream.close()
+
+            if (combined.size < 28) return@withContext Result.failure(Exception("Invalid backup file"))
+
+            val salt = combined.copyOfRange(0, 16)
+            val encryptedData = combined.copyOfRange(16, combined.size)
+            
+            val derivedKey = cryptoManager.deriveKey(password, salt)
+            val decryptedBytes = cryptoManager.decryptBytes(encryptedData, derivedKey)
+            password.fill('\u0000')
+            
+            val json = String(decryptedBytes, Charsets.UTF_8)
+            decryptedBytes.fill(0)
+            
+            val payload = gson.fromJson(json, BackupPayload::class.java)
+
+            // Verify integrity
+            val payloadToVerify = payload.copy(checksum = "")
+            val jsonToVerify = gson.toJson(payloadToVerify)
+            val calculatedChecksum = calculateHmac(jsonToVerify, derivedKey)
+            
+            if (calculatedChecksum != payload.checksum) {
+                return@withContext Result.failure(Exception("Integrity Check Failed"))
+            }
+
+            restorePayload(payload)
+            val count = (payload.passwords?.size ?: 0) + (payload.cards?.size ?: 0) + 
+                        (payload.notes?.size ?: 0) + (payload.files?.size ?: 0) + 
+                        (payload.identities?.size ?: 0)
+
+            Result.success(count)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    private suspend fun buildBackupPayload(scopes: Set<BackupScope>): BackupPayload {
+        val includeFull = scopes.contains(BackupScope.FULL) || scopes.isEmpty()
+        
+        return BackupPayload(
+            scopes = scopes,
+            passwords = if (includeFull || scopes.contains(BackupScope.PASSWORDS)) passwordRepository.getAllPasswords().first() else emptyList(),
+            cards = if (includeFull || scopes.contains(BackupScope.CARDS)) cardRepository.getAllCards().first() else emptyList(),
+            notes = if (includeFull || scopes.contains(BackupScope.NOTES)) noteRepository.getAllNotes().first() else emptyList(),
+            files = if (includeFull || scopes.contains(BackupScope.FILES)) fileRepository.getAllFiles().first() else emptyList(),
+            folders = if (includeFull || scopes.contains(BackupScope.FILES)) fileRepository.getAllFolders().first() else emptyList(),
+            identities = if (includeFull || scopes.contains(BackupScope.IDENTITIES)) identityRepository.getAllIdentities().first() else emptyList(),
+            exportedAt = System.currentTimeMillis()
+        )
+    }
+
+    private suspend fun restorePayload(payload: BackupPayload) {
+        val scopes = payload.scopes ?: setOf(BackupScope.FULL)
+        val includeFull = scopes.contains(BackupScope.FULL)
+        
+        if (includeFull) {
+            passwordRepository.deleteAllPasswords()
+            cardRepository.deleteAllCards()
+            noteRepository.deleteAllNotes()
+            fileRepository.deleteAllFiles()
+            fileRepository.deleteAllFolders()
+            identityRepository.deleteAllIdentities()
+        }
+
+        payload.folders?.forEach { fileRepository.insertFolder(it) }
+        payload.passwords?.forEach { passwordRepository.insertPassword(it) }
+        payload.cards?.forEach { cardRepository.insertCard(it) }
+        payload.notes?.forEach { noteRepository.insertNote(it) }
+        payload.files?.forEach { fileRepository.insertFile(it) }
+        payload.identities?.forEach { identityRepository.insertIdentity(it) }
+    }
+
+    private fun calculateHmac(input: String, key: javax.crypto.SecretKey): String {
+        val mac = javax.crypto.Mac.getInstance("HmacSHA256")
+        mac.init(key)
+        val bytes = mac.doFinal(input.toByteArray())
+        return bytes.joinToString("") { "%02x".format(it) }
+    }
+
+    fun getLocalBackups(): List<File> {
+        val backupDir = File(context.filesDir, "backups")
+        return if (backupDir.exists()) {
+            backupDir.listFiles()?.filter { it.extension == "vbk" && it.name.startsWith("vaultix_history_") }
+                ?.sortedByDescending { it.lastModified() } ?: emptyList()
+        } else emptyList()
+    }
+
+    /**
+     * Deletes old backups exceeding the limit to save space.
+     */
+    suspend fun cleanOldBackups(maxFiles: Int) = withContext(Dispatchers.IO) {
+        val backups = getLocalBackups()
+        if (backups.size > maxFiles) {
+            backups.drop(maxFiles).forEach { it.delete() }
+        }
+    }
+
+    fun deleteLocalBackup(file: File): Boolean = file.delete()
+
+    suspend fun createHistoryBackup(): Result<File> = withContext(Dispatchers.IO) {
+        // Local backups use a special Keystore key (device-bound)
+        try {
+            val payload = buildBackupPayload(setOf(BackupScope.FULL))
+            val jsonBytes = gson.toJson(payload).toByteArray(Charsets.UTF_8)
+            val backupKey = KeystoreManager.getOrCreateBackupHistoryKey()
+            val encryptedBytes = cryptoManager.encryptBytes(jsonBytes, backupKey)
+            jsonBytes.fill(0)
+
+            val backupDir = File(context.filesDir, "backups").also { it.mkdirs() }
+            val backupFile = File(backupDir, "vaultix_history_${System.currentTimeMillis()}.vbk")
+            backupFile.writeBytes(encryptedBytes)
+            
+            // Auto-cleanup old history backups (keep last 5)
+            cleanOldBackups(5)
+            
+            Result.success(backupFile)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun restoreDailyLocalBackup(file: File): Result<Int> = withContext(Dispatchers.IO) {
+        try {
+            val encryptedBytes = file.readBytes()
+            val backupKey = KeystoreManager.getOrCreateBackupHistoryKey()
+            val decryptedBytes = cryptoManager.decryptBytes(encryptedBytes, backupKey)
+            val json = String(decryptedBytes, Charsets.UTF_8)
+            decryptedBytes.fill(0)
+            val payload = gson.fromJson(json, BackupPayload::class.java)
+            restorePayload(payload)
+            val count = (payload.passwords?.size ?: 0) + (payload.cards?.size ?: 0) + 
+                        (payload.notes?.size ?: 0) + (payload.files?.size ?: 0) + 
+                        (payload.identities?.size ?: 0)
+            Result.success(count)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun importBackupFromFile(file: File, password: CharArray): Result<Int> = withContext(Dispatchers.IO) {
+        try {
+            val combined = file.readBytes()
+            if (combined.size < 28) return@withContext Result.failure(Exception("Invalid backup file"))
+
+            val salt = combined.copyOfRange(0, 16)
+            val encryptedData = combined.copyOfRange(16, combined.size)
+            
+            val derivedKey = cryptoManager.deriveKey(password, salt)
+            val decryptedBytes = cryptoManager.decryptBytes(encryptedData, derivedKey)
+            password.fill('\u0000')
+            
+            val json = String(decryptedBytes, Charsets.UTF_8)
+            decryptedBytes.fill(0)
+            
+            val payload = gson.fromJson(json, BackupPayload::class.java)
+
+            // Verify integrity
+            val payloadToVerify = payload.copy(checksum = "")
+            val jsonToVerify = gson.toJson(payloadToVerify)
+            val calculatedChecksum = calculateHmac(jsonToVerify, derivedKey)
+            
+            if (calculatedChecksum != payload.checksum) {
+                return@withContext Result.failure(Exception("Integrity Check Failed"))
+            }
+
+            restorePayload(payload)
+            val count = (payload.passwords?.size ?: 0) + (payload.cards?.size ?: 0) + 
+                        (payload.notes?.size ?: 0) + (payload.files?.size ?: 0) + 
+                        (payload.identities?.size ?: 0)
+
+            Result.success(count)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Import backup from raw encrypted bytes (used by QR Code restore)
+     * 
+     * @param encryptedBackupData Raw encrypted backup bytes (from QR code chunks)
+     * @param password Master password for decryption
+     * @return Number of items restored
+     */
+    suspend fun importBackupFromBytes(encryptedBackupData: ByteArray, password: CharArray): Result<Int> = withContext(Dispatchers.IO) {
+        try {
+            if (encryptedBackupData.size < 28) {
+                return@withContext Result.failure(Exception("Invalid backup data: too small"))
+            }
+
+            // Extract salt from first 16 bytes
+            val salt = encryptedBackupData.copyOfRange(0, 16)
+            val encryptedData = encryptedBackupData.copyOfRange(16, encryptedBackupData.size)
+            
+            // Derive key from password
+            val derivedKey = cryptoManager.deriveKey(password, salt)
+            val decryptedBytes = cryptoManager.decryptBytes(encryptedData, derivedKey)
+            password.fill('\u0000')
+            
+            // Parse JSON payload
+            val json = String(decryptedBytes, Charsets.UTF_8)
+            decryptedBytes.fill(0)
+            
+            val payload = gson.fromJson(json, BackupPayload::class.java)
+
+            // Verify integrity
+            val payloadToVerify = payload.copy(checksum = "")
+            val jsonToVerify = gson.toJson(payloadToVerify)
+            val calculatedChecksum = calculateHmac(jsonToVerify, derivedKey)
+            
+            if (calculatedChecksum != payload.checksum) {
+                return@withContext Result.failure(Exception("Integrity Check Failed: Backup may be corrupted"))
+            }
+
+            // Restore data
+            restorePayload(payload)
+            val count = (payload.passwords?.size ?: 0) + (payload.cards?.size ?: 0) + 
+                        (payload.notes?.size ?: 0) + (payload.files?.size ?: 0) + 
+                        (payload.identities?.size ?: 0)
+
+            Result.success(count)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Create encrypted backup as raw bytes (for QR Code export)
+     * Used by QRCodeBackupGenerator to generate QR codes
+     */
+    suspend fun createDailyLocalBackup(): ByteArray = withContext(Dispatchers.IO) {
+        val payload = buildBackupPayload(setOf(BackupScope.FULL))
+        val jsonBytes = gson.toJson(payload).toByteArray(Charsets.UTF_8)
+        val backupKey = KeystoreManager.getOrCreateBackupHistoryKey()
+        val encryptedBytes = cryptoManager.encryptBytes(jsonBytes, backupKey)
+        jsonBytes.fill(0)
+        
+        // Return encrypted bytes directly (no file)
+        encryptedBytes
+    }
+}

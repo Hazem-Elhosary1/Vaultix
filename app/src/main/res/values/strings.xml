@@ -1,0 +1,100 @@
+<resources>
+    <string name="app_name">Vaultix</string>
+    
+    <!-- Navigation / General -->
+    <string name="settings">Settings</string>
+    <string name="back">Back</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+    <string name="lock_vault">Lock Vault</string>
+    
+    <!-- Dashboard -->
+    <string name="search_vault">Search Vault...</string>
+    <string name="categories">Categories</string>
+    <string name="passwords">Passwords</string>
+    <string name="cards">Cards</string>
+    <string name="notes">Notes</string>
+    <string name="files">Files</string>
+    <string name="identities">Identities</string>
+    <string name="favorites">Favorites</string>
+    <string name="no_favorites">No favorites yet</string>
+    
+    <!-- Settings Sections -->
+    <string name="appearance">Appearance</string>
+    <string name="theme_mode">Theme Mode</string>
+    <string name="accent_color">Accent Color</string>
+    <string name="language">Language</string>
+    <string name="security">Security</string>
+    <string name="auto_lock_grace">Auto-Lock &amp; Grace Period</string>
+    <string name="panic_mode">Panic Mode</string>
+    <string name="backup_restore">Backup &amp; Restore</string>
+    <string name="about">About</string>
+    
+    <!-- Settings Items -->
+    <string name="biometric_unlock">Biometric Unlock</string>
+    <string name="biometric_subtitle">Use fingerprint or face recognition</string>
+    <string name="change_master_password">Change Master Password</string>
+    <string name="change_master_password_subtitle">Update your master password</string>
+    <string name="change_pin">Change PIN</string>
+    <string name="change_pin_subtitle">Update your PIN code</string>
+    <string name="auto_lock_inactivity">Auto-lock after inactivity</string>
+    <string name="grace_period_title">Biometric Grace Period</string>
+    <string name="grace_period_subtitle">Allow re-entry without login if returned within:</string>
+    <string name="panic_mode_warning">Panic mode instantly deletes ALL vault data. This action is IRREVERSIBLE.</string>
+    <string name="trigger_panic_mode">Trigger Panic Mode</string>
+    <string name="export_backup">Export Encrypted Backup</string>
+    <string name="export_subtitle">Save encrypted backup to device</string>
+    <string name="import_backup">Import Backup</string>
+    <string name="import_subtitle">Restore from encrypted backup</string>
+    
+    <!-- Dashboard Extra -->
+    <string name="quick_access">Quick Access</string>
+    <string name="quick_actions">Quick Actions</string>
+    <string name="scan_card">Scan Card</string>
+    <string name="ocr">OCR Scanner</string>
+    <string name="align_card_hint">Align your card within the orange frame</string>
+    <string name="scan_area_only">Data is detected only inside the frame</string>
+    <string name="embossed_card_tip">For embossed cards: Try tilting the card slightly to avoid glare</string>
+    <string name="detecting_info">Detecting card info...</string>
+
+    <!-- Premium -->
+    <string name="go_pro">Upgrade to Pro</string>
+    <string name="premium_features">Pro Features</string>
+    <string name="feature_unlimited">Unlimited File Storage</string>
+    <string name="feature_fake_vault">Advanced Fake Vault</string>
+    <string name="feature_cloud_backup">Encrypted Cloud Backup</string>
+    <string name="feature_custom_themes">Custom Themes &amp; Colors</string>
+    <string name="buy_pro_now">Buy Pro Now</string>
+    <string name="pro_unlocked">You are using the Premium Pro version!</string>
+    <string name="premium_badge">PRO</string>
+    <string name="file_vault">File Vault</string>
+    <string name="encrypt_files">Encrypt files</string>
+    <string name="password_generator">Password Generator</string>
+    <string name="generate_strong_passwords">Generate strong random passwords</string>
+    <string name="password_history">Password History</string>
+    <string name="last_3_passwords">Last 3 generated passwords</string>
+    <string name="copy_password">Copy Password</string>
+    <string name="recent_activities">Recent Activities</string>
+    <string name="recent_passwords">Recent Passwords</string>
+    <string name="security_health">Security Health</string>
+    <string name="all_data_encrypted">All data encrypted</string>
+    <string name="offline_100">100% Offline</string>
+    <string name="total">Total</string>
+    <string name="vault_overview">Vault Overview</string>
+    <string name="items_secured">items secured</string>
+    <string name="good_morning">Good Morning</string>
+    <string name="good_afternoon">Good Afternoon</string>
+    <string name="good_evening">Good Evening</string>
+    <string name="security_well_protected">Your vault is well protected</string>
+    <string name="security_improvements_needed">Some improvements needed</string>
+    <string name="security_risk_detected">Security risk detected</string>
+    <string name="nothing_here">Nothing here yet</string>
+    <string name="empty_category_desc">Your %1$s will appear here.</string>
+    <string name="no_items">No items found</string>
+    <string name="add">Add</string>
+    <string name="delete_password">Delete Item</string>
+    <string name="delete_confirm">Are you sure you want to delete \'%1$s\'?</string>
+    <string name="autofill_service_label">Vaultix Autofill Service</string>
+</resources>

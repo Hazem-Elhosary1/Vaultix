@@ -1,0 +1,94 @@
+<resources>
+    <string name="app_name">فولتكس</string>
+    
+    <!-- Navigation / General -->
+    <string name="settings">الإعدادات</string>
+    <string name="back">رجوع</string>
+    <string name="cancel">إلغاء</string>
+    <string name="save">حفظ</string>
+    <string name="delete">حذف</string>
+    <string name="edit">تعديل</string>
+    <string name="lock_vault">قفل الخزنة</string>
+    
+    <!-- Dashboard -->
+    <string name="search_vault">بحث في الخزنة...</string>
+    <string name="categories">الفئات</string>
+    <string name="passwords">كلمات المرور</string>
+    <string name="cards">البطاقات</string>
+    <string name="notes">الملاحظات</string>
+    <string name="files">الملفات</string>
+    <string name="identities">الهويات</string>
+    <string name="favorites">المفضلة</string>
+    <string name="no_favorites">لا توجد عناصر مفضلة بعد</string>
+    
+    <!-- Settings Sections -->
+    <string name="appearance">المظهر</string>
+    <string name="theme_mode">وضع المظهر</string>
+    <string name="accent_color">لون التمييز</string>
+    <string name="language">اللغة</string>
+    <string name="security">الأمان</string>
+    <string name="auto_lock_grace">القفل التلقائي وفترة السماح</string>
+    <string name="panic_mode">وضع الذعر (Panic Mode)</string>
+    <string name="backup_restore">النسخ الاحتياطي والاستعادة</string>
+    <string name="about">حول التطبيق</string>
+    
+    <!-- Settings Items -->
+    <string name="biometric_unlock">فتح بالقفل البيومتري</string>
+    <string name="biometric_subtitle">استخدم البصمة أو التعرف على الوجه</string>
+    <string name="change_master_password">تغيير كلمة المرور الرئيسية</string>
+    <string name="change_master_password_subtitle">تحديث كلمة المرور الرئيسية الخاصة بك</string>
+    <string name="change_pin">تغيير رمز PIN</string>
+    <string name="change_pin_subtitle">تحديث رمز PIN الخاص بك</string>
+    <string name="auto_lock_inactivity">قفل تلقائي عند الخمول</string>
+    <string name="grace_period_title">فترة السماح البيومترية</string>
+    <string name="grace_period_subtitle">السماح بالدخول مرة أخرى بدون تسجيل دخول إذا عدت خلال:</string>
+    <string name="panic_mode_warning">يقوم وضع الذعر بحذف جميع بيانات الخزنة فوراً. هذا الإجراء لا يمكن التراجع عنه.</string>
+    <string name="trigger_panic_mode">تفعيل وضع الذعر</string>
+    <string name="export_backup">تصدير نسخة احتياطية مشفرة</string>
+    <string name="export_subtitle">حفظ نسخة احتياطية مشفرة على الجهاز</string>
+    <string name="import_backup">استيراد نسخة احتياطية</string>
+    <string name="import_subtitle">استعادة البيانات من نسخة احتياطية مشفرة</string>
+    
+    <!-- Dashboard Extra -->
+    <string name="quick_access">وصول سريع</string>
+    <string name="quick_actions">إجراءات سريعة</string>
+    <string name="scan_card">مسح بطاقة</string>
+    <string name="ocr">تعرف ضوئي (OCR)</string>
+    <string name="align_card_hint">ضع البطاقة داخل الإطار البرتقالي</string>
+    <string name="scan_area_only">سيتم التعرف على البيانات داخل الإطار فقط</string>
+    <string name="embossed_card_tip">للكروت البارزة: يرجى تحريك البطاقة قليلاً لتجنب انعكاس الضوء</string>
+    <string name="detecting_info">جاري التعرف على البيانات...</string>
+    
+    <!-- Premium -->
+    <string name="go_pro">الترقية لنسخة برو</string>
+    <string name="premium_features">مميزات نسخة برو</string>
+    <string name="feature_unlimited">تخزين ملفات غير محدود</string>
+    <string name="feature_fake_vault">خزنة وهمية متقدمة</string>
+    <string name="feature_cloud_backup">نسخ احتياطي سحابي مشفر</string>
+    <string name="feature_custom_themes">ألوان وثيمات مخصصة</string>
+    <string name="buy_pro_now">شراء نسخة برو الآن</string>
+    <string name="pro_unlocked">أنت الآن تستخدم نسخة برو المتميزة!</string>
+    <string name="premium_badge">برو</string>
+    <string name="file_vault">خزنة الملفات</string>
+    <string name="encrypt_files">تشفير الملفات</string>
+    <string name="password_generator">مولد كلمات المرور</string>
+    <string name="generate_strong_passwords">توليد كلمات مرور عشوائية قوية</string>
+    <string name="recent_passwords">كلمات المرور الأخيرة</string>
+    <string name="password_history">سجل كلمات المرور</string>
+    <string name="last_3_passwords">آخر 3 كلمات مرور تم إنشاؤها</string>
+    <string name="copy_password">نسخ كلمة المرور</string>
+    <string name="security_health">صحة الأمان</string>
+    <string name="all_data_encrypted">جميع البيانات مشفرة</string>
+    <string name="offline_100">أوفلاين 100%</string>
+    <string name="total">الإجمالي</string>
+    <string name="good_morning">صباح الخير</string>
+    <string name="good_afternoon">مساء الخير</string>
+    <string name="good_evening">مساء الخير</string>
+    <string name="security_well_protected">خزنتك محمية بشكل جيد</string>
+    <string name="security_improvements_needed">تحتاج لبعض التحسينات</string>
+    <string name="security_risk_detected">تم اكتشاف مخاطر أمنية</string>
+    <string name="nothing_here">لا يوجد شيء هنا بعد</string>
+    <string name="add">إضافة</string>
+    <string name="delete_password">حذف العنصر</string>
+    <string name="delete_confirm">هل أنت متأكد من حذف \'%1$s\'؟</string>
+</resources>

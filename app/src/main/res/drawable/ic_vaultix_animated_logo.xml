@@ -1,0 +1,128 @@
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt">
+    <aapt:attr name="android:drawable">
+        <vector
+            android:width="200dp"
+            android:height="200dp"
+            android:viewportWidth="108"
+            android:viewportHeight="108">
+
+            <group 
+                android:translateX="10.8" 
+                android:translateY="10.8"
+                android:scaleX="0.8"
+                android:scaleY="0.8">
+
+                <!-- Shield outline -->
+                <group android:name="shield_group"
+                    android:pivotX="54" android:pivotY="56"
+                    android:scaleX="0.85" android:scaleY="0.85">
+                    <path
+                        android:pathData="M54,16 L26,38 L26,62 C26,78 38,90 54,96 C70,90 82,78 82,62 L82,38 Z"
+                        android:fillColor="#FF7A00"/>
+                    <path
+                        android:pathData="M54,24 L32,42 L32,62 C32,74 41,84 54,89 C67,84 76,74 76,62 L76,42 Z"
+                        android:fillColor="#0A1F44"/>
+                </group>
+
+                <!-- V letterform -->
+                <group android:name="v_group"
+                    android:pivotX="54" android:pivotY="56"
+                    android:alpha="0">
+                    <path
+                        android:pathData="M40,40 L54,72"
+                        android:strokeColor="#FFFFFF"
+                        android:strokeWidth="7"
+                        android:strokeLineCap="round"
+                        android:fillColor="#00000000"/>
+                    <path
+                        android:pathData="M68,40 L54,72"
+                        android:strokeColor="#FFFFFF"
+                        android:strokeWidth="7"
+                        android:strokeLineCap="round"
+                        android:fillColor="#00000000"/>
+                </group>
+
+                <!-- Keyhole -->
+                <group android:name="keyhole_group"
+                    android:pivotX="54" android:pivotY="60"
+                    android:alpha="0">
+                    <path
+                        android:pathData="M54,55 m-5,0 a5,5 0,1 1,10 0 a5,5 0,1 1,-10 0"
+                        android:fillColor="#FF7A00"/>
+                    <path
+                        android:pathData="M52,60 L56,60 L55,68 L53,68 Z"
+                        android:fillColor="#FF7A00"/>
+                </group>
+            </group>
+        </vector>
+    </aapt:attr>
+
+    <target android:name="shield_group">
+        <aapt:attr name="android:animation">
+            <set android:ordering="together">
+                <objectAnimator
+                    android:propertyName="scaleX"
+                    android:duration="600"
+                    android:valueFrom="0.5"
+                    android:valueTo="1.0"
+                    android:valueType="floatType"
+                    android:interpolator="@android:anim/overshoot_interpolator"/>
+                <objectAnimator
+                    android:propertyName="scaleY"
+                    android:duration="600"
+                    android:valueFrom="0.5"
+                    android:valueTo="1.0"
+                    android:valueType="floatType"
+                    android:interpolator="@android:anim/overshoot_interpolator"/>
+            </set>
+        </aapt:attr>
+    </target>
+
+    <target android:name="v_group">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:propertyName="alpha"
+                android:duration="400"
+                android:startOffset="500"
+                android:valueFrom="0"
+                android:valueTo="1"
+                android:valueType="floatType"
+                android:interpolator="@android:anim/decelerate_interpolator"/>
+        </aapt:attr>
+    </target>
+
+    <target android:name="keyhole_group">
+        <aapt:attr name="android:animation">
+            <set android:ordering="sequentially">
+                <objectAnimator
+                    android:propertyName="alpha"
+                    android:duration="300"
+                    android:startOffset="800"
+                    android:valueFrom="0"
+                    android:valueTo="1"
+                    android:valueType="floatType"/>
+                <set android:ordering="together">
+                    <objectAnimator
+                        android:propertyName="scaleX"
+                        android:duration="800"
+                        android:valueFrom="1.0"
+                        android:valueTo="1.2"
+                        android:valueType="floatType"
+                        android:repeatCount="infinite"
+                        android:repeatMode="reverse"
+                        android:interpolator="@android:anim/accelerate_decelerate_interpolator"/>
+                    <objectAnimator
+                        android:propertyName="scaleY"
+                        android:duration="800"
+                        android:valueFrom="1.0"
+                        android:valueTo="1.2"
+                        android:valueType="floatType"
+                        android:repeatCount="infinite"
+                        android:repeatMode="reverse"
+                        android:interpolator="@android:anim/accelerate_decelerate_interpolator"/>
+                </set>
+            </set>
+        </aapt:attr>
+    </target>
+</animated-vector>
