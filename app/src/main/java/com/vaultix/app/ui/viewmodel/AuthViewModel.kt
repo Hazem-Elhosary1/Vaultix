@@ -203,15 +203,14 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Verify PIN code.
-     */
     fun verifyPin(pin: CharArray, onSuccess: () -> Unit, onFailure: () -> Unit) {
         viewModelScope.launch {
+            _authState.value = AuthState.Loading
             val storedHash = securePreferences.getString(SecurePreferences.KEY_PIN_HASH)
             val storedSalt = securePreferences.getString(SecurePreferences.KEY_PIN_SALT)
 
             if (storedHash == null || storedSalt == null) {
+                _authState.value = AuthState.Unauthenticated
                 pin.fill('\u0000') // Zeroization
                 onFailure()
                 return@launch

@@ -49,11 +49,13 @@ class MainActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
         ProcessLifecycleOwner.get().lifecycle.addObserver(lifecycleObserver)
 
-        // Prevent screenshots and screen recording
-        window.setFlags(
-            WindowManager.LayoutParams.FLAG_SECURE,
-            WindowManager.LayoutParams.FLAG_SECURE
-        )
+        // Prevent screenshots and screen recording (allowed only in debug builds)
+        if (!BuildConfig.DEBUG) {
+            window.setFlags(
+                WindowManager.LayoutParams.FLAG_SECURE,
+                WindowManager.LayoutParams.FLAG_SECURE
+            )
+        }
 
         enableEdgeToEdge()
         window.decorView.setFilterTouchesWhenObscured(true)
@@ -122,11 +124,13 @@ class MainActivity : FragmentActivity() {
         super.onResume()
         // Remove privacy overlay
         hidePrivacyOverlay()
-        // Re-apply FLAG_SECURE on resume
-        window.setFlags(
-            WindowManager.LayoutParams.FLAG_SECURE,
-            WindowManager.LayoutParams.FLAG_SECURE
-        )
+        // Re-apply FLAG_SECURE on resume (allowed only in debug builds)
+        if (!BuildConfig.DEBUG) {
+            window.setFlags(
+                WindowManager.LayoutParams.FLAG_SECURE,
+                WindowManager.LayoutParams.FLAG_SECURE
+            )
+        }
     }
 
     /**

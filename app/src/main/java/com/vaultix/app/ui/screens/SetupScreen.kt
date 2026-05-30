@@ -201,9 +201,10 @@ fun SetupScreen(
                 SetupStep.RECOVERY_KEY -> RecoveryKeyStep(
                     authViewModel = authViewModel,
                     isProcessing = isProcessing,
-                    onNext = { 
+                    onNext = { key ->
                         scope.launch {
                             isProcessing = true
+                            authViewModel.setupRecoveryKey(key)
                             currentStep = SetupStep.WARNING 
                             isProcessing = false
                         }
@@ -373,8 +374,18 @@ private fun ConfirmPasswordStep(
         )
 
         Spacer(Modifier.height(32.dp))
-        Button(onClick = onNext, modifier = Modifier.fillMaxWidth().height(56.dp), shape = RoundedCornerShape(16.dp), colors = ButtonDefaults.buttonColors(containerColor = VaultOrange)) {
-            Text("Continue", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = VaultBlack)
+        Button(
+            onClick = onNext,
+            modifier = Modifier.fillMaxWidth().height(56.dp),
+            shape = RoundedCornerShape(16.dp),
+            enabled = !isProcessing && password.isNotEmpty(),
+            colors = ButtonDefaults.buttonColors(containerColor = VaultOrange)
+        ) {
+            if (isProcessing) {
+                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = VaultBlack, strokeWidth = 2.dp)
+            } else {
+                Text("Continue", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = VaultBlack)
+            }
         }
     }
 }
@@ -473,8 +484,18 @@ private fun ConfirmPinStep(
         )
 
         Spacer(Modifier.height(32.dp))
-        Button(onClick = onNext, modifier = Modifier.fillMaxWidth().height(56.dp), shape = RoundedCornerShape(16.dp), colors = ButtonDefaults.buttonColors(containerColor = VaultOrange)) {
-            Text("Continue", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = VaultBlack)
+        Button(
+            onClick = onNext,
+            modifier = Modifier.fillMaxWidth().height(56.dp),
+            shape = RoundedCornerShape(16.dp),
+            enabled = !isProcessing && pin.isNotEmpty(),
+            colors = ButtonDefaults.buttonColors(containerColor = VaultOrange)
+        ) {
+            if (isProcessing) {
+                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = VaultBlack, strokeWidth = 2.dp)
+            } else {
+                Text("Continue", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = VaultBlack)
+            }
         }
     }
 }
@@ -653,7 +674,7 @@ fun PasswordStrengthBar(password: CharArray) {
 private fun RecoveryKeyStep(
     authViewModel: AuthViewModel,
     isProcessing: Boolean,
-    onNext: () -> Unit
+    onNext: (String) -> Unit
 ) {
     val recoveryKey = remember { authViewModel.generateRecoveryKey() }
     val scope = rememberCoroutineScope()
@@ -725,12 +746,7 @@ private fun RecoveryKeyStep(
         Spacer(Modifier.height(32.dp))
 
         Button(
-            onClick = {
-                scope.launch {
-                    authViewModel.setupRecoveryKey(recoveryKey)
-                    onNext()
-                }
-            },
+            onClick = { onNext(recoveryKey) },
             enabled = isSaved && !isProcessing,
             modifier = Modifier.fillMaxWidth().height(56.dp),
             shape = RoundedCornerShape(16.dp),

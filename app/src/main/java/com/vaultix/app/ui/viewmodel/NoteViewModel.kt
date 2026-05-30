@@ -31,7 +31,8 @@ class NoteViewModel @Inject constructor(
             combine(noteRepository.getAllNotes(), _searchQuery) { notes, query ->
                 val filtered = if (query.isBlank()) notes
                 else notes.filter { it.title.contains(query, ignoreCase = true) || it.content.contains(query, ignoreCase = true) }
-                NoteUiState(notes = filtered, searchQuery = query, isLoading = false)
+                val sorted = filtered.sortedWith(compareByDescending<Note> { it.isPinned }.thenByDescending { it.updatedAt })
+                NoteUiState(notes = sorted, searchQuery = query, isLoading = false)
             }.collect { _uiState.value = it }
         }
     }
@@ -58,6 +59,12 @@ class NoteViewModel @Inject constructor(
     fun toggleFavorite(note: Note) {
         viewModelScope.launch {
             noteRepository.updateNote(note.copy(isFavorite = !note.isFavorite))
+        }
+    }
+
+    fun togglePin(note: Note) {
+        viewModelScope.launch {
+            noteRepository.updateNote(note.copy(isPinned = !note.isPinned))
         }
     }
 }

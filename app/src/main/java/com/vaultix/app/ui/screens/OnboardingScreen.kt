@@ -80,7 +80,8 @@ fun OnboardingScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 16.dp),
+                    .statusBarsPadding()
+                    .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 8.dp),
                 horizontalArrangement = Arrangement.End
             ) {
                 TextButton(onClick = {

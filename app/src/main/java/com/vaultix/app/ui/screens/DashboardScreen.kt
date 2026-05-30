@@ -153,7 +153,8 @@ fun DashboardScreen(
                     cardCount = cardState.cards.size,
                     noteCount = noteState.notes.size,
                     idCount = identityState.size,
-                    fileCount = fileState.size
+                    fileCount = fileState.size,
+                    wifiCount = passwordState.wifiPasswords.size
                 )
             }
 
@@ -295,9 +296,10 @@ private fun DashboardStatsCard(
     cardCount: Int,
     noteCount: Int,
     idCount: Int,
-    fileCount: Int
+    fileCount: Int,
+    wifiCount: Int
 ) {
-    val totalCount = passwordCount + cardCount + noteCount + idCount + fileCount
+    val totalCount = passwordCount + cardCount + noteCount + idCount + fileCount + wifiCount
     
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -363,12 +365,14 @@ private fun DashboardStatsCard(
                     val nWeight = (noteCount.toFloat() / totalCount).coerceAtLeast(0.01f)
                     val iWeight = (idCount.toFloat() / totalCount).coerceAtLeast(0.01f)
                     val fWeight = (fileCount.toFloat() / totalCount).coerceAtLeast(0.01f)
+                    val wWeight = (wifiCount.toFloat() / totalCount).coerceAtLeast(0.01f)
 
                     Box(Modifier.fillMaxHeight().weight(pWeight).background(CategoryPasswords))
                     Box(Modifier.fillMaxHeight().weight(cWeight).background(CategoryCards))
                     Box(Modifier.fillMaxHeight().weight(nWeight).background(CategoryNotes))
                     Box(Modifier.fillMaxHeight().weight(iWeight).background(CategoryIDs))
                     Box(Modifier.fillMaxHeight().weight(fWeight).background(CategoryFiles))
+                    Box(Modifier.fillMaxHeight().weight(wWeight).background(CategoryWifi))
                 }
                 Spacer(Modifier.height(16.dp))
             }
@@ -382,6 +386,7 @@ private fun DashboardStatsCard(
                 StatMiniItem(count = noteCount, label = stringResource(R.string.notes), color = CategoryNotes)
                 StatMiniItem(count = idCount, label = stringResource(R.string.identities), color = CategoryIDs)
                 StatMiniItem(count = fileCount, label = stringResource(R.string.files), color = CategoryFiles)
+                StatMiniItem(count = wifiCount, label = "Wi-Fi", color = CategoryWifi)
             }
 
             Spacer(Modifier.height(20.dp))
@@ -468,7 +473,8 @@ private fun CategoryGrid(onNavigateToCategory: (String) -> Unit) {
         CategoryItem("Cards", Icons.Default.CreditCard, CategoryCards, "cards"),
         CategoryItem("Notes", Icons.Default.Note, CategoryNotes, "notes"),
         CategoryItem("Files", Icons.Default.Folder, CategoryFiles, "files"),
-        CategoryItem("IDs", Icons.Default.Badge, CategoryIDs, "identities")
+        CategoryItem("IDs", Icons.Default.Badge, CategoryIDs, "identities"),
+        CategoryItem("Wi-Fi", Icons.Default.Wifi, CategoryWifi, "wifi")
     )
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -488,10 +494,6 @@ private fun CategoryGrid(onNavigateToCategory: (String) -> Unit) {
                     modifier = Modifier.weight(1f),
                     onClick = { onNavigateToCategory(category.route) }
                 )
-            }
-            // Empty weight filler
-            if (categories.drop(3).size < 3) {
-                Spacer(modifier = Modifier.weight((3 - categories.drop(3).size).toFloat()))
             }
         }
     }
@@ -536,6 +538,7 @@ private fun CategoryCard(
                     "notes" -> stringResource(R.string.notes)
                     "files" -> stringResource(R.string.files)
                     "identities" -> stringResource(R.string.identities)
+                    "wifi" -> "Wi-Fi"
                     else -> item.title
                 }
                 Text(title, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)

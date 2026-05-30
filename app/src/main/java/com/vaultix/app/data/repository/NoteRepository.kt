@@ -5,8 +5,10 @@ import com.vaultix.app.data.local.entity.NoteEntity
 import com.vaultix.app.data.model.Note
 import com.vaultix.app.security.CryptoManager
 import com.vaultix.app.security.KeystoreManager
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.flowOn
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -22,7 +24,7 @@ class NoteRepository @Inject constructor(
         return noteDao.getAllNotes().map { entities ->
             entities.filter { it.isFake == com.vaultix.app.security.VaultSession.isFakeVaultActive }
                 .mapNotNull { it.toDecrypted() }
-        }
+        }.flowOn(Dispatchers.Default)
     }
 
     suspend fun getNoteById(id: String): Note? {
@@ -57,6 +59,7 @@ class NoteRepository @Inject constructor(
                 content = cryptoManager.decrypt(content, key),
                 color = color,
                 isFavorite = isFavorite,
+                isPinned = isPinned,
                 createdAt = createdAt,
                 updatedAt = updatedAt,
                 keyVersion = keyVersion
@@ -72,6 +75,7 @@ class NoteRepository @Inject constructor(
         content = cryptoManager.encrypt(content, key),
         color = color,
         isFavorite = isFavorite,
+        isPinned = isPinned,
         createdAt = createdAt,
         updatedAt = updatedAt,
         keyVersion = keyVersion,

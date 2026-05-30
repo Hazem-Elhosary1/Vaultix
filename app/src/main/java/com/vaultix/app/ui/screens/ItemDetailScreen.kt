@@ -59,6 +59,7 @@ fun ItemDetailScreen(
         "passwords" -> PasswordDetailScreen(itemId = itemId, onEdit = onEdit, onBack = onBack)
         "cards" -> CardDetailScreen(itemId = itemId, onEdit = onEdit, onBack = onBack)
         "notes" -> NoteDetailScreen(itemId = itemId, onEdit = onEdit, onBack = onBack)
+        "wifi" -> WifiDetailScreen(itemId = itemId, onEdit = onEdit, onBack = onBack)
         "identities" -> IdentityDetailScreen(itemId = itemId, onEdit = onEdit, onBack = onBack, onViewImage = onViewImage)
         else -> GenericDetailScreen(onBack = onBack)
     }

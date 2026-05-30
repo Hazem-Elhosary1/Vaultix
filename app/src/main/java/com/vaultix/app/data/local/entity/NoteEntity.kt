@@ -13,6 +13,7 @@ data class NoteEntity(
     val content: String,     // Encrypted
     val color: String = "#1A2744",  // Not sensitive
     val isFavorite: Boolean = false,
+    val isPinned: Boolean = false,
     val createdAt: Long,
     val updatedAt: Long,
     val keyVersion: Int = 1,

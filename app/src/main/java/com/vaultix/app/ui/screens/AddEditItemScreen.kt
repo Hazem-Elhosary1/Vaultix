@@ -62,6 +62,7 @@ fun AddEditItemScreen(
         "passwords" -> AddEditPasswordScreen(itemId = itemId, onSaved = onSaved, onBack = onBack)
         "cards" -> AddEditCardScreen(itemId = itemId, startNfcScanning = startNfcScanning, onNavigateToScan = onNavigateToScan, onSaved = onSaved, onBack = onBack)
         "notes" -> AddEditNoteScreen(itemId = itemId, onSaved = onSaved, onBack = onBack)
+        "wifi" -> AddEditWifiScreen(itemId = itemId, onSaved = onSaved, onBack = onBack)
         "identities" -> {
             val identityViewModel: com.vaultix.app.ui.viewmodel.IdentityViewModel = hiltViewModel()
             IdentityEditScreen(
@@ -1527,7 +1528,7 @@ class MarkdownVisualTransformation : androidx.compose.ui.text.input.VisualTransf
             val rawText = text.text
             append(rawText)
 
-            // Parse lines for Heading, Quote, Bullet, Divider
+            // 1. Parse lines for Heading, Quote, Bullet, Divider
             val lines = rawText.split("\n")
             var currentOffset = 0
             lines.forEachIndexed { index, line ->
@@ -1591,36 +1592,30 @@ class MarkdownVisualTransformation : androidx.compose.ui.text.input.VisualTransf
                 currentOffset = nextOffset
             }
 
-            // Find and style bold ranges (**text**)
+            // 2. Make ALL '*' characters in the entire text completely transparent and 0.sp
+            // This prevents any raw stars from ever flickering/appearing when formatting is incomplete or deleted!
+            val starRegex = Regex("\\*")
+            starRegex.findAll(rawText).forEach { match ->
+                addStyle(
+                    androidx.compose.ui.text.SpanStyle(color = androidx.compose.ui.graphics.Color.Transparent, fontSize = 0.sp),
+                    match.range.first, match.range.first + 1
+                )
+            }
+
+            // 3. Find and apply bold formatting spans (**text**)
             val boldRegex = Regex("\\*\\*(.*?)\\*\\*")
             boldRegex.findAll(rawText).forEach { match ->
                 val range = match.range
-                addStyle(
-                    androidx.compose.ui.text.SpanStyle(color = androidx.compose.ui.graphics.Color.Transparent, fontSize = 0.sp),
-                    range.first, range.first + 2
-                )
-                addStyle(
-                    androidx.compose.ui.text.SpanStyle(color = androidx.compose.ui.graphics.Color.Transparent, fontSize = 0.sp),
-                    range.last - 1, range.last + 1
-                )
                 addStyle(
                     androidx.compose.ui.text.SpanStyle(fontWeight = FontWeight.Bold),
                     range.first + 2, range.last - 1
                 )
             }
 
-            // Find and style italic ranges (*text*)
+            // 4. Find and apply italic formatting spans (*text*)
             val italicRegex = Regex("(?<!\\*)\\*(?!\\*)(.*?)(?<!\\*)\\*(?!\\*)")
             italicRegex.findAll(rawText).forEach { match ->
                 val range = match.range
-                addStyle(
-                    androidx.compose.ui.text.SpanStyle(color = androidx.compose.ui.graphics.Color.Transparent, fontSize = 0.sp),
-                    range.first, range.first + 1
-                )
-                addStyle(
-                    androidx.compose.ui.text.SpanStyle(color = androidx.compose.ui.graphics.Color.Transparent, fontSize = 0.sp),
-                    range.last, range.last + 1
-                )
                 addStyle(
                     androidx.compose.ui.text.SpanStyle(fontStyle = androidx.compose.ui.text.font.FontStyle.Italic),
                     range.first + 1, range.last
