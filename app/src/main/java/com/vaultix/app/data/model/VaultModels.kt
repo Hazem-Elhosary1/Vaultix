@@ -75,6 +75,7 @@ data class Note(
     val content: String,
     val color: String,
     val isFavorite: Boolean,
+    val isPinned: Boolean = false,
     val createdAt: Long,
     val updatedAt: Long,
     val keyVersion: Int = 1

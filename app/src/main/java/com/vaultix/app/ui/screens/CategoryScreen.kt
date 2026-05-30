@@ -29,6 +29,11 @@ import com.vaultix.app.R
 import com.vaultix.app.data.model.*
 import com.vaultix.app.ui.theme.*
 import com.vaultix.app.ui.viewmodel.*
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.IntOffset
+import kotlin.math.roundToInt
+import androidx.compose.ui.graphics.graphicsLayer
 
 @Composable
 fun CategoryScreen(
@@ -47,6 +52,7 @@ fun CategoryScreen(
         "notes" -> stringResource(R.string.notes)
         "files" -> stringResource(R.string.files)
         "identities" -> stringResource(R.string.identities)
+        "wifi" -> "Wi-Fi Networks"
         else -> stringResource(R.string.app_name)
     }
     val accentColor = MaterialTheme.colorScheme.primary
@@ -169,6 +175,11 @@ fun CategoryScreen(
                     searchQuery = searchQuery,
                     accentColor = accentColor,
                     onItemClick = { id -> onNavigateToDetail(id) }
+                )
+                "wifi" -> WifiList(
+                    searchQuery = searchQuery,
+                    onItemClick = onNavigateToDetail,
+                    accentColor = accentColor
                 )
                 else -> EmptyState(categoryType, Icons.Default.Folder, accentColor)
             }
@@ -384,7 +395,8 @@ private fun NoteList(
                 note = note,
                 onClick = { onItemClick(note.id) },
                 onDelete = { viewModel.deleteNote(note.id) },
-                onToggleFavorite = { viewModel.toggleFavorite(note) }
+                onToggleFavorite = { viewModel.toggleFavorite(note) },
+                onTogglePin = { viewModel.togglePin(note) }
             )
         }
     }
@@ -395,7 +407,8 @@ private fun NoteListItem(
     note: Note,
     onClick: () -> Unit,
     onDelete: () -> Unit,
-    onToggleFavorite: () -> Unit
+    onToggleFavorite: () -> Unit,
+    onTogglePin: () -> Unit
 ) {
     var showDeleteDialog by remember { mutableStateOf(false) }
 
@@ -406,106 +419,207 @@ private fun NoteListItem(
 
     val dateFmt = remember { java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.getDefault()) }
 
-    Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = noteAccentColor.copy(alpha = 0.10f)),
-        border = androidx.compose.foundation.BorderStroke(1.dp, noteAccentColor.copy(alpha = 0.18f))
+    // Smooth Swipe Gestures State
+    val offsetXAnim = remember { androidx.compose.animation.core.Animatable(0f) }
+    val scope = rememberCoroutineScope()
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(androidx.compose.foundation.layout.IntrinsicSize.Min)
+            .padding(vertical = 4.dp),
+        contentAlignment = Alignment.CenterStart
     ) {
-        Row(Modifier.fillMaxWidth().height(androidx.compose.foundation.layout.IntrinsicSize.Min)) {
-            // Color accent strip on the left
-            Box(
-                modifier = Modifier
-                    .width(5.dp)
-                    .fillMaxHeight()
-                    .background(noteAccentColor, RoundedCornerShape(topStart = 14.dp, bottomStart = 14.dp))
-                    .defaultMinSize(minHeight = 90.dp)
-            )
-
+        // 1. Background Action Rows Layer
+        // Revealed only when the foreground card is actively swiped (to prevent visual bleed through semi-transparent cards at rest)
+        if (kotlin.math.abs(offsetXAnim.value) > 1f) {
+            val isSwipingRight = offsetXAnim.value > 0f
             Row(
-                Modifier
-                    .weight(1f)
-                    .padding(14.dp),
-                verticalAlignment = Alignment.Top
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+                    .background(VaultSurface, RoundedCornerShape(14.dp))
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = if (isSwipingRight) Arrangement.Start else Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                // Note icon avatar
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .background(noteAccentColor.copy(alpha = 0.18f), RoundedCornerShape(12.dp)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        Icons.Default.Description,
-                        contentDescription = null,
-                        tint = noteAccentColor,
-                        modifier = Modifier.size(22.dp)
-                    )
-                }
-
-                Spacer(Modifier.width(12.dp))
-
-                Column(Modifier.weight(1f)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            note.title,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            maxLines = 1,
-                            modifier = Modifier.weight(1f, fill = false)
-                        )
-                        if (note.isFavorite) {
-                            Spacer(Modifier.width(6.dp))
+                if (isSwipingRight) {
+                    // Left Side Actions (Pin, Favorite) - Revealed when swiping right (positive offset)
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Pin Action Button
+                        IconButton(
+                            onClick = {
+                                scope.launch { offsetXAnim.animateTo(0f) }
+                                onTogglePin()
+                            },
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(VaultOrange.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
+                        ) {
                             Icon(
-                                Icons.Default.Star,
-                                contentDescription = null,
-                                tint = VaultOrange,
-                                modifier = Modifier.size(16.dp)
+                                Icons.Default.PushPin,
+                                contentDescription = "Toggle Pin",
+                                tint = if (note.isPinned) VaultOrange else VaultTextSecondary.copy(alpha = 0.5f),
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+
+                        // Favorite Action Button
+                        IconButton(
+                            onClick = {
+                                scope.launch { offsetXAnim.animateTo(0f) }
+                                onToggleFavorite()
+                            },
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(VaultError.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
+                        ) {
+                            Icon(
+                                if (note.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                contentDescription = "Toggle Favorite",
+                                tint = if (note.isFavorite) VaultError else VaultTextSecondary.copy(alpha = 0.5f),
+                                modifier = Modifier.size(18.dp)
                             )
                         }
                     }
-
-                    Spacer(Modifier.height(4.dp))
-
-                    if (note.content.isNotBlank()) {
-                        Text(
-                            note.content.take(120).replace("\n", " "),
-                            fontSize = 13.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 3,
-                            lineHeight = 18.sp
+                } else {
+                    // Right Side Actions (Delete) - Revealed when swiping left (negative offset)
+                    IconButton(
+                        onClick = {
+                            scope.launch { offsetXAnim.animateTo(0f) }
+                            showDeleteDialog = true
+                        },
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(VaultError.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
+                    ) {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = "Delete Note",
+                            tint = VaultError,
+                            modifier = Modifier.size(18.dp)
                         )
-                        Spacer(Modifier.height(6.dp))
                     }
+                }
+            }
+        }
 
-                    Text(
-                        dateFmt.format(java.util.Date(note.updatedAt)),
-                        fontSize = 11.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+        // 2. Foreground Note Card Layer (Swipeable & Clickable)
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .offset { IntOffset(offsetXAnim.value.roundToInt(), 0) }
+                .pointerInput(note.id) {
+                    detectHorizontalDragGestures(
+                        onDragEnd = {
+                            scope.launch {
+                                val target = when {
+                                    offsetXAnim.value > 60.dp.toPx() -> 130.dp.toPx()  // Settle open right (fully reveal both buttons)
+                                    offsetXAnim.value < -60.dp.toPx() -> -70.dp.toPx() // Settle open left
+                                    else -> 0f
+                                }
+                                offsetXAnim.animateTo(target)
+                            }
+                        },
+                        onHorizontalDrag = { change, dragAmount ->
+                            change.consume()
+                            scope.launch {
+                                val newOffset = (offsetXAnim.value + dragAmount).coerceIn(-100.dp.toPx(), 170.dp.toPx())
+                                offsetXAnim.snapTo(newOffset)
+                            }
+                        }
                     )
                 }
+                .clickable(onClick = onClick),
+            shape = RoundedCornerShape(14.dp),
+            colors = CardDefaults.cardColors(containerColor = noteAccentColor.copy(alpha = 0.10f)),
+            border = androidx.compose.foundation.BorderStroke(1.dp, noteAccentColor.copy(alpha = 0.18f))
+        ) {
+            Row(Modifier.fillMaxWidth().height(androidx.compose.foundation.layout.IntrinsicSize.Min)) {
+                // Left accent strip
+                Box(
+                    modifier = Modifier
+                        .width(5.dp)
+                        .fillMaxHeight()
+                        .background(noteAccentColor, RoundedCornerShape(topStart = 14.dp, bottomStart = 14.dp))
+                        .defaultMinSize(minHeight = 90.dp)
+                )
 
-                Spacer(Modifier.width(4.dp))
-
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(0.dp)
+                Row(
+                    Modifier
+                        .weight(1f)
+                        .padding(14.dp),
+                    verticalAlignment = Alignment.Top
                 ) {
-                    IconButton(onClick = onToggleFavorite, modifier = Modifier.size(36.dp)) {
+                    // Note avatar box
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .background(noteAccentColor.copy(alpha = 0.18f), RoundedCornerShape(12.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
                         Icon(
-                            if (note.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                            contentDescription = "Toggle favorite",
-                            tint = if (note.isFavorite) VaultError else VaultTextSecondary.copy(alpha = 0.5f),
-                            modifier = Modifier.size(18.dp)
+                            Icons.Default.Description,
+                            contentDescription = null,
+                            tint = noteAccentColor,
+                            modifier = Modifier.size(22.dp)
                         )
                     }
-                    IconButton(onClick = { showDeleteDialog = true }, modifier = Modifier.size(36.dp)) {
-                        Icon(
-                            Icons.Default.DeleteOutline,
-                            contentDescription = "Delete",
-                            tint = VaultTextSecondary.copy(alpha = 0.5f),
-                            modifier = Modifier.size(18.dp)
+
+                    Spacer(Modifier.width(12.dp))
+
+                    Column(Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            if (note.isPinned) {
+                                Icon(
+                                    Icons.Default.PushPin,
+                                    contentDescription = "Pinned",
+                                    tint = VaultOrange,
+                                    modifier = Modifier
+                                        .size(13.dp)
+                                        .graphicsLayer(rotationZ = 45f)
+                                )
+                                Spacer(Modifier.width(6.dp))
+                            }
+                            Text(
+                                note.title,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                maxLines = 1,
+                                modifier = Modifier.weight(1f, fill = false)
+                            )
+                            if (note.isFavorite) {
+                                Spacer(Modifier.width(6.dp))
+                                Icon(
+                                    Icons.Default.Star,
+                                    contentDescription = null,
+                                    tint = VaultOrange,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+
+                        Spacer(Modifier.height(4.dp))
+
+                        if (note.content.isNotBlank()) {
+                            Text(
+                                stripMarkdown(note.content.take(120).replace("\n", " ")),
+                                fontSize = 13.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 3,
+                                lineHeight = 18.sp
+                            )
+                            Spacer(Modifier.height(6.dp))
+                        }
+
+                        Text(
+                            dateFmt.format(java.util.Date(note.updatedAt)),
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                         )
                     }
                 }
@@ -784,5 +898,21 @@ private fun IdentityList(
                 }
             }
         }
+    }
+}
+
+private fun stripMarkdown(text: String): String {
+    return try {
+        text
+            .replace(Regex("\\*\\*([^*]+)\\*\\*"), "$1") // Bold
+            .replace(Regex("\\*([^*]+)\\*"), "$1")     // Italic
+            .replace(Regex("(?m)^#{1,3}\\s+"), "")     // Headings
+            .replace(Regex("(?m)^>\\s+"), "")          // Quotes
+            .replace(Regex("(?m)^[•\\-*]\\s+"), "")     // Bullets
+            .replace("---", "")
+            .replace("***", "")
+            .trim()
+    } catch (_: Exception) {
+        text
     }
 }

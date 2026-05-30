@@ -42,6 +42,7 @@ val CategoryCards = Color(0xFF26A69A)
 val CategoryNotes = Color(0xFFEF9A9A)
 val CategoryFiles = Color(0xFFFFCA28)
 val CategoryIDs = Color(0xFF66BB6A)
+val CategoryWifi = Color(0xFF0288D1)
 
 // Divider / Border
 val VaultDivider = Color(0xFF1E3054)

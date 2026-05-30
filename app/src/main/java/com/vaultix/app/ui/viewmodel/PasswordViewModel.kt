@@ -16,6 +16,7 @@ import javax.inject.Inject
 
 data class PasswordUiState(
     val passwords: List<Password> = emptyList(),
+    val wifiPasswords: List<Password> = emptyList(),
     val searchQuery: String = "",
     val isLoading: Boolean = false,
     val error: String? = null,
@@ -44,8 +45,12 @@ class PasswordViewModel @Inject constructor(
                     p.website.contains(query, ignoreCase = true) ||
                     p.appPackageName.contains(query, ignoreCase = true)
                 }
+                // Separate standard and Wi-Fi entries
+                val standard = filtered.filter { p -> p.website != "vaultix://wifi" }
+                val wifi = filtered.filter { p -> p.website == "vaultix://wifi" }
                 PasswordUiState(
-                    passwords = filtered,
+                    passwords = standard,
+                    wifiPasswords = wifi,
                     searchQuery = query,
                     isLoading = false
                 )

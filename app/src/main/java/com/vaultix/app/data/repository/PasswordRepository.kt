@@ -5,8 +5,10 @@ import com.vaultix.app.data.local.entity.PasswordEntity
 import com.vaultix.app.data.model.Password
 import com.vaultix.app.security.CryptoManager
 import com.vaultix.app.security.KeystoreManager
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.flowOn
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -22,14 +24,14 @@ class PasswordRepository @Inject constructor(
         return passwordDao.getAllPasswords().map { entities ->
             entities.filter { it.isFake == com.vaultix.app.security.VaultSession.isFakeVaultActive }
                 .mapNotNull { it.toDecrypted() }
-        }
+        }.flowOn(Dispatchers.Default)
     }
 
     fun getFavoritePasswords(): Flow<List<Password>> {
         return passwordDao.getFavoritePasswords().map { entities ->
             entities.filter { it.isFake == com.vaultix.app.security.VaultSession.isFakeVaultActive }
                 .mapNotNull { it.toDecrypted() }
-        }
+        }.flowOn(Dispatchers.Default)
     }
 
     suspend fun getPasswordById(id: String): Password? {
