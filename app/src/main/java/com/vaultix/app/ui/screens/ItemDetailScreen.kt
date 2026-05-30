@@ -506,26 +506,48 @@ private fun NoteDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () -> U
     val viewModel: NoteViewModel = hiltViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val note = remember(state.notes, itemId) { state.notes.find { it.id == itemId } }
+    val context = LocalContext.current
+
+    var showDeleteConfirm by remember { mutableStateOf(false) }
+
+    val noteAccentColor = remember(note?.color) {
+        try { Color(android.graphics.Color.parseColor(note?.color ?: "#1A3A5C")) }
+        catch (_: Exception) { VaultSurface }
+    }
+
+    val quickColors = listOf(
+        "#1A3A5C", "#4A1942", "#1B4332", "#5C1A1A",
+        "#5C3D1A", "#1A4A4A", "#3D1A5C", "#4A4A1A"
+    )
 
     Scaffold(
         containerColor = VaultBlack,
         topBar = {
             TopAppBar(
-                title = { Text(note?.title ?: "Note", fontWeight = FontWeight.Bold, color = VaultTextPrimary) },
+                title = { },
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, "Back", tint = VaultTextPrimary) } },
                 actions = {
                     note?.let { n ->
+                        // Copy content
+                        IconButton(onClick = {
+                            copyToClipboard(context, "Note Content", n.content)
+                        }) {
+                            Icon(Icons.Default.ContentCopy, "Copy", tint = VaultTextSecondary)
+                        }
+                        // Favorite toggle
                         IconButton(onClick = { viewModel.toggleFavorite(n) }) {
                             Icon(
                                 if (n.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                                 "Favorite",
-                                tint = if (n.isFavorite) VaultError else VaultOrange
+                                tint = if (n.isFavorite) VaultError else VaultTextSecondary
                             )
                         }
-                    }
-                    IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, "Edit", tint = VaultOrange) }
-                    IconButton(onClick = { note?.let { viewModel.deleteNote(it.id) }; onBack() }) {
-                        Icon(Icons.Default.Delete, "Delete", tint = VaultError)
+                        // Edit
+                        IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, "Edit", tint = VaultOrange) }
+                        // Delete
+                        IconButton(onClick = { showDeleteConfirm = true }) {
+                            Icon(Icons.Default.Delete, "Delete", tint = VaultError)
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = VaultBlack)
@@ -533,32 +555,162 @@ private fun NoteDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () -> U
         }
     ) { paddingValues ->
         note?.let { n ->
-            val noteColor = remember(n.color) { 
-                try { Color(android.graphics.Color.parseColor(n.color)) } 
-                catch (_: Exception) { VaultSurface }
-            }
-            
+            val wordCount = remember(n.content) { n.content.trim().split("\\s+".toRegex()).filter { it.isNotBlank() }.size }
+            val charCount = remember(n.content) { n.content.length }
+            val dateFmt = remember { SimpleDateFormat("MMM dd, yyyy 'at' h:mm a", Locale.getDefault()) }
+
             Column(
-                Modifier.fillMaxSize()
+                Modifier
+                    .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(16.dp)
-                    .background(noteColor.copy(alpha = 0.15f), RoundedCornerShape(24.dp))
-                    .padding(20.dp)
-                    .verticalScroll(rememberScrollState())
             ) {
-                Text(n.title, fontSize = 26.sp, fontWeight = FontWeight.ExtraBold, color = VaultTextPrimary)
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    "Last updated: ${java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.getDefault()).format(java.util.Date(n.updatedAt))}",
-                    fontSize = 11.sp,
-                    color = VaultTextSecondary.copy(alpha = 0.7f)
-                )
-                Spacer(Modifier.height(24.dp))
-                FormattedNoteContent(n.content)
+                // Main scrollable content area
+                Column(
+                    Modifier
+                        .weight(1f)
+                        .padding(horizontal = 16.dp)
+                        .padding(top = 4.dp, bottom = 8.dp)
+                        .background(noteAccentColor.copy(alpha = 0.18f), RoundedCornerShape(24.dp))
+                        .padding(1.dp)
+                        .background(noteAccentColor.copy(alpha = 0.06f), RoundedCornerShape(23.dp))
+                        .verticalScroll(rememberScrollState())
+                        .padding(22.dp)
+                ) {
+                    // Title
+                    Text(
+                        n.title,
+                        fontSize = 26.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = VaultTextPrimary,
+                        lineHeight = 32.sp
+                    )
+
+                    Spacer(Modifier.height(10.dp))
+
+                    // Metadata row
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        // Favorite badge
+                        if (n.isFavorite) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.Star, null, tint = VaultOrange, modifier = Modifier.size(13.dp))
+                                Spacer(Modifier.width(3.dp))
+                                Text("Favorite", fontSize = 11.sp, color = VaultOrange, fontWeight = FontWeight.Medium)
+                            }
+                            Box(Modifier.size(3.dp).background(VaultTextDisabled, androidx.compose.foundation.shape.CircleShape))
+                        }
+                        // Word count
+                        Text(
+                            "$wordCount words · $charCount chars",
+                            fontSize = 11.sp,
+                            color = VaultTextSecondary.copy(alpha = 0.6f)
+                        )
+                    }
+
+                    Spacer(Modifier.height(6.dp))
+
+                    // Timestamps
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(
+                            "Created ${dateFmt.format(Date(n.createdAt))}",
+                            fontSize = 11.sp,
+                            color = VaultTextSecondary.copy(alpha = 0.5f)
+                        )
+                    }
+                    Text(
+                        "Updated ${dateFmt.format(Date(n.updatedAt))}",
+                        fontSize = 11.sp,
+                        color = VaultTextSecondary.copy(alpha = 0.5f)
+                    )
+
+                    Spacer(Modifier.height(20.dp))
+                    HorizontalDivider(color = noteAccentColor.copy(alpha = 0.15f), thickness = 1.dp)
+                    Spacer(Modifier.height(20.dp))
+
+                    // Content
+                    FormattedNoteContent(n.content)
+                }
+
+                // Quick color strip at the bottom
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = VaultSurface.copy(alpha = 0.6f),
+                    tonalElevation = 4.dp
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 10.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Theme", fontSize = 11.sp, color = VaultTextSecondary, fontWeight = FontWeight.Medium)
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            quickColors.forEach { colorHex ->
+                                val chipColor = remember(colorHex) {
+                                    try { Color(android.graphics.Color.parseColor(colorHex)) }
+                                    catch (_: Exception) { VaultSurface }
+                                }
+                                val isSelected = n.color == colorHex
+                                Box(
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .background(chipColor, RoundedCornerShape(7.dp))
+                                        .then(
+                                            if (isSelected) Modifier
+                                                .background(chipColor, RoundedCornerShape(7.dp))
+                                            else Modifier
+                                        )
+                                        .clickable {
+                                            viewModel.updateNote(n.copy(color = colorHex))
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (isSelected) {
+                                        Icon(
+                                            Icons.Default.Check, null,
+                                            tint = Color.White,
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         } ?: Box(Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
             Text("Item not found", color = VaultTextSecondary)
         }
+    }
+
+    // Delete confirmation dialog
+    if (showDeleteConfirm && note != null) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirm = false },
+            title = { Text("Delete Note", fontWeight = FontWeight.Bold) },
+            text = { Text("Are you sure you want to delete \"${note.title}\"? This action cannot be undone.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.deleteNote(note.id)
+                    showDeleteConfirm = false
+                    onBack()
+                }) {
+                    Text("Delete", color = VaultError)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirm = false }) {
+                    Text("Cancel", color = VaultTextSecondary)
+                }
+            },
+            containerColor = VaultSurface
+        )
     }
 }
 
@@ -579,71 +731,167 @@ private fun DetailField(label: String, value: String, onCopy: (() -> Unit)? = nu
 }
 
 @Composable
-private fun FormattedNoteContent(content: String) {
-    val annotatedString = remember(content) {
-        parseMarkdown(content)
+fun FormattedNoteContent(content: String) {
+    val blocks = remember(content) { parseNoteBlocks(content) }
+
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        blocks.forEach { block ->
+            when (block) {
+                is NoteBlock.Heading -> {
+                    val (fontSize, lineH) = when (block.level) {
+                        1 -> 24.sp to 30.sp
+                        2 -> 20.sp to 26.sp
+                        else -> 17.sp to 23.sp
+                    }
+                    Text(
+                        text = applyInlineStyles(block.text),
+                        fontSize = fontSize,
+                        lineHeight = lineH,
+                        fontWeight = FontWeight.Bold,
+                        color = VaultTextPrimary
+                    )
+                    if (block.level == 1) {
+                        Spacer(Modifier.height(2.dp))
+                    }
+                }
+                is NoteBlock.Quote -> {
+                    Row(Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
+                        Box(
+                            Modifier
+                                .width(3.dp)
+                                .defaultMinSize(minHeight = 20.dp)
+                                .fillMaxHeight()
+                                .background(VaultOrange.copy(alpha = 0.6f), RoundedCornerShape(2.dp))
+                        )
+                        Spacer(Modifier.width(12.dp))
+                        Text(
+                            text = applyInlineStyles(block.text),
+                            fontSize = 15.sp,
+                            lineHeight = 22.sp,
+                            color = VaultTextSecondary,
+                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                        )
+                    }
+                }
+                is NoteBlock.Bullet -> {
+                    Row(Modifier.fillMaxWidth().padding(start = 8.dp, top = 2.dp, bottom = 2.dp)) {
+                        Text(
+                            "•",
+                            fontSize = 16.sp,
+                            color = VaultOrange,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.width(16.dp)
+                        )
+                        Text(
+                            text = applyInlineStyles(block.text),
+                            fontSize = 15.sp,
+                            lineHeight = 23.sp,
+                            color = VaultTextPrimary
+                        )
+                    }
+                }
+                is NoteBlock.HorizontalRule -> {
+                    Spacer(Modifier.height(8.dp))
+                    HorizontalDivider(
+                        color = VaultTextDisabled.copy(alpha = 0.3f),
+                        thickness = 1.dp,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                    Spacer(Modifier.height(8.dp))
+                }
+                is NoteBlock.Paragraph -> {
+                    if (block.text.isNotBlank()) {
+                        Text(
+                            text = applyInlineStyles(block.text),
+                            fontSize = 16.sp,
+                            lineHeight = 26.sp,
+                            color = VaultTextPrimary
+                        )
+                    } else {
+                        Spacer(Modifier.height(8.dp))
+                    }
+                }
+            }
+        }
     }
-    
-    Text(
-        text = annotatedString,
-        fontSize = 16.sp,
-        lineHeight = 26.sp,
-        color = VaultTextPrimary
-    )
 }
 
-private fun parseMarkdown(text: String): androidx.compose.ui.text.AnnotatedString {
-    return androidx.compose.ui.text.buildAnnotatedString {
-        val lines = text.split("\n")
-        lines.forEachIndexed { index, line ->
-            var currentLine = line
-            // Handle Bullet Points
-            if (currentLine.startsWith("- ")) {
-                currentLine = "• " + currentLine.substring(2)
-            } else if (currentLine.startsWith("* ") && !currentLine.startsWith("**")) {
-                currentLine = "• " + currentLine.substring(2)
-            }
-            
-            val startOffset = length
-            
-            // Process bold and italic while stripping tags
-            var processedText = currentLine
-            val boldRanges = mutableListOf<IntRange>()
-            val italicRanges = mutableListOf<IntRange>()
-            
-            // 1. Find and strip bold **text**
-            val boldRegex = Regex("\\*\\*(.*?)\\*\\*")
-            var match = boldRegex.find(processedText)
-            while (match != null) {
-                val content = match.groupValues[1]
-                val range = match.range
-                processedText = processedText.replaceRange(range, content)
-                boldRanges.add(range.first until (range.first + content.length))
-                match = boldRegex.find(processedText)
-            }
-            
-            // 2. Find and strip italic *text*
-            val italicRegex = Regex("(?<!\\*)\\*(?!\\*)(.*?)(?<!\\*)\\*(?!\\*)")
-            var iMatch = italicRegex.find(processedText)
-            while (iMatch != null) {
-                val content = iMatch.groupValues[1]
-                val range = iMatch.range
-                processedText = processedText.replaceRange(range, content)
-                italicRanges.add(range.first until (range.first + content.length))
-                iMatch = italicRegex.find(processedText)
-            }
-            
-            append(processedText)
-            
-            // Apply styles based on saved ranges
-            boldRanges.forEach { range ->
-                addStyle(androidx.compose.ui.text.SpanStyle(fontWeight = FontWeight.Bold, color = VaultOrange), startOffset + range.first, startOffset + range.last + 1)
-            }
-            italicRanges.forEach { range ->
-                addStyle(androidx.compose.ui.text.SpanStyle(fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, color = VaultTextSecondary), startOffset + range.first, startOffset + range.last + 1)
-            }
+sealed class NoteBlock {
+    data class Heading(val level: Int, val text: String) : NoteBlock()
+    data class Quote(val text: String) : NoteBlock()
+    data class Bullet(val text: String) : NoteBlock()
+    object HorizontalRule : NoteBlock()
+    data class Paragraph(val text: String) : NoteBlock()
+}
 
-            if (index < lines.size - 1) append("\n")
+fun parseNoteBlocks(text: String): List<NoteBlock> {
+    val lines = text.split("\n")
+    return lines.map { line ->
+        when {
+            line.trimEnd() == "---" || line.trimEnd() == "***" || line.trimEnd() == "___" ->
+                NoteBlock.HorizontalRule
+            line.startsWith("### ") ->
+                NoteBlock.Heading(3, line.substring(4))
+            line.startsWith("## ") ->
+                NoteBlock.Heading(2, line.substring(3))
+            line.startsWith("# ") ->
+                NoteBlock.Heading(1, line.substring(2))
+            line.startsWith("> ") ->
+                NoteBlock.Quote(line.substring(2))
+            line.startsWith("• ") ->
+                NoteBlock.Bullet(line.substring(2))
+            line.startsWith("- ") ->
+                NoteBlock.Bullet(line.substring(2))
+            line.startsWith("* ") && !line.startsWith("**") ->
+                NoteBlock.Bullet(line.substring(2))
+            else ->
+                NoteBlock.Paragraph(line)
+        }
+    }
+}
+
+fun applyInlineStyles(text: String): androidx.compose.ui.text.AnnotatedString {
+    return androidx.compose.ui.text.buildAnnotatedString {
+        var processedText = text
+        val boldRanges = mutableListOf<IntRange>()
+        val italicRanges = mutableListOf<IntRange>()
+
+        // 1. Find and strip bold **text**
+        val boldRegex = Regex("\\*\\*(.*?)\\*\\*")
+        var match = boldRegex.find(processedText)
+        while (match != null) {
+            val content = match.groupValues[1]
+            val range = match.range
+            processedText = processedText.replaceRange(range, content)
+            boldRanges.add(range.first until (range.first + content.length))
+            match = boldRegex.find(processedText)
+        }
+
+        // 2. Find and strip italic *text*
+        val italicRegex = Regex("(?<!\\*)\\*(?!\\*)(.*?)(?<!\\*)\\*(?!\\*)")
+        var iMatch = italicRegex.find(processedText)
+        while (iMatch != null) {
+            val content = iMatch.groupValues[1]
+            val range = iMatch.range
+            processedText = processedText.replaceRange(range, content)
+            italicRanges.add(range.first until (range.first + content.length))
+            iMatch = italicRegex.find(processedText)
+        }
+
+        append(processedText)
+
+        // Apply styles
+        boldRanges.forEach { range ->
+            addStyle(
+                androidx.compose.ui.text.SpanStyle(fontWeight = FontWeight.Bold),
+                range.first, (range.last + 1).coerceAtMost(processedText.length)
+            )
+        }
+        italicRanges.forEach { range ->
+            addStyle(
+                androidx.compose.ui.text.SpanStyle(fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, color = VaultTextSecondary),
+                range.first, (range.last + 1).coerceAtMost(processedText.length)
+            )
         }
     }
 }
