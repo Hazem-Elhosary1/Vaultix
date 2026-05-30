@@ -18,6 +18,7 @@ import com.vaultix.app.data.local.dao.IdentityDao
 import com.vaultix.app.data.local.dao.PasswordDao
 import com.vaultix.app.security.CryptoManager
 import com.vaultix.app.security.KeystoreManager
+import com.vaultix.app.security.SecurePreferences
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.util.concurrent.TimeUnit
@@ -33,7 +34,8 @@ class ExpiryCheckWorker @AssistedInject constructor(
     private val passwordDao: PasswordDao,
     private val cardDao: CardDao,
     private val identityDao: IdentityDao,
-    private val cryptoManager: CryptoManager
+    private val cryptoManager: CryptoManager,
+    private val securePreferences: SecurePreferences
 ) : CoroutineWorker(appContext, workerParams) {
 
     companion object {
@@ -43,9 +45,26 @@ class ExpiryCheckWorker @AssistedInject constructor(
         private const val DAYS_BEFORE_EXPIRY = 30
 
         fun schedule(context: Context) {
+            val calendar = java.util.Calendar.getInstance().apply {
+                timeInMillis = System.currentTimeMillis()
+                // Set to 12:00 AM (midnight)
+                set(java.util.Calendar.HOUR_OF_DAY, 0)
+                set(java.util.Calendar.MINUTE, 0)
+                set(java.util.Calendar.SECOND, 0)
+                set(java.util.Calendar.MILLISECOND, 0)
+                // If past 12:00 AM today, schedule for tomorrow
+                if (before(java.util.Calendar.getInstance())) {
+                    add(java.util.Calendar.DAY_OF_YEAR, 1)
+                }
+            }
+
+            val initialDelay = calendar.timeInMillis - System.currentTimeMillis()
+
             val request = androidx.work.PeriodicWorkRequestBuilder<ExpiryCheckWorker>(
                 1, TimeUnit.DAYS
-            ).setConstraints(
+            )
+            .setInitialDelay(initialDelay, TimeUnit.MILLISECONDS)
+            .setConstraints(
                 androidx.work.Constraints.Builder()
                     .setRequiresBatteryNotLow(true)
                     .build()
@@ -53,7 +72,7 @@ class ExpiryCheckWorker @AssistedInject constructor(
 
             androidx.work.WorkManager.getInstance(context).enqueueUniquePeriodicWork(
                 WORK_NAME,
-                androidx.work.ExistingPeriodicWorkPolicy.KEEP,
+                androidx.work.ExistingPeriodicWorkPolicy.UPDATE, // UPDATE to apply midnight delay immediately
                 request
             )
         }
@@ -81,6 +100,13 @@ class ExpiryCheckWorker @AssistedInject constructor(
             val threshold = now + TimeUnit.DAYS.toMillis(DAYS_BEFORE_EXPIRY.toLong())
             val key = KeystoreManager.getOrCreateDatabaseKey()
 
+            // Resolve localized context based on stored app language setting or default system language
+            val lang = securePreferences.getPlainString(SecurePreferences.KEY_APP_LANGUAGE) ?: "en"
+            val locale = java.util.Locale(lang)
+            val config = android.content.res.Configuration(appContext.resources.configuration)
+            config.setLocale(locale)
+            val localizedContext = appContext.createConfigurationContext(config)
+
             var notificationId = NOTIFICATION_ID_BASE
             var alertCount = 0
 
@@ -88,10 +114,11 @@ class ExpiryCheckWorker @AssistedInject constructor(
             val expiringPasswords = passwordDao.getExpiringPasswords(threshold)
             for (pwd in expiringPasswords) {
                 val title = try { cryptoManager.decrypt(pwd.title, key) } catch (e: Exception) { "Password" }
+                val daysLeft = calculateDays(pwd.expiresAt ?: 0, now)
                 sendNotification(
                     notificationId++,
-                    "🔑 Password Expiring Soon",
-                    "'$title' expires in ${calculateDays(pwd.expiresAt ?: 0, now)} days"
+                    localizedContext.getString(R.string.password_expiring_soon_title),
+                    localizedContext.getString(R.string.password_expiring_soon_msg, title, daysLeft)
                 )
                 alertCount++
             }
@@ -100,10 +127,11 @@ class ExpiryCheckWorker @AssistedInject constructor(
             val expiringCards = cardDao.getExpiringCards(threshold)
             for (card in expiringCards) {
                 val name = try { cryptoManager.decrypt(card.cardName, key) } catch (e: Exception) { "Card" }
+                val daysLeft = calculateDays(card.expiryTimestamp ?: 0, now)
                 sendNotification(
                     notificationId++,
-                    "💳 Card Expiring Soon",
-                    "'$name' expires in ${calculateDays(card.expiryTimestamp ?: 0, now)} days"
+                    localizedContext.getString(R.string.card_expiring_soon_title),
+                    localizedContext.getString(R.string.card_expiring_soon_msg, name, daysLeft)
                 )
                 alertCount++
             }
@@ -112,10 +140,11 @@ class ExpiryCheckWorker @AssistedInject constructor(
             val expiringIdentities = identityDao.getExpiringIdentities(threshold)
             for (id in expiringIdentities) {
                 val name = try { cryptoManager.decrypt(id.documentName, key) } catch (e: Exception) { "ID Document" }
+                val daysLeft = calculateDays(id.expiryTimestamp ?: 0, now)
                 sendNotification(
                     notificationId++,
-                    "🪪 ID Expiring Soon",
-                    "'$name' expires in ${calculateDays(id.expiryTimestamp ?: 0, now)} days"
+                    localizedContext.getString(R.string.id_expiring_soon_title),
+                    localizedContext.getString(R.string.id_expiring_soon_msg, name, daysLeft)
                 )
                 alertCount++
             }
@@ -143,8 +172,8 @@ class ExpiryCheckWorker @AssistedInject constructor(
             if (weakPasswordsCount > 0) {
                 sendNotification(
                     notificationId++,
-                    "🔒 تنبيه أمان: كلمات مرور ضعيفة",
-                    "لديك $weakPasswordsCount كلمة مرور ضعيفة قد تهدد حساباتك. افتح Vaultix لتحديثها وحماية بياناتك!"
+                    localizedContext.getString(R.string.weak_passwords_title),
+                    localizedContext.getString(R.string.weak_passwords_msg, weakPasswordsCount)
                 )
                 alertCount++
             }
@@ -152,8 +181,8 @@ class ExpiryCheckWorker @AssistedInject constructor(
             if (weakWifiCount > 0) {
                 sendNotification(
                     notificationId++,
-                    "⚠️ تنبيه أمان: شبكات واي فاي غير آمنة",
-                    "تم رصد $weakWifiCount شبكة واي فاي غير آمنة أو بتشفير ضعيف. افتح التطبيق لمراجعتها وتأمين اتصالك."
+                    localizedContext.getString(R.string.weak_wifi_title),
+                    localizedContext.getString(R.string.weak_wifi_msg, weakWifiCount)
                 )
                 alertCount++
             }
@@ -162,8 +191,8 @@ class ExpiryCheckWorker @AssistedInject constructor(
             if (alertCount == 0) {
                 sendNotification(
                     notificationId++,
-                    "🛡️ حصنك الرقمي في أمان",
-                    "رائع! جميع بياناتك وكلمات المرور في Vaultix آمنة ومحمية بالكامل. تابع الحفاظ على سلامتك الرقمية!"
+                    localizedContext.getString(R.string.vault_secure_title),
+                    localizedContext.getString(R.string.vault_secure_msg)
                 )
             }
 

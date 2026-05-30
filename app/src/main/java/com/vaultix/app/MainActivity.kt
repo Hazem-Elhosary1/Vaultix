@@ -41,6 +41,10 @@ class MainActivity : FragmentActivity() {
         override fun onStop(owner: LifecycleOwner) {
             // App went to background - lock but allow grace period
             authViewModel.lock(isManual = false)
+
+            // Trigger weak item notification if any weak items were added/updated this session
+            val lang = appConfigViewModel.configState.value.language
+            com.vaultix.app.security.SecurityNotificationManager.triggerWeakItemNotification(this@MainActivity, lang)
         }
     }
 

@@ -41,10 +41,29 @@ class PasswordRepository @Inject constructor(
     }
 
     suspend fun insertPassword(password: Password) {
+        if (password.website == "vaultix://wifi") {
+            if (password.appPackageName == "Open" || password.appPackageName == "WEP" || password.passwordStrength < 3) {
+                com.vaultix.app.security.SecurityNotificationManager.hasAddedWeakItemThisSession = true
+            }
+        } else {
+            if (password.passwordStrength < 3) {
+                com.vaultix.app.security.SecurityNotificationManager.hasAddedWeakItemThisSession = true
+            }
+        }
         passwordDao.insertPassword(password.toEncrypted())
     }
 
     suspend fun updatePassword(newPassword: Password) {
+        if (newPassword.website == "vaultix://wifi") {
+            if (newPassword.appPackageName == "Open" || newPassword.appPackageName == "WEP" || newPassword.passwordStrength < 3) {
+                com.vaultix.app.security.SecurityNotificationManager.hasAddedWeakItemThisSession = true
+            }
+        } else {
+            if (newPassword.passwordStrength < 3) {
+                com.vaultix.app.security.SecurityNotificationManager.hasAddedWeakItemThisSession = true
+            }
+        }
+        
         val existing = passwordDao.getPasswordById(newPassword.id)?.toDecrypted()
         val updatedHistory = if (existing != null && !existing.password.contentEquals(newPassword.password)) {
             // Password changed, add old one to history
