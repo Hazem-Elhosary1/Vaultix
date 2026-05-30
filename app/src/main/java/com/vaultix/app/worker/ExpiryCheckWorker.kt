@@ -45,9 +45,26 @@ class ExpiryCheckWorker @AssistedInject constructor(
         private const val DAYS_BEFORE_EXPIRY = 30
 
         fun schedule(context: Context) {
+            val calendar = java.util.Calendar.getInstance().apply {
+                timeInMillis = System.currentTimeMillis()
+                // Set to 12:00 AM (midnight)
+                set(java.util.Calendar.HOUR_OF_DAY, 0)
+                set(java.util.Calendar.MINUTE, 0)
+                set(java.util.Calendar.SECOND, 0)
+                set(java.util.Calendar.MILLISECOND, 0)
+                // If past 12:00 AM today, schedule for tomorrow
+                if (before(java.util.Calendar.getInstance())) {
+                    add(java.util.Calendar.DAY_OF_YEAR, 1)
+                }
+            }
+
+            val initialDelay = calendar.timeInMillis - System.currentTimeMillis()
+
             val request = androidx.work.PeriodicWorkRequestBuilder<ExpiryCheckWorker>(
                 1, TimeUnit.DAYS
-            ).setConstraints(
+            )
+            .setInitialDelay(initialDelay, TimeUnit.MILLISECONDS)
+            .setConstraints(
                 androidx.work.Constraints.Builder()
                     .setRequiresBatteryNotLow(true)
                     .build()
@@ -55,7 +72,7 @@ class ExpiryCheckWorker @AssistedInject constructor(
 
             androidx.work.WorkManager.getInstance(context).enqueueUniquePeriodicWork(
                 WORK_NAME,
-                androidx.work.ExistingPeriodicWorkPolicy.KEEP,
+                androidx.work.ExistingPeriodicWorkPolicy.UPDATE, // UPDATE to apply midnight delay immediately
                 request
             )
         }
