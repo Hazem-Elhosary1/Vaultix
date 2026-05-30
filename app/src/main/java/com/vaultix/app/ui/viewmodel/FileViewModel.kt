@@ -104,6 +104,45 @@ class FileViewModel @Inject constructor(
         }
     }
 
+    fun moveFileToFolder(fileId: String, targetFolderId: String?) {
+        viewModelScope.launch {
+            fileRepository.updateFileFolder(fileId, targetFolderId)
+            DebugEventBus.log(
+                category  = DebugCategory.FILE,
+                eventType = "FILE_MOVED",
+                details   = "fileId=$fileId, targetFolderId=${targetFolderId ?: "root"}",
+                source    = "FileViewModel"
+            )
+        }
+    }
+
+    fun moveFolderToFolder(folderId: String, targetFolderId: String?) {
+        if (folderId == targetFolderId || isFolderDescendantOf(folderId, targetFolderId)) {
+            return
+        }
+        viewModelScope.launch {
+            fileRepository.updateFolderParent(folderId, targetFolderId)
+            DebugEventBus.log(
+                category  = DebugCategory.FILE,
+                eventType = "FOLDER_MOVED",
+                details   = "folderId=$folderId, targetFolderId=${targetFolderId ?: "root"}",
+                source    = "FileViewModel"
+            )
+        }
+    }
+
+    fun isFolderDescendantOf(folderId: String, potentialParentId: String?): Boolean {
+        if (potentialParentId == null) return false
+        if (folderId == potentialParentId) return true
+        
+        var currentParentId = _folders.value.find { it.id == potentialParentId }?.parentFolderId
+        while (currentParentId != null) {
+            if (currentParentId == folderId) return true
+            currentParentId = _folders.value.find { it.id == currentParentId }?.parentFolderId
+        }
+        return false
+    }
+
     suspend fun getDecryptedBytes(file: VaultFile): ByteArray? {
         val bos = java.io.ByteArrayOutputStream()
         return if (fileRepository.decryptFileToStream(file, bos).isSuccess) {

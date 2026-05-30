@@ -4,11 +4,15 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -16,21 +20,49 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.vaultix.app.R
 import com.vaultix.app.data.model.VaultFile
+import com.vaultix.app.data.model.VaultFolder
 import com.vaultix.app.ui.theme.*
 import com.vaultix.app.ui.viewmodel.FileViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.compose.ui.graphics.Color
+import kotlin.math.roundToInt
+
+/**
+ * State class to manage the active Drag and Drop session inside the File Vault.
+ */
+class DragDropState {
+    var draggedItemId by mutableStateOf<String?>(null)
+    var draggedItemType by mutableStateOf<String?>(null) // "file" or "folder"
+    var draggedItemName by mutableStateOf("")
+    var dragOffset by mutableStateOf(Offset.Zero)
+    var dragPosition by mutableStateOf(Offset.Zero)
+    var isDragging by mutableStateOf(false)
+    
+    // Bounds of potential drop targets (folders/root) on screen
+    val folderBounds = mutableStateMapOf<String, Rect>()
+    var currentHoveredFolderId by mutableStateOf<String?>(null)
+}
 
 /**
  * File Vault screen: import files, encrypt them with AES-256-GCM,
- * and store encrypted copies in the app's internal storage.
+ * store encrypted copies in the app's internal storage, and navigate using breadcrumbs.
  */
 @Composable
 fun FileVaultScreen(
@@ -49,6 +81,8 @@ fun FileVaultScreen(
     
     var showNewFolderDialog by remember { mutableStateOf(false) }
     var showProRequiredDialog by remember(configState.isPremium) { mutableStateOf(false) }
+    
+    val dragDropState = remember { DragDropState() }
     
     val currentFiles = files.filter { it.folderId == currentFolderId }
     val currentFolders = folders.filter { it.parentFolderId == currentFolderId }
@@ -102,6 +136,23 @@ fun FileVaultScreen(
         )
     }
 
+    // Build the hierarchical breadcrumb trail from root up to current folder
+    val breadcrumbs = remember(currentFolderId, folders) {
+        val list = mutableListOf<Pair<String?, String>>()
+        var currentId = currentFolderId
+        while (currentId != null) {
+            val folder = folders.find { it.id == currentId }
+            if (folder != null) {
+                list.add(0, Pair(folder.id, folder.name))
+                currentId = folder.parentFolderId
+            } else {
+                break
+            }
+        }
+        list.add(0, Pair(null, "File Vault")) // Root folder
+        list
+    }
+
     Scaffold(
         containerColor = VaultBlack,
         topBar = {
@@ -150,98 +201,155 @@ fun FileVaultScreen(
                 .padding(padding)
                 .background(Brush.verticalGradient(listOf(VaultBlack, VaultNavy)))
         ) {
-            if (isEmpty) {
-                // Empty state (centered in Box)
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+            Column(modifier = Modifier.fillMaxSize()) {
+                // Navigable breadcrumb trail
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 10.dp)
+                        .background(VaultSurface.copy(alpha = 0.4f), RoundedCornerShape(10.dp))
+                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                        .horizontalScroll(rememberScrollState()),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        if (currentFolderId == null) Icons.Default.FolderOpen else Icons.Default.CreateNewFolder,
-                        contentDescription = null,
-                        tint = VaultTextDisabled,
-                        modifier = Modifier.size(72.dp)
-                    )
-                    Spacer(Modifier.height(16.dp))
-                    Text(
-                        if (currentFolderId == null) "No files yet" else "This folder is empty",
-                        color = VaultTextSecondary,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        "Tap + to import and encrypt files",
-                        color = VaultTextDisabled,
-                        fontSize = 14.sp
-                    )
-                    if (currentFolderId == null) {
-                        Spacer(Modifier.height(24.dp))
-                        Button(
-                            onClick = { filePickerLauncher.launch(arrayOf("*/*")) },
-                            colors = ButtonDefaults.buttonColors(containerColor = VaultOrange),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Icon(Icons.Default.Upload, null)
-                            Spacer(Modifier.width(8.dp))
-                            Text("Import File", color = VaultBlack, fontWeight = FontWeight.SemiBold)
+                    breadcrumbs.forEachIndexed { index, segment ->
+                        val isLast = index == breadcrumbs.lastIndex
+                        val isHovered = dragDropState.currentHoveredFolderId == (segment.first ?: "root")
+                        
+                        Text(
+                            text = segment.second,
+                            color = when {
+                                isHovered -> VaultOrange
+                                isLast -> VaultOrangeLight
+                                else -> VaultTextSecondary
+                            },
+                            fontWeight = if (isLast) FontWeight.Bold else FontWeight.Normal,
+                            fontSize = 14.sp,
+                            modifier = Modifier
+                                .clickable(!isLast) {
+                                    fileViewModel.navigateToFolder(segment.first)
+                                }
+                                .onGloballyPositioned { coords ->
+                                    // Register breadcrumb coordinates as drop targets (so users can drag items back to parent folders)
+                                    val targetId = segment.first ?: "root"
+                                    if (coords.isAttached) {
+                                        dragDropState.folderBounds[targetId] = coords.boundsInRoot()
+                                    }
+                                }
+                                .padding(vertical = 4.dp)
+                        )
+                        if (!isLast) {
+                            Icon(
+                                imageVector = Icons.Default.ChevronRight,
+                                contentDescription = null,
+                                tint = VaultTextDisabled,
+                                modifier = Modifier.padding(horizontal = 6.dp).size(14.dp)
+                            )
                         }
                     }
                 }
-            } else {
-                // File explorer list
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(vertical = 12.dp)
-                ) {
-                    // Breadcrumbs / Info
-                    item {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                currentFolderName,
-                                color = VaultTextPrimary,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 18.sp
+
+                // Main Content area
+                Box(modifier = Modifier.weight(1f)) {
+                    if (isEmpty) {
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                if (currentFolderId == null) Icons.Default.FolderOpen else Icons.Default.CreateNewFolder,
+                                contentDescription = null,
+                                tint = VaultTextDisabled,
+                                modifier = Modifier.size(72.dp)
                             )
-                            Spacer(Modifier.weight(1f))
+                            Spacer(Modifier.height(16.dp))
                             Text(
-                                "${currentFiles.size + currentFolders.size} items",
+                                if (currentFolderId == null) "No files yet" else "This folder is empty",
                                 color = VaultTextSecondary,
-                                fontSize = 13.sp
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Medium
                             )
-                        }
-                    }
-
-                    // List Folders
-                    items(currentFolders, key = { it.id }) { folder ->
-                        FolderItem(
-                            folder = folder,
-                            onClick = { fileViewModel.navigateToFolder(folder.id) },
-                            onDelete = { fileViewModel.deleteFolder(folder.id) }
-                        )
-                    }
-
-                    // List Files
-                    items(currentFiles, key = { it.id }) { file ->
-                        FileVaultItem(
-                            file = file,
-                            onDelete = { fileViewModel.deleteFile(file.id) },
-                            onView = {
-                                when {
-                                    file.mimeType.contains("pdf") -> onViewPdf(file.id, file.fileName)
-                                    file.mimeType.startsWith("image/") -> onViewImage(file.encryptedFilePath)
-                                    else -> Toast.makeText(context, "Cannot preview this type securely yet.", Toast.LENGTH_SHORT).show()
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                "Tap + to import and encrypt files",
+                                color = VaultTextDisabled,
+                                fontSize = 14.sp
+                            )
+                            if (currentFolderId == null) {
+                                Spacer(Modifier.height(24.dp))
+                                Button(
+                                    onClick = { filePickerLauncher.launch(arrayOf("*/*")) },
+                                    colors = ButtonDefaults.buttonColors(containerColor = VaultOrange),
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Icon(Icons.Default.Upload, null)
+                                    Spacer(Modifier.width(8.dp))
+                                    Text("Import File", color = VaultBlack, fontWeight = FontWeight.SemiBold)
                                 }
                             }
-                        )
+                        }
+                    } else {
+                        // File and Folder List
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            contentPadding = PaddingValues(vertical = 12.dp)
+                        ) {
+                            item {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        currentFolderName,
+                                        color = VaultTextPrimary,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 18.sp
+                                    )
+                                    Spacer(Modifier.weight(1f))
+                                    Text(
+                                        "${currentFiles.size + currentFolders.size} items",
+                                        color = VaultTextSecondary,
+                                        fontSize = 13.sp
+                                    )
+                                }
+                            }
+
+                            // Folders
+                            items(currentFolders, key = { it.id }) { folder ->
+                                FolderItem(
+                                    folder = folder,
+                                    onClick = { fileViewModel.navigateToFolder(folder.id) },
+                                    onDelete = { fileViewModel.deleteFolder(folder.id) },
+                                    dragDropState = dragDropState,
+                                    fileViewModel = fileViewModel,
+                                    files = files,
+                                    folders = folders
+                                )
+                            }
+
+                            // Files
+                            items(currentFiles, key = { it.id }) { file ->
+                                FileVaultItem(
+                                    file = file,
+                                    onDelete = { fileViewModel.deleteFile(file.id) },
+                                    onView = {
+                                        when {
+                                            file.mimeType.contains("pdf") -> onViewPdf(file.id, file.fileName)
+                                            file.mimeType.startsWith("image/") -> onViewImage(file.encryptedFilePath)
+                                            else -> Toast.makeText(context, "Cannot preview this type securely yet.", Toast.LENGTH_SHORT).show()
+                                        }
+                                    },
+                                    dragDropState = dragDropState,
+                                    fileViewModel = fileViewModel
+                                )
+                            }
+                        }
                     }
                 }
             }
 
+            // Create New Folder Dialog
             if (showNewFolderDialog) {
                 var folderName by remember { mutableStateOf("") }
                 AlertDialog(
@@ -275,6 +383,7 @@ fun FileVaultScreen(
                 )
             }
 
+            // Encrypting Overlay
             val isImporting by fileViewModel.isImporting.collectAsState()
             if (isImporting) {
                 Box(
@@ -291,24 +400,138 @@ fun FileVaultScreen(
                     }
                 }
             }
+
+            // Floating drag preview item under the dragging finger (Enhanced Large Preview)
+            if (dragDropState.isDragging && dragDropState.draggedItemId != null) {
+                val cardWidthDp = 260.dp
+                val cardHeightOffsetDp = 75.dp
+                Card(
+                    modifier = Modifier
+                        .offset {
+                            IntOffset(
+                                x = (dragDropState.dragPosition.x - cardWidthDp.toPx() / 2f).roundToInt(),
+                                y = (dragDropState.dragPosition.y - cardHeightOffsetDp.toPx()).roundToInt()
+                            )
+                        }
+                        .width(cardWidthDp)
+                        .alpha(0.9f),
+                    colors = CardDefaults.cardColors(containerColor = VaultOrange),
+                    shape = RoundedCornerShape(14.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 14.dp),
+                    border = BorderStroke(2.dp, VaultBlack.copy(alpha = 0.15f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 18.dp, vertical = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .background(VaultBlack.copy(alpha = 0.12f), RoundedCornerShape(8.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = if (dragDropState.draggedItemType == "folder") Icons.Default.Folder else Icons.Default.InsertDriveFile,
+                                contentDescription = null,
+                                tint = VaultBlack,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        Spacer(Modifier.width(12.dp))
+                        Text(
+                            text = dragDropState.draggedItemName,
+                            color = VaultBlack,
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 15.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+            }
         }
     }
 }
 
 @Composable
 private fun FolderItem(
-    folder: com.vaultix.app.data.model.VaultFolder,
+    folder: VaultFolder,
     onClick: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    dragDropState: DragDropState,
+    fileViewModel: FileViewModel,
+    files: List<VaultFile>,
+    folders: List<VaultFolder>
 ) {
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var itemCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
+    
+    // Safety check: check if the folder is empty
+    val hasContents = remember(files, folders, folder.id) {
+        files.any { it.folderId == folder.id } || folders.any { it.parentFolderId == folder.id }
+    }
+    
+    val isHovered = dragDropState.currentHoveredFolderId == folder.id
+    val borderStroke = if (isHovered) BorderStroke(2.dp, VaultOrange) else null
+    val containerColor = if (isHovered) VaultOrange.copy(alpha = 0.15f) else VaultSurface.copy(alpha = 0.7f)
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .clickable(onClick = onClick)
+            .onGloballyPositioned { coordinates ->
+                itemCoordinates = coordinates
+                if (coordinates.isAttached) {
+                    // Register the folder's bounding box as an active drop target
+                    dragDropState.folderBounds[folder.id] = coordinates.boundsInRoot()
+                }
+            }
+            .pointerInput(folder.id) {
+                detectDragGesturesAfterLongPress(
+                    onDragStart = { offset ->
+                        dragDropState.draggedItemId = folder.id
+                        dragDropState.draggedItemType = "folder"
+                        dragDropState.draggedItemName = folder.name
+                        dragDropState.dragOffset = Offset.Zero
+                        dragDropState.dragPosition = itemCoordinates?.localToRoot(offset) ?: Offset.Zero
+                        dragDropState.isDragging = true
+                    },
+                    onDrag = { change, dragAmount ->
+                        change.consume()
+                        dragDropState.dragOffset += dragAmount
+                        val rootPos = itemCoordinates?.localToRoot(change.position)
+                        if (rootPos != null) {
+                            dragDropState.dragPosition = rootPos
+                            // Find which folder bounds contain the pointer, excluding itself and its descendants
+                            dragDropState.currentHoveredFolderId = dragDropState.folderBounds.entries
+                                .find { entry ->
+                                    entry.key != folder.id && 
+                                    !fileViewModel.isFolderDescendantOf(folder.id, entry.key) &&
+                                    entry.value.contains(rootPos)
+                                }?.key
+                        }
+                    },
+                    onDragEnd = {
+                        dragDropState.isDragging = false
+                        val target = dragDropState.currentHoveredFolderId
+                        if (target != null) {
+                            val destId = if (target == "root") null else target
+                            fileViewModel.moveFolderToFolder(folder.id, destId)
+                        }
+                        dragDropState.draggedItemId = null
+                        dragDropState.currentHoveredFolderId = null
+                    },
+                    onDragCancel = {
+                        dragDropState.isDragging = false
+                        dragDropState.draggedItemId = null
+                        dragDropState.currentHoveredFolderId = null
+                    }
+                )
+            },
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = VaultSurface.copy(alpha = 0.7f))
+        border = borderStroke,
+        colors = CardDefaults.cardColors(containerColor = containerColor)
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -323,21 +546,38 @@ private fun FolderItem(
         }
     }
     
+    // Safety check Folder deletion alerts (Fully localized using strings.xml)
     if (showDeleteDialog) {
-        AlertDialog(
-            onDismissRequest = { showDeleteDialog = false },
-            containerColor = VaultSurface,
-            title = { Text("Delete Folder?", color = VaultTextPrimary) },
-            text = { Text("The folder will be deleted. Files inside will be moved to the root vault.", color = VaultTextSecondary) },
-            confirmButton = {
-                Button(onClick = { onDelete(); showDeleteDialog = false }, colors = ButtonDefaults.buttonColors(containerColor = VaultError)) { 
-                    Text("Delete", color = VaultTextPrimary) 
+        if (hasContents) {
+            AlertDialog(
+                onDismissRequest = { showDeleteDialog = false },
+                containerColor = VaultSurface,
+                title = { Text(stringResource(R.string.folder_not_empty_title), color = VaultOrange, fontWeight = FontWeight.Bold) },
+                text = { Text(stringResource(R.string.folder_not_empty_msg), color = VaultTextPrimary) },
+                confirmButton = {
+                    Button(
+                        onClick = { showDeleteDialog = false },
+                        colors = ButtonDefaults.buttonColors(containerColor = VaultOrange)
+                    ) { Text(stringResource(R.string.ok_action), color = VaultBlack, fontWeight = FontWeight.SemiBold) }
                 }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") }
-            }
-        )
+            )
+        } else {
+            AlertDialog(
+                onDismissRequest = { showDeleteDialog = false },
+                containerColor = VaultSurface,
+                title = { Text(stringResource(R.string.delete_empty_folder_title), color = VaultTextPrimary) },
+                text = { Text(stringResource(R.string.delete_empty_folder_msg), color = VaultTextSecondary) },
+                confirmButton = {
+                    Button(
+                        onClick = { onDelete(); showDeleteDialog = false },
+                        colors = ButtonDefaults.buttonColors(containerColor = VaultError)
+                    ) { Text(stringResource(R.string.delete), color = VaultTextPrimary) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDeleteDialog = false }) { Text(stringResource(R.string.cancel)) }
+                }
+            )
+        }
     }
 }
 
@@ -345,14 +585,60 @@ private fun FolderItem(
 private fun FileVaultItem(
     file: VaultFile,
     onDelete: () -> Unit,
-    onView: () -> Unit
+    onView: () -> Unit,
+    dragDropState: DragDropState,
+    fileViewModel: FileViewModel
 ) {
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var itemCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onView)
+            .onGloballyPositioned { coords ->
+                itemCoordinates = coords
+            }
+            .pointerInput(file.id) {
+                detectDragGesturesAfterLongPress(
+                    onDragStart = { offset ->
+                        dragDropState.draggedItemId = file.id
+                        dragDropState.draggedItemType = "file"
+                        dragDropState.draggedItemName = file.fileName
+                        dragDropState.dragOffset = Offset.Zero
+                        dragDropState.dragPosition = itemCoordinates?.localToRoot(offset) ?: Offset.Zero
+                        dragDropState.isDragging = true
+                    },
+                    onDrag = { change, dragAmount ->
+                        change.consume()
+                        dragDropState.dragOffset += dragAmount
+                        val rootPos = itemCoordinates?.localToRoot(change.position)
+                        if (rootPos != null) {
+                            dragDropState.dragPosition = rootPos
+                            // Check which folder bounds contain the finger pointer
+                            dragDropState.currentHoveredFolderId = dragDropState.folderBounds.entries
+                                .find { entry ->
+                                    entry.value.contains(rootPos)
+                                }?.key
+                        }
+                    },
+                    onDragEnd = {
+                        dragDropState.isDragging = false
+                        val target = dragDropState.currentHoveredFolderId
+                        if (target != null) {
+                            val destId = if (target == "root") null else target
+                            fileViewModel.moveFileToFolder(file.id, destId)
+                        }
+                        dragDropState.draggedItemId = null
+                        dragDropState.currentHoveredFolderId = null
+                    },
+                    onDragCancel = {
+                        dragDropState.isDragging = false
+                        dragDropState.draggedItemId = null
+                        dragDropState.currentHoveredFolderId = null
+                    }
+                )
+            }
             .animateContentSize(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = VaultSurface)
@@ -363,7 +649,7 @@ private fun FileVaultItem(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // File icon
+            // File type icon
             Box(
                 modifier = Modifier
                     .size(44.dp)
