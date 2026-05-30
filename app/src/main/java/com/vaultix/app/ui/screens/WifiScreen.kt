@@ -103,6 +103,7 @@ fun serializeWifiNotes(details: WifiDetails): String {
 @Composable
 fun WifiList(
     searchQuery: String,
+    sortKey: String,
     onItemClick: (String) -> Unit,
     accentColor: Color
 ) {
@@ -111,11 +112,13 @@ fun WifiList(
 
     LaunchedEffect(searchQuery) { viewModel.setSearchQuery(searchQuery) }
 
-    val sortedWifi = remember(state.wifiPasswords, searchQuery) {
-        state.wifiPasswords.sortedWith(
-            compareByDescending<Password> { parseWifiNotes(it.notes).isPinned }
-                .thenByDescending { it.updatedAt }
-        )
+    val sortedWifi = remember(state.wifiPasswords, sortKey) {
+        val base = when (sortKey) {
+            "name" -> state.wifiPasswords.sortedBy { it.title.lowercase() }
+            "strength" -> state.wifiPasswords.sortedBy { it.passwordStrength }
+            else -> state.wifiPasswords.sortedByDescending { it.updatedAt }
+        }
+        base.sortedByDescending { parseWifiNotes(it.notes).isPinned }
     }
 
     if (sortedWifi.isEmpty()) {

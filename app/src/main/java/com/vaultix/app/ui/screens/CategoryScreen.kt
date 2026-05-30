@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -58,6 +59,19 @@ fun CategoryScreen(
     val accentColor = MaterialTheme.colorScheme.primary
 
     var searchQuery by remember { mutableStateOf("") }
+    var currentSort by remember { mutableStateOf("date_newest") }
+
+    val sortOptions = remember(categoryType) {
+        when (categoryType) {
+            "passwords" -> listOf("date_newest", "date_oldest", "name", "strength")
+            "cards" -> listOf("date_newest", "name", "expiry")
+            "notes" -> listOf("date_newest", "date_oldest", "name")
+            "files" -> listOf("date_newest", "name", "size_largest", "size_smallest")
+            "identities" -> listOf("date_newest", "name", "type", "expiry")
+            "wifi" -> listOf("date_newest", "name", "strength")
+            else -> listOf("date_newest", "name")
+        }
+    }
 
     Scaffold(
         containerColor = VaultBlack,
@@ -94,6 +108,13 @@ fun CategoryScreen(
                         focusedTextColor = MaterialTheme.colorScheme.onSurface,
                         unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                     )
+                )
+                // Sort Chip Row
+                SortChipRow(
+                    options = sortOptions,
+                    selected = currentSort,
+                    onSelect = { currentSort = it },
+                    accentColor = accentColor
                 )
             }
         },
@@ -157,27 +178,32 @@ fun CategoryScreen(
             when (categoryType) {
                 "passwords" -> PasswordList(
                     searchQuery = searchQuery,
+                    sortKey = currentSort,
                     onItemClick = onNavigateToDetail,
                     accentColor = accentColor
                 )
                 "cards" -> CardList(
                     searchQuery = searchQuery,
+                    sortKey = currentSort,
                     onItemClick = onNavigateToDetail,
                     accentColor = accentColor
                 )
                 "notes" -> NoteList(
                     searchQuery = searchQuery,
+                    sortKey = currentSort,
                     onItemClick = onNavigateToDetail,
                     accentColor = accentColor
                 )
-                "files" -> FileList(accentColor = accentColor)
+                "files" -> FileList(sortKey = currentSort, accentColor = accentColor)
                 "identities" -> IdentityList(
                     searchQuery = searchQuery,
+                    sortKey = currentSort,
                     accentColor = accentColor,
                     onItemClick = { id -> onNavigateToDetail(id) }
                 )
                 "wifi" -> WifiList(
                     searchQuery = searchQuery,
+                    sortKey = currentSort,
                     onItemClick = onNavigateToDetail,
                     accentColor = accentColor
                 )
@@ -190,6 +216,7 @@ fun CategoryScreen(
 @Composable
 private fun PasswordList(
     searchQuery: String,
+    sortKey: String,
     onItemClick: (String) -> Unit,
     accentColor: Color
 ) {
@@ -198,7 +225,16 @@ private fun PasswordList(
 
     LaunchedEffect(searchQuery) { viewModel.setSearchQuery(searchQuery) }
 
-    if (state.passwords.isEmpty()) {
+    val sorted = remember(state.passwords, sortKey) {
+        when (sortKey) {
+            "name" -> state.passwords.sortedBy { it.title.lowercase() }
+            "date_oldest" -> state.passwords.sortedBy { it.updatedAt }
+            "strength" -> state.passwords.sortedBy { it.passwordStrength }
+            else -> state.passwords.sortedByDescending { it.updatedAt }
+        }
+    }
+
+    if (sorted.isEmpty()) {
         EmptyState(stringResource(R.string.passwords), Icons.Default.VpnKey, accentColor)
         return
     }
@@ -207,7 +243,7 @@ private fun PasswordList(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(state.passwords, key = { it.id }) { password ->
+        items(sorted, key = { it.id }) { password ->
             PasswordListItem(
                 password = password,
                 accentColor = accentColor,
@@ -304,15 +340,21 @@ private fun StrengthDot(strength: Int) {
 @Composable
 private fun CardList(
     searchQuery: String,
+    sortKey: String,
     onItemClick: (String) -> Unit,
     accentColor: Color
 ) {
     val viewModel: CardViewModel = hiltViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    val filtered = remember(state.cards, searchQuery) {
-        if (searchQuery.isBlank()) state.cards
+    val filtered = remember(state.cards, searchQuery, sortKey) {
+        val base = if (searchQuery.isBlank()) state.cards
         else state.cards.filter { it.cardName.contains(searchQuery, true) || it.holderName.contains(searchQuery, true) }
+        when (sortKey) {
+            "name" -> base.sortedBy { it.cardName.lowercase() }
+            "expiry" -> base.sortedBy { (it.expiryYear.toIntOrNull() ?: 99) * 100 + (it.expiryMonth.toIntOrNull() ?: 99) }
+            else -> base.sortedByDescending { it.updatedAt }
+        }
     }
 
     if (filtered.isEmpty()) {
@@ -373,6 +415,7 @@ private fun CardListItem(card: Card, onClick: () -> Unit, onDelete: () -> Unit) 
 @Composable
 private fun NoteList(
     searchQuery: String,
+    sortKey: String,
     onItemClick: (String) -> Unit,
     accentColor: Color
 ) {
@@ -381,7 +424,18 @@ private fun NoteList(
 
     LaunchedEffect(searchQuery) { viewModel.setSearchQuery(searchQuery) }
 
-    if (state.notes.isEmpty()) {
+    val sorted = remember(state.notes, sortKey) {
+        val pinned = state.notes.filter { it.isPinned }
+        val unpinned = state.notes.filter { !it.isPinned }
+        val sortedUnpinned = when (sortKey) {
+            "name" -> unpinned.sortedBy { it.title.lowercase() }
+            "date_oldest" -> unpinned.sortedBy { it.updatedAt }
+            else -> unpinned.sortedByDescending { it.updatedAt }
+        }
+        pinned.sortedByDescending { it.updatedAt } + sortedUnpinned
+    }
+
+    if (sorted.isEmpty()) {
         EmptyState(stringResource(R.string.notes), Icons.Default.Description, accentColor)
         return
     }
@@ -390,7 +444,7 @@ private fun NoteList(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        items(state.notes, key = { it.id }) { note ->
+        items(sorted, key = { it.id }) { note ->
             NoteListItem(
                 note = note,
                 onClick = { onItemClick(note.id) },
@@ -661,7 +715,7 @@ private fun EmptyState(category: String, icon: androidx.compose.ui.graphics.vect
 }
 
 @Composable
-private fun FileList(accentColor: Color) {
+private fun FileList(sortKey: String, accentColor: Color) {
     val viewModel: FileViewModel = hiltViewModel()
     val files by viewModel.files.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -683,18 +737,27 @@ private fun FileList(accentColor: Color) {
         return
     }
 
+    val sorted = remember(files, sortKey) {
+        when (sortKey) {
+            "name" -> files.sortedBy { it.fileName.lowercase() }
+            "size_largest" -> files.sortedByDescending { it.fileSizeBytes }
+            "size_smallest" -> files.sortedBy { it.fileSizeBytes }
+            else -> files.sortedByDescending { it.updatedAt }
+        }
+    }
+
     LazyColumn(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         item {
             Text(
-                "${files.size} encrypted file${if (files.size > 1) "s" else ""}",
+                "${sorted.size} encrypted file${if (sorted.size > 1) "s" else ""}",
                 color = VaultTextSecondary,
                 fontSize = 13.sp
             )
         }
-        items(files, key = { it.id }) { file ->
+        items(sorted, key = { it.id }) { file ->
             Card(
                 modifier = Modifier.fillMaxWidth().clickable { 
                     selectedFile = file
@@ -819,18 +882,25 @@ private fun FileList(accentColor: Color) {
 @Composable
 private fun IdentityList(
     searchQuery: String,
+    sortKey: String,
     accentColor: Color,
     onItemClick: (String) -> Unit
 ) {
     val viewModel: IdentityViewModel = hiltViewModel()
     val identities by viewModel.allIdentities.collectAsStateWithLifecycle()
 
-    val filtered = remember(identities, searchQuery) {
-        if (searchQuery.isBlank()) identities
+    val filtered = remember(identities, searchQuery, sortKey) {
+        val base = if (searchQuery.isBlank()) identities
         else identities.filter {
             it.fullName.contains(searchQuery, true) ||
             it.documentName.contains(searchQuery, true) ||
             it.documentNumber.contains(searchQuery, true)
+        }
+        when (sortKey) {
+            "name" -> base.sortedBy { it.fullName.lowercase() }
+            "type" -> base.sortedBy { it.documentType.lowercase() }
+            "expiry" -> base.sortedBy { it.expiryDate }
+            else -> base.sortedByDescending { it.updatedAt }
         }
     }
 
@@ -916,3 +986,66 @@ private fun stripMarkdown(text: String): String {
         text
     }
 }
+
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@Composable
+private fun SortChipRow(
+    options: List<String>,
+    selected: String,
+    onSelect: (String) -> Unit,
+    accentColor: Color
+) {
+    LazyRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        item {
+            Icon(
+                imageVector = Icons.Default.Sort,
+                contentDescription = "Sort Options",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                modifier = Modifier.size(20.dp)
+            )
+        }
+        items(options) { key ->
+            val labelRes = when (key) {
+                "name" -> R.string.sort_name
+                "date_newest" -> R.string.sort_date_newest
+                "date_oldest" -> R.string.sort_date_oldest
+                "strength" -> R.string.sort_strength
+                "size_largest" -> R.string.sort_size_largest
+                "size_smallest" -> R.string.sort_size_smallest
+                "expiry" -> R.string.sort_expiry
+                "type" -> R.string.sort_type
+                else -> R.string.sort_date_newest
+            }
+            val isSelected = key == selected
+            FilterChip(
+                selected = isSelected,
+                onClick = { onSelect(key) },
+                label = { Text(stringResource(labelRes), fontSize = 12.sp, fontWeight = FontWeight.Medium) },
+                shape = RoundedCornerShape(8.dp),
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = accentColor.copy(alpha = 0.2f),
+                    selectedLabelColor = accentColor,
+                    selectedLeadingIconColor = accentColor,
+                    containerColor = VaultSurface,
+                    labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    iconColor = MaterialTheme.colorScheme.onSurfaceVariant
+                ),
+                border = FilterChipDefaults.filterChipBorder(
+                    enabled = true,
+                    selected = isSelected,
+                    borderColor = if (isSelected) accentColor else MaterialTheme.colorScheme.outlineVariant,
+                    selectedBorderColor = accentColor,
+                    borderWidth = 1.dp,
+                    selectedBorderWidth = 1.dp
+                )
+            )
+        }
+    }
+}
+

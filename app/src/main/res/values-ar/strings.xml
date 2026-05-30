@@ -118,4 +118,14 @@
     <string name="delete_empty_folder_title">حذف المجلد؟</string>
     <string name="delete_empty_folder_msg">هل تريد حذف هذا المجلد الفارغ بشكل نهائي؟</string>
     <string name="ok_action">حسناً</string>
+
+    <!-- Sort Options -->
+    <string name="sort_name">الاسم</string>
+    <string name="sort_date_newest">الأحدث</string>
+    <string name="sort_date_oldest">الأقدم</string>
+    <string name="sort_strength">القوة</string>
+    <string name="sort_size_largest">الأكبر</string>
+    <string name="sort_size_smallest">الأصغر</string>
+    <string name="sort_expiry">الانتهاء</string>
+    <string name="sort_type">النوع</string>
 </resources>
