@@ -5,6 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vaultix.app.data.model.VaultFile
 import com.vaultix.app.data.repository.FileRepository
+import com.vaultix.app.debug.DebugCategory
+import com.vaultix.app.debug.DebugEventBus
+import com.vaultix.app.debug.DebugSeverity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -46,19 +49,44 @@ class FileViewModel @Inject constructor(
     fun createFolder(name: String) {
         viewModelScope.launch {
             fileRepository.createFolder(name, _currentFolderId.value)
+            DebugEventBus.log(
+                category  = DebugCategory.FILE,
+                eventType = "FOLDER_CREATED",
+                details   = "name=$name, parentId=${_currentFolderId.value ?: "root"}",
+                source    = "FileViewModel"
+            )
         }
     }
 
     fun deleteFolder(id: String) {
         viewModelScope.launch {
             fileRepository.deleteFolder(id)
+            DebugEventBus.log(
+                category  = DebugCategory.FILE,
+                eventType = "FOLDER_DELETED",
+                details   = "id=$id",
+                severity  = DebugSeverity.WARNING,
+                source    = "FileViewModel"
+            )
         }
     }
 
     fun importFile(uri: Uri, fileName: String, mimeType: String) {
         viewModelScope.launch {
             _isImporting.value = true
+            DebugEventBus.log(
+                category  = DebugCategory.FILE,
+                eventType = "FILE_IMPORT_STARTED",
+                details   = "name=$fileName, mime=$mimeType",
+                source    = "FileViewModel"
+            )
             fileRepository.importFile(uri, fileName, mimeType, _currentFolderId.value)
+            DebugEventBus.log(
+                category  = DebugCategory.FILE,
+                eventType = "FILE_IMPORT_COMPLETE",
+                details   = "name=$fileName",
+                source    = "FileViewModel"
+            )
             _isImporting.value = false
         }
     }
@@ -66,6 +94,13 @@ class FileViewModel @Inject constructor(
     fun deleteFile(id: String) {
         viewModelScope.launch {
             fileRepository.deleteFile(id)
+            DebugEventBus.log(
+                category  = DebugCategory.FILE,
+                eventType = "FILE_DELETED",
+                details   = "id=$id",
+                severity  = DebugSeverity.WARNING,
+                source    = "FileViewModel"
+            )
         }
     }
 

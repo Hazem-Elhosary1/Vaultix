@@ -96,6 +96,12 @@ class SecurityAuditViewModel @Inject constructor(
             false
         }
     }
+
+    fun clearLogs() {
+        viewModelScope.launch {
+            securityRepository.clearLogs()
+        }
+    }
 }
 
 data class SecurityAuditUiState(

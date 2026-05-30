@@ -50,6 +50,7 @@ fun SettingsScreen(
     onNavigateToPremium: () -> Unit,
     onNavigateToQRCodeBackup: (String) -> Unit = {},
     onNavigateToQRCodeRestore: () -> Unit = {},
+    onNavigateToDevelopment: () -> Unit = {},
     appConfigViewModel: AppConfigViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -489,6 +490,18 @@ fun SettingsScreen(
                 }
             }
 
+            // Dev Tools (develop branch only)
+            SettingsSection(title = "\uD83D\uDD27 Developer") {
+                SettingsClickItem(
+                    icon = Icons.Default.Code,
+                    title = "Development Tools",
+                    subtitle = "Seed mock data, clear database & more",
+                    iconTint = VaultInfo
+                ) {
+                    onNavigateToDevelopment()
+                }
+            }
+
             // App Info
             SettingsSection(title = stringResource(R.string.about)) {
                 SettingsInfoItem("Version", if (configState.isPremium) "1.0.0 PRO" else "1.0.0")
@@ -539,24 +552,47 @@ fun SettingsScreen(
     }
 
     if (showPanicConfirmDialog) {
+        var isPanicProcessing by remember { mutableStateOf(false) }
         AlertDialog(
-            onDismissRequest = { showPanicConfirmDialog = false },
+            onDismissRequest = { if (!isPanicProcessing) showPanicConfirmDialog = false },
             containerColor = MaterialTheme.colorScheme.surface,
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Warning, null, tint = VaultError)
                     Spacer(Modifier.width(8.dp))
-                    Text("âš ï¸ Panic Mode", color = VaultError, fontWeight = FontWeight.Bold)
+                    Text("\u26A0\uFE0F Panic Mode", color = VaultError, fontWeight = FontWeight.Bold)
                 }
             },
             text = { Text("This will PERMANENTLY delete all passwords, cards, notes, files, and IDs.\n\nThere is NO recovery. Are you absolutely sure?", color = MaterialTheme.colorScheme.onSurfaceVariant) },
             confirmButton = {
-                Button(onClick = { scope.launch { authViewModel.triggerPanicMode(); onLogout() } }, colors = ButtonDefaults.buttonColors(containerColor = VaultError)) {
-                    Text(stringResource(R.string.delete).uppercase(), fontWeight = FontWeight.Bold, color = Color.White)
+                Button(
+                    onClick = {
+                        if (!isPanicProcessing) {
+                            scope.launch {
+                                isPanicProcessing = true
+                                authViewModel.triggerPanicMode()
+                                onLogout()
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = VaultError),
+                    enabled = !isPanicProcessing
+                ) {
+                    if (isPanicProcessing) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text(stringResource(R.string.delete).uppercase(), fontWeight = FontWeight.Bold, color = Color.White)
+                    }
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showPanicConfirmDialog = false }) { Text(stringResource(R.string.cancel), color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                if (!isPanicProcessing) {
+                    TextButton(onClick = { showPanicConfirmDialog = false }) { Text(stringResource(R.string.cancel), color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                }
             }
         )
     }
@@ -591,9 +627,10 @@ fun SettingsScreen(
         var confirmPwd by remember { mutableStateOf("") }
         var errorMsg by remember { mutableStateOf<String?>(null) }
         var showPwd by remember { mutableStateOf(false) }
+        var isSaving by remember { mutableStateOf(false) }
         
         AlertDialog(
-            onDismissRequest = { showChangePasswordDialog = false },
+            onDismissRequest = { if (!isSaving) showChangePasswordDialog = false },
             containerColor = MaterialTheme.colorScheme.surface,
             title = { Text(stringResource(R.string.change_master_password), color = MaterialTheme.colorScheme.primary) },
             text = {
@@ -607,7 +644,8 @@ fun SettingsScreen(
                         label = { Text("Current Password") },
                         visualTransformation = if (showPwd) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isSaving
                     )
                     Spacer(Modifier.height(8.dp))
                     OutlinedTextField(
@@ -616,7 +654,8 @@ fun SettingsScreen(
                         label = { Text("New Password") },
                         visualTransformation = if (showPwd) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isSaving
                     )
                     Spacer(Modifier.height(8.dp))
                     OutlinedTextField(
@@ -625,12 +664,13 @@ fun SettingsScreen(
                         label = { Text("Confirm New Password") },
                         visualTransformation = if (showPwd) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
                         trailingIcon = {
-                            IconButton(onClick = { showPwd = !showPwd }) {
+                            IconButton(onClick = { showPwd = !showPwd }, enabled = !isSaving) {
                                 Icon(if (showPwd) Icons.Default.VisibilityOff else Icons.Default.Visibility, null)
                             }
                         },
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isSaving
                     )
                     
                     if (errorMsg != null) {
@@ -651,24 +691,38 @@ fun SettingsScreen(
                             return@Button
                         }
                         
+                        isSaving = true
                         authViewModel.changeMasterPassword(
                             currentPwd = currentPwd.toCharArray(),
                             newPwd = newPwd.toCharArray(),
                             onSuccess = {
+                                isSaving = false
                                 showChangePasswordDialog = false
-                                android.widget.Toast.makeText(context, "Password changed and Vault re-encrypted! ðŸ”’", android.widget.Toast.LENGTH_LONG).show()
+                                android.widget.Toast.makeText(context, "Password changed and Vault re-encrypted! 🔐", android.widget.Toast.LENGTH_LONG).show()
                             },
                             onFailure = { error ->
+                                isSaving = false
                                 errorMsg = error
                             }
                         )
-                    }
+                    },
+                    enabled = !isSaving
                 ) {
-                    Text(stringResource(R.string.save))
+                    if (isSaving) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text(stringResource(R.string.save))
+                    }
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showChangePasswordDialog = false }) { Text(stringResource(R.string.cancel)) }
+                if (!isSaving) {
+                    TextButton(onClick = { showChangePasswordDialog = false }) { Text(stringResource(R.string.cancel)) }
+                }
             }
         )
     }
@@ -679,13 +733,14 @@ fun SettingsScreen(
         var confirmPin by remember { mutableStateOf("") }
         var errorMsg by remember { mutableStateOf<String?>(null) }
         var showPin by remember { mutableStateOf(false) }
+        var isSaving by remember { mutableStateOf(false) }
 
         fun normalizePinInput(value: String): String {
             return value.filter { it.isDigit() }.take(6)
         }
 
         AlertDialog(
-            onDismissRequest = { showChangePinDialog = false },
+            onDismissRequest = { if (!isSaving) showChangePinDialog = false },
             containerColor = MaterialTheme.colorScheme.surface,
             title = { Text(stringResource(R.string.change_pin), color = MaterialTheme.colorScheme.primary) },
             text = {
@@ -703,7 +758,8 @@ fun SettingsScreen(
                         visualTransformation = if (showPin) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.NumberPassword),
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isSaving
                     )
                     Spacer(Modifier.height(8.dp))
                     OutlinedTextField(
@@ -716,7 +772,8 @@ fun SettingsScreen(
                         visualTransformation = if (showPin) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.NumberPassword),
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isSaving
                     )
                     Spacer(Modifier.height(8.dp))
                     OutlinedTextField(
@@ -728,13 +785,14 @@ fun SettingsScreen(
                         label = { Text("Confirm New PIN") },
                         visualTransformation = if (showPin) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
                         trailingIcon = {
-                            IconButton(onClick = { showPin = !showPin }) {
+                            IconButton(onClick = { showPin = !showPin }, enabled = !isSaving) {
                                 Icon(if (showPin) Icons.Default.VisibilityOff else Icons.Default.Visibility, null)
                             }
                         },
                         keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.NumberPassword),
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isSaving
                     )
 
                     if (errorMsg != null) {
@@ -757,26 +815,40 @@ fun SettingsScreen(
                                 errorMsg = "PIN must be 4-6 digits"
                             }
                             else -> {
+                                isSaving = true
                                 authViewModel.changePin(
                                     currentPin = currentPin.toCharArray(),
                                     newPin = newPin.toCharArray(),
                                     onSuccess = {
+                                        isSaving = false
                                         showChangePinDialog = false
                                         Toast.makeText(context, "PIN changed successfully!", Toast.LENGTH_LONG).show()
                                     },
                                     onFailure = { error ->
+                                        isSaving = false
                                         errorMsg = error
                                     }
                                 )
                             }
                         }
-                    }
+                    },
+                    enabled = !isSaving
                 ) {
-                    Text(stringResource(R.string.save))
+                    if (isSaving) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text(stringResource(R.string.save))
+                    }
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showChangePinDialog = false }) { Text(stringResource(R.string.cancel)) }
+                if (!isSaving) {
+                    TextButton(onClick = { showChangePinDialog = false }) { Text(stringResource(R.string.cancel)) }
+                }
             }
         )
     }
@@ -786,9 +858,10 @@ fun SettingsScreen(
         var confirmFakePwd by remember { mutableStateOf("") }
         var errorMsg by remember { mutableStateOf<String?>(null) }
         var showPwd by remember { mutableStateOf(false) }
+        var isSaving by remember { mutableStateOf(false) }
 
         AlertDialog(
-            onDismissRequest = { showFakeVaultDialog = false },
+            onDismissRequest = { if (!isSaving) showFakeVaultDialog = false },
             containerColor = MaterialTheme.colorScheme.surface,
             title = { Text("Setup Fake Vault", color = MaterialTheme.colorScheme.error) },
             text = {
@@ -802,7 +875,8 @@ fun SettingsScreen(
                         label = { Text("Fake Password") },
                         visualTransformation = if (showPwd) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isSaving
                     )
                     Spacer(Modifier.height(8.dp))
                     OutlinedTextField(
@@ -811,7 +885,8 @@ fun SettingsScreen(
                         label = { Text("Confirm Fake Password") },
                         visualTransformation = if (showPwd) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isSaving
                     )
                     
                     if (errorMsg != null) {
@@ -831,21 +906,34 @@ fun SettingsScreen(
                             errorMsg = "Password too short"
                             return@Button
                         }
+                        isSaving = true
                         authViewModel.setFakePassword(
                             password = fakePwd.toCharArray(),
                             onSuccess = {
+                                isSaving = false
                                 showFakeVaultDialog = false
                                 Toast.makeText(context, "Fake Vault configured! Try logging in with the decoy password.", Toast.LENGTH_LONG).show()
                             }
                         )
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                    enabled = !isSaving
                 ) {
-                    Text("Setup")
+                    if (isSaving) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text("Setup")
+                    }
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showFakeVaultDialog = false }) { Text(stringResource(R.string.cancel)) }
+                if (!isSaving) {
+                    TextButton(onClick = { showFakeVaultDialog = false }) { Text(stringResource(R.string.cancel)) }
+                }
             }
         )
     }
