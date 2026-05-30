@@ -83,6 +83,13 @@ class AuthViewModel @Inject constructor(
     private val _gracePeriodSeconds = MutableStateFlow(GRACE_PERIOD_DEFAULT_SECONDS)
     val gracePeriodSeconds: StateFlow<Int> = _gracePeriodSeconds.asStateFlow()
 
+    private val _pendingShortcutAction = MutableStateFlow<String?>(null)
+    val pendingShortcutAction: StateFlow<String?> = _pendingShortcutAction.asStateFlow()
+
+    fun setPendingShortcutAction(action: String?) {
+        _pendingShortcutAction.value = action
+    }
+
     init {
         initializeApp()
     }

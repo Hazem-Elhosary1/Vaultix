@@ -111,4 +111,10 @@
     <string name="weak_wifi_msg">You have %1$d weak or insecure Wi-Fi passwords. Open Vaultix to review them.</string>
     <string name="vault_secure_title">🛡️ Your Digital Vault is Secure</string>
     <string name="vault_secure_msg">Great! All passwords and your data in Vaultix are secure and fully protected. Keep maintaining your digital safety!</string>
+
+    <!-- App Shortcuts -->
+    <string name="shortcut_add_password_short">Add Password</string>
+    <string name="shortcut_add_password_long">Add a new password to your vault</string>
+    <string name="shortcut_add_note_short">Add Note</string>
+    <string name="shortcut_add_note_long">Add a new secure note to your vault</string>
 </resources>

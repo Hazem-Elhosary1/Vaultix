@@ -142,6 +142,22 @@ fun VaultixNavGraph(
 
         // Home / Dashboard
         composable(Screen.Home.route) {
+            val pendingShortcutAction by authViewModel.pendingShortcutAction.collectAsStateWithLifecycle()
+
+            LaunchedEffect(pendingShortcutAction) {
+                pendingShortcutAction?.let { action ->
+                    authViewModel.setPendingShortcutAction(null)
+                    when (action) {
+                        "com.vaultix.app.ACTION_ADD_PASSWORD" -> {
+                            navController.navigate(Screen.AddEdit.createRoute("passwords"))
+                        }
+                        "com.vaultix.app.ACTION_ADD_NOTE" -> {
+                            navController.navigate(Screen.AddEdit.createRoute("notes"))
+                        }
+                    }
+                }
+            }
+
             DashboardScreen(
                 authViewModel = authViewModel,
                 onNavigateToCategory = { type ->

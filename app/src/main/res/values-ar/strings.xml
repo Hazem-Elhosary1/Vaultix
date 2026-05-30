@@ -105,4 +105,10 @@
     <string name="weak_wifi_msg">تم رصد %1$d شبكة واي فاي غير آمنة أو بتشفير ضعيف. افتح التطبيق لمراجعتها وتأمين اتصالك.</string>
     <string name="vault_secure_title">🛡️ حصنك الرقمي في أمان</string>
     <string name="vault_secure_msg">رائع! جميع بياناتك وكلمات المرور في Vaultix آمنة ومحمية بالكامل. تابع الحفاظ على سلامتك الرقمية!</string>
+
+    <!-- App Shortcuts -->
+    <string name="shortcut_add_password_short">إضافة كلمة مرور</string>
+    <string name="shortcut_add_password_long">إضافة كلمة مرور جديدة لخزنتك</string>
+    <string name="shortcut_add_note_short">إضافة ملاحظة</string>
+    <string name="shortcut_add_note_long">إضافة ملاحظة آمنة جديدة لخزنتك</string>
 </resources>
