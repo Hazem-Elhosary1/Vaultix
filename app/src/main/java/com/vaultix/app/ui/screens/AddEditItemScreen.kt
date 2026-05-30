@@ -475,12 +475,14 @@ private fun AddEditNoteScreen(itemId: String?, onSaved: () -> Unit, onBack: () -
     var selectedColor by remember { mutableStateOf(existingItem?.color ?: "#1A2744") }
 
     val noteColors = listOf(
-        "#1A2744", // Navy
-        "#2D1A44", // Purple
-        "#1A442D", // Green
-        "#441A1A", // Red
-        "#44361A", // Gold/Orange
-        "#1A3E44"  // Teal
+        "#1A3A5C", // Deep Blue
+        "#4A1942", // Rich Purple
+        "#1B4332", // Forest Green
+        "#5C1A1A", // Deep Red
+        "#5C3D1A", // Warm Amber
+        "#1A4A4A", // Deep Teal
+        "#3D1A5C", // Violet
+        "#4A4A1A"  // Olive Gold
     )
 
     // Sync initialization
@@ -495,7 +497,7 @@ private fun AddEditNoteScreen(itemId: String?, onSaved: () -> Unit, onBack: () -
     }
 
     val noteBackground = remember(selectedColor) { 
-        try { Color(android.graphics.Color.parseColor(selectedColor)).copy(alpha = 0.12f) } 
+        try { Color(android.graphics.Color.parseColor(selectedColor)).copy(alpha = 0.22f) } 
         catch (_: Exception) { VaultSurface }
     }
 
@@ -542,15 +544,25 @@ private fun AddEditNoteScreen(itemId: String?, onSaved: () -> Unit, onBack: () -
                 Text("Theme:", fontSize = 12.sp, color = VaultTextSecondary, fontWeight = FontWeight.Medium)
                 noteColors.forEach { colorHex ->
                     val color = Color(android.graphics.Color.parseColor(colorHex))
+                    val isSelected = selectedColor == colorHex
                     Box(
                         modifier = Modifier
-                            .size(28.dp)
-                            .background(color, RoundedCornerShape(8.dp))
-                            .clickable { selectedColor = colorHex }
-                            .padding(4.dp),
+                            .size(32.dp)
+                            .background(color, RoundedCornerShape(10.dp))
+                            .then(
+                                if (isSelected) Modifier.background(
+                                    color, RoundedCornerShape(10.dp)
+                                ).padding(2.dp).background(
+                                    Color.Black, RoundedCornerShape(8.dp)
+                                ).padding(2.dp).background(
+                                    color, RoundedCornerShape(6.dp)
+                                )
+                                else Modifier
+                            )
+                            .clickable { selectedColor = colorHex },
                         contentAlignment = Alignment.Center
                     ) {
-                        if (selectedColor == colorHex) {
+                        if (isSelected) {
                             Icon(Icons.Default.Check, null, tint = Color.White, modifier = Modifier.size(16.dp))
                         }
                     }
@@ -597,6 +609,7 @@ private fun AddEditNoteScreen(itemId: String?, onSaved: () -> Unit, onBack: () -
                         color = VaultTextPrimary
                     ),
                     cursorBrush = androidx.compose.ui.graphics.SolidColor(VaultOrange),
+                    visualTransformation = MarkdownVisualTransformation(),
                     decorationBox = { innerTextField ->
                         if (contentValue.text.isEmpty()) Text("Start writing your secure note...", color = VaultTextDisabled, fontSize = 17.sp)
                         innerTextField()
@@ -616,39 +629,128 @@ private fun AddEditNoteScreen(itemId: String?, onSaved: () -> Unit, onBack: () -
                         .fillMaxWidth()
                         .padding(8.dp)
                         .horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    val toolbarButtons = listOf(
-                        Triple(Icons.Default.FormatBold, "**", "**"),
-                        Triple(Icons.Default.FormatItalic, "*", "*"),
-                        Triple(Icons.Default.FormatListBulleted, "\n• ", ""),
-                        Triple(Icons.Default.FormatQuote, "\n> ", "")
-                    )
+                    // Helper to insert text at cursor
+                    fun insertFormatting(prefix: String, suffix: String, wrapSelection: Boolean = true) {
+                        val selection = contentValue.selection
+                        val text = contentValue.text
+                        val before = text.substring(0, selection.start)
+                        val selected = text.substring(selection.start, selection.end)
+                        val after = text.substring(selection.end)
 
-                    toolbarButtons.forEach { (icon, prefix, suffix) ->
-                        IconButton(
-                            onClick = {
-                                val selection = contentValue.selection
-                                val text = contentValue.text
-                                val before = text.substring(0, selection.start)
-                                val selected = text.substring(selection.start, selection.end)
-                                val after = text.substring(selection.end)
-                                
-                                val newText = "$before$prefix$selected$suffix$after"
-                                val newCursor = selection.start + prefix.length + selected.length + suffix.length
-                                
-                                contentValue = androidx.compose.ui.text.input.TextFieldValue(
-                                    text = newText,
-                                    selection = androidx.compose.ui.text.TextRange(newCursor)
-                                )
-                            },
-                            modifier = Modifier
-                                .size(44.dp)
-                                .background(VaultBlack.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
-                        ) {
-                            Icon(icon, null, tint = VaultOrange, modifier = Modifier.size(20.dp))
+                        val newText = if (wrapSelection) {
+                            "$before$prefix$selected$suffix$after"
+                        } else {
+                            "$before$prefix$after"
                         }
+                        val newCursor = if (wrapSelection) {
+                            selection.start + prefix.length + selected.length + suffix.length
+                        } else {
+                            selection.start + prefix.length
+                        }
+
+                        contentValue = androidx.compose.ui.text.input.TextFieldValue(
+                            text = newText,
+                            selection = androidx.compose.ui.text.TextRange(newCursor)
+                        )
+                    }
+
+                    // Helper to insert line-level prefix
+                    fun insertLinePrefix(marker: String) {
+                        val text = contentValue.text
+                        val cursorPos = contentValue.selection.start
+                        // Find start of current line
+                        val lineStart = text.lastIndexOf('\n', cursorPos - 1) + 1
+                        val before = text.substring(0, lineStart)
+                        val lineAndAfter = text.substring(lineStart)
+                        val newText = "$before$marker$lineAndAfter"
+                        val newCursor = cursorPos + marker.length
+
+                        contentValue = androidx.compose.ui.text.input.TextFieldValue(
+                            text = newText,
+                            selection = androidx.compose.ui.text.TextRange(newCursor)
+                        )
+                    }
+
+                    // Heading (H) — cycles # / ## / ###
+                    IconButton(
+                        onClick = {
+                            val text = contentValue.text
+                            val cursorPos = contentValue.selection.start
+                            val lineStart = text.lastIndexOf('\n', cursorPos - 1) + 1
+                            val lineEnd = text.indexOf('\n', cursorPos).let { if (it == -1) text.length else it }
+                            val currentLine = text.substring(lineStart, lineEnd)
+
+                            val (newLine, headingLen) = when {
+                                currentLine.startsWith("### ") -> currentLine.substring(4) to -4
+                                currentLine.startsWith("## ") -> "### ${currentLine.substring(3)}" to 1
+                                currentLine.startsWith("# ") -> "## ${currentLine.substring(2)}" to 1
+                                else -> "# $currentLine" to 2
+                            }
+
+                            val newText = text.substring(0, lineStart) + newLine + text.substring(lineEnd)
+                            contentValue = androidx.compose.ui.text.input.TextFieldValue(
+                                text = newText,
+                                selection = androidx.compose.ui.text.TextRange((cursorPos + headingLen).coerceAtLeast(lineStart))
+                            )
+                        },
+                        modifier = Modifier
+                            .size(44.dp)
+                            .background(VaultBlack.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+                    ) {
+                        Text("H", color = VaultOrange, fontWeight = FontWeight.ExtraBold, fontSize = 18.sp)
+                    }
+
+                    // Bold
+                    IconButton(
+                        onClick = { insertFormatting("**", "**") },
+                        modifier = Modifier
+                            .size(44.dp)
+                            .background(VaultBlack.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+                    ) {
+                        Icon(Icons.Default.FormatBold, null, tint = VaultOrange, modifier = Modifier.size(20.dp))
+                    }
+
+                    // Italic
+                    IconButton(
+                        onClick = { insertFormatting("*", "*") },
+                        modifier = Modifier
+                            .size(44.dp)
+                            .background(VaultBlack.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+                    ) {
+                        Icon(Icons.Default.FormatItalic, null, tint = VaultOrange, modifier = Modifier.size(20.dp))
+                    }
+
+                    // Bullet list
+                    IconButton(
+                        onClick = { insertLinePrefix("• ") },
+                        modifier = Modifier
+                            .size(44.dp)
+                            .background(VaultBlack.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+                    ) {
+                        Icon(Icons.Default.FormatListBulleted, null, tint = VaultOrange, modifier = Modifier.size(20.dp))
+                    }
+
+                    // Blockquote
+                    IconButton(
+                        onClick = { insertLinePrefix("> ") },
+                        modifier = Modifier
+                            .size(44.dp)
+                            .background(VaultBlack.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+                    ) {
+                        Icon(Icons.Default.FormatQuote, null, tint = VaultOrange, modifier = Modifier.size(20.dp))
+                    }
+
+                    // Separator line
+                    IconButton(
+                        onClick = { insertFormatting("\n---\n", "", wrapSelection = false) },
+                        modifier = Modifier
+                            .size(44.dp)
+                            .background(VaultBlack.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+                    ) {
+                        Icon(Icons.Default.HorizontalRule, null, tint = VaultOrange, modifier = Modifier.size(20.dp))
                     }
 
                     Spacer(Modifier.weight(1f))
@@ -1417,4 +1519,114 @@ private fun Context.findActivity(): Activity? = when (this) {
     is Activity -> this
     is android.content.ContextWrapper -> baseContext.findActivity()
     else -> null
+}
+
+class MarkdownVisualTransformation : androidx.compose.ui.text.input.VisualTransformation {
+    override fun filter(text: androidx.compose.ui.text.AnnotatedString): androidx.compose.ui.text.input.TransformedText {
+        val annotatedString = androidx.compose.ui.text.buildAnnotatedString {
+            val rawText = text.text
+            append(rawText)
+
+            // Parse lines for Heading, Quote, Bullet, Divider
+            val lines = rawText.split("\n")
+            var currentOffset = 0
+            lines.forEachIndexed { index, line ->
+                val lineLength = line.length
+                val nextOffset = currentOffset + lineLength + 1 // +1 for newline
+
+                when {
+                    line.startsWith("### ") -> {
+                        addStyle(
+                            androidx.compose.ui.text.SpanStyle(color = androidx.compose.ui.graphics.Color.Transparent, fontSize = 0.sp),
+                            currentOffset, currentOffset + 4
+                        )
+                        addStyle(
+                            androidx.compose.ui.text.SpanStyle(fontWeight = FontWeight.Bold, fontSize = 17.sp, color = VaultTextPrimary),
+                            currentOffset + 4, currentOffset + lineLength
+                        )
+                    }
+                    line.startsWith("## ") -> {
+                        addStyle(
+                            androidx.compose.ui.text.SpanStyle(color = androidx.compose.ui.graphics.Color.Transparent, fontSize = 0.sp),
+                            currentOffset, currentOffset + 3
+                        )
+                        addStyle(
+                            androidx.compose.ui.text.SpanStyle(fontWeight = FontWeight.Bold, fontSize = 20.sp, color = VaultTextPrimary),
+                            currentOffset + 3, currentOffset + lineLength
+                        )
+                    }
+                    line.startsWith("# ") -> {
+                        addStyle(
+                            androidx.compose.ui.text.SpanStyle(color = androidx.compose.ui.graphics.Color.Transparent, fontSize = 0.sp),
+                            currentOffset, currentOffset + 2
+                        )
+                        addStyle(
+                            androidx.compose.ui.text.SpanStyle(fontWeight = FontWeight.ExtraBold, fontSize = 24.sp, color = VaultTextPrimary),
+                            currentOffset + 2, currentOffset + lineLength
+                        )
+                    }
+                    line.startsWith("> ") -> {
+                        addStyle(
+                            androidx.compose.ui.text.SpanStyle(color = androidx.compose.ui.graphics.Color.Transparent, fontSize = 0.sp),
+                            currentOffset, currentOffset + 2
+                        )
+                        addStyle(
+                            androidx.compose.ui.text.SpanStyle(fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, color = VaultTextSecondary, fontSize = 16.sp),
+                            currentOffset + 2, currentOffset + lineLength
+                        )
+                    }
+                    line.startsWith("• ") || line.startsWith("- ") -> {
+                        addStyle(
+                            androidx.compose.ui.text.SpanStyle(color = VaultOrange, fontWeight = FontWeight.Bold),
+                            currentOffset, currentOffset + 2
+                        )
+                    }
+                    line.trim() == "---" || line.trim() == "***" -> {
+                        addStyle(
+                            androidx.compose.ui.text.SpanStyle(color = VaultOrange, fontWeight = FontWeight.Bold, letterSpacing = 4.sp),
+                            currentOffset, currentOffset + lineLength
+                        )
+                    }
+                }
+                currentOffset = nextOffset
+            }
+
+            // Find and style bold ranges (**text**)
+            val boldRegex = Regex("\\*\\*(.*?)\\*\\*")
+            boldRegex.findAll(rawText).forEach { match ->
+                val range = match.range
+                addStyle(
+                    androidx.compose.ui.text.SpanStyle(color = androidx.compose.ui.graphics.Color.Transparent, fontSize = 0.sp),
+                    range.first, range.first + 2
+                )
+                addStyle(
+                    androidx.compose.ui.text.SpanStyle(color = androidx.compose.ui.graphics.Color.Transparent, fontSize = 0.sp),
+                    range.last - 1, range.last + 1
+                )
+                addStyle(
+                    androidx.compose.ui.text.SpanStyle(fontWeight = FontWeight.Bold),
+                    range.first + 2, range.last - 1
+                )
+            }
+
+            // Find and style italic ranges (*text*)
+            val italicRegex = Regex("(?<!\\*)\\*(?!\\*)(.*?)(?<!\\*)\\*(?!\\*)")
+            italicRegex.findAll(rawText).forEach { match ->
+                val range = match.range
+                addStyle(
+                    androidx.compose.ui.text.SpanStyle(color = androidx.compose.ui.graphics.Color.Transparent, fontSize = 0.sp),
+                    range.first, range.first + 1
+                )
+                addStyle(
+                    androidx.compose.ui.text.SpanStyle(color = androidx.compose.ui.graphics.Color.Transparent, fontSize = 0.sp),
+                    range.last, range.last + 1
+                )
+                addStyle(
+                    androidx.compose.ui.text.SpanStyle(fontStyle = androidx.compose.ui.text.font.FontStyle.Italic),
+                    range.first + 1, range.last
+                )
+            }
+        }
+        return androidx.compose.ui.text.input.TransformedText(annotatedString, androidx.compose.ui.text.input.OffsetMapping.Identity)
+    }
 }

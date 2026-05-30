@@ -377,31 +377,157 @@ private fun NoteList(
 
     LazyColumn(
         contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         items(state.notes, key = { it.id }) { note ->
-            NoteListItem(note = note, onClick = { onItemClick(note.id) }, onDelete = { viewModel.deleteNote(note.id) })
+            NoteListItem(
+                note = note,
+                onClick = { onItemClick(note.id) },
+                onDelete = { viewModel.deleteNote(note.id) },
+                onToggleFavorite = { viewModel.toggleFavorite(note) }
+            )
         }
     }
 }
 
 @Composable
-private fun NoteListItem(note: Note, onClick: () -> Unit, onDelete: () -> Unit) {
+private fun NoteListItem(
+    note: Note,
+    onClick: () -> Unit,
+    onDelete: () -> Unit,
+    onToggleFavorite: () -> Unit
+) {
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+    val noteAccentColor = remember(note.color) {
+        try { Color(android.graphics.Color.parseColor(note.color)) }
+        catch (_: Exception) { CategoryNotes }
+    }
+
+    val dateFmt = remember { java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.getDefault()) }
+
     Card(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(0.4f))
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = noteAccentColor.copy(alpha = 0.10f)),
+        border = androidx.compose.foundation.BorderStroke(1.dp, noteAccentColor.copy(alpha = 0.18f))
     ) {
-        Column(Modifier.fillMaxWidth().padding(16.dp)) {
-            Text(note.title, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
-            Spacer(Modifier.height(4.dp))
-            Text(
-                note.content.take(80) + if (note.content.length > 80) "..." else "",
-                fontSize = 13.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2
+        Row(Modifier.fillMaxWidth().height(androidx.compose.foundation.layout.IntrinsicSize.Min)) {
+            // Color accent strip on the left
+            Box(
+                modifier = Modifier
+                    .width(5.dp)
+                    .fillMaxHeight()
+                    .background(noteAccentColor, RoundedCornerShape(topStart = 14.dp, bottomStart = 14.dp))
+                    .defaultMinSize(minHeight = 90.dp)
             )
+
+            Row(
+                Modifier
+                    .weight(1f)
+                    .padding(14.dp),
+                verticalAlignment = Alignment.Top
+            ) {
+                // Note icon avatar
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .background(noteAccentColor.copy(alpha = 0.18f), RoundedCornerShape(12.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.Description,
+                        contentDescription = null,
+                        tint = noteAccentColor,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
+
+                Spacer(Modifier.width(12.dp))
+
+                Column(Modifier.weight(1f)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            note.title,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1,
+                            modifier = Modifier.weight(1f, fill = false)
+                        )
+                        if (note.isFavorite) {
+                            Spacer(Modifier.width(6.dp))
+                            Icon(
+                                Icons.Default.Star,
+                                contentDescription = null,
+                                tint = VaultOrange,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(Modifier.height(4.dp))
+
+                    if (note.content.isNotBlank()) {
+                        Text(
+                            note.content.take(120).replace("\n", " "),
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 3,
+                            lineHeight = 18.sp
+                        )
+                        Spacer(Modifier.height(6.dp))
+                    }
+
+                    Text(
+                        dateFmt.format(java.util.Date(note.updatedAt)),
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                    )
+                }
+
+                Spacer(Modifier.width(4.dp))
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(0.dp)
+                ) {
+                    IconButton(onClick = onToggleFavorite, modifier = Modifier.size(36.dp)) {
+                        Icon(
+                            if (note.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = "Toggle favorite",
+                            tint = if (note.isFavorite) VaultError else VaultTextSecondary.copy(alpha = 0.5f),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                    IconButton(onClick = { showDeleteDialog = true }, modifier = Modifier.size(36.dp)) {
+                        Icon(
+                            Icons.Default.DeleteOutline,
+                            contentDescription = "Delete",
+                            tint = VaultTextSecondary.copy(alpha = 0.5f),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
         }
+    }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Delete Note") },
+            text = { Text("Are you sure you want to delete \"${note.title}\"? This action cannot be undone.") },
+            confirmButton = {
+                TextButton(onClick = { onDelete(); showDeleteDialog = false }) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") }
+            },
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     }
 }
 
