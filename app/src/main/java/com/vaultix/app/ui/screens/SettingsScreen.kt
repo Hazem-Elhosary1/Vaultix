@@ -490,17 +490,7 @@ fun SettingsScreen(
                 }
             }
 
-            // Dev Tools (develop branch only)
-            SettingsSection(title = "\uD83D\uDD27 Developer") {
-                SettingsClickItem(
-                    icon = Icons.Default.Code,
-                    title = "Development Tools",
-                    subtitle = "Seed mock data, clear database & more",
-                    iconTint = VaultInfo
-                ) {
-                    onNavigateToDevelopment()
-                }
-            }
+
 
             // App Info
             SettingsSection(title = stringResource(R.string.about)) {
