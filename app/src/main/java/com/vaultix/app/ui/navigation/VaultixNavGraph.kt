@@ -133,6 +133,23 @@ fun VaultixNavGraph(
             LockScreen(
                 authViewModel = authViewModel,
                 onAuthenticated = {
+                    val pendingAction = authViewModel.pendingShortcutAction.value
+                    if (pendingAction != null) {
+                        authViewModel.setPendingShortcutAction(null)
+                        val targetType = when (pendingAction) {
+                            "com.vaultix.app.ACTION_ADD_PASSWORD" -> "passwords"
+                            "com.vaultix.app.ACTION_ADD_NOTE" -> "notes"
+                            else -> null
+                        }
+                        if (targetType != null) {
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(Screen.Lock.route) { inclusive = true }
+                            }
+                            navController.navigate(Screen.AddEdit.createRoute(targetType))
+                            return@LockScreen
+                        }
+                    }
+
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Lock.route) { inclusive = true }
                     }
@@ -146,6 +163,7 @@ fun VaultixNavGraph(
 
             LaunchedEffect(pendingShortcutAction) {
                 pendingShortcutAction?.let { action ->
+                    kotlinx.coroutines.delay(300L) // Wait for transition animations to fully settle
                     authViewModel.setPendingShortcutAction(null)
                     when (action) {
                         "com.vaultix.app.ACTION_ADD_PASSWORD" -> {
