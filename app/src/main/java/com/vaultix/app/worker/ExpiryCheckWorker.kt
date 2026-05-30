@@ -62,10 +62,10 @@ class ExpiryCheckWorker @AssistedInject constructor(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val channel = NotificationChannel(
                     CHANNEL_ID,
-                    "Expiry Alerts",
+                    "Security & Expiry Alerts",
                     NotificationManager.IMPORTANCE_DEFAULT
                 ).apply {
-                    description = "Alerts for expiring cards, IDs, and passwords"
+                    description = "Alerts for weak passwords, insecure networks, and expiring items"
                 }
                 val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                 manager.createNotificationChannel(channel)
@@ -118,6 +118,53 @@ class ExpiryCheckWorker @AssistedInject constructor(
                     "'$name' expires in ${calculateDays(id.expiryTimestamp ?: 0, now)} days"
                 )
                 alertCount++
+            }
+
+            // 4. Check Weak Passwords & Weak Wi-Fi
+            val allPasswords = passwordDao.getAllPasswordsList()
+            var weakPasswordsCount = 0
+            var weakWifiCount = 0
+
+            for (pwd in allPasswords) {
+                if (pwd.isFake == com.vaultix.app.security.VaultSession.isFakeVaultActive) {
+                    val website = try { cryptoManager.decrypt(pwd.website, key) } catch (e: Exception) { "" }
+                    if (website == "vaultix://wifi") {
+                        if (pwd.appPackageName == "Open" || pwd.appPackageName == "WEP" || pwd.passwordStrength < 3) {
+                            weakWifiCount++
+                        }
+                    } else {
+                        if (pwd.passwordStrength < 3) {
+                            weakPasswordsCount++
+                        }
+                    }
+                }
+            }
+
+            if (weakPasswordsCount > 0) {
+                sendNotification(
+                    notificationId++,
+                    "🔒 تنبيه أمان: كلمات مرور ضعيفة",
+                    "لديك $weakPasswordsCount كلمة مرور ضعيفة قد تهدد حساباتك. افتح Vaultix لتحديثها وحماية بياناتك!"
+                )
+                alertCount++
+            }
+
+            if (weakWifiCount > 0) {
+                sendNotification(
+                    notificationId++,
+                    "⚠️ تنبيه أمان: شبكات واي فاي غير آمنة",
+                    "تم رصد $weakWifiCount شبكة واي فاي غير آمنة أو بتشفير ضعيف. افتح التطبيق لمراجعتها وتأمين اتصالك."
+                )
+                alertCount++
+            }
+
+            // General "Stay Safe" positive encouragement if everything is fully secure
+            if (alertCount == 0) {
+                sendNotification(
+                    notificationId++,
+                    "🛡️ حصنك الرقمي في أمان",
+                    "رائع! جميع بياناتك وكلمات المرور في Vaultix آمنة ومحمية بالكامل. تابع الحفاظ على سلامتك الرقمية!"
+                )
             }
 
             return Result.success()
