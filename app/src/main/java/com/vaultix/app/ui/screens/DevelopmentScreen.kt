@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -24,35 +25,37 @@ class DevelopmentViewModel @Inject constructor(
 ) : ViewModel() {
     
     var isLoading by mutableStateOf(false)
+    var activeAction by mutableStateOf("")
     var statusMessage by mutableStateOf("")
 
     fun seedAll() {
-        execute { dataSeeder.seedAll(); "All data seeded successfully!" }
+        execute("seed_all") { dataSeeder.seedAll(); "All data seeded successfully!" }
     }
 
     fun seedPasswords() {
-        execute { dataSeeder.seedPasswords(); "Passwords seeded successfully!" }
+        execute("seed_passwords") { dataSeeder.seedPasswords(); "Passwords seeded successfully!" }
     }
 
     fun seedCards() {
-        execute { dataSeeder.seedCards(); "Cards seeded successfully!" }
+        execute("seed_cards") { dataSeeder.seedCards(); "Cards seeded successfully!" }
     }
 
     fun seedNotes() {
-        execute { dataSeeder.seedNotes(); "Notes seeded successfully!" }
+        execute("seed_notes") { dataSeeder.seedNotes(); "Notes seeded successfully!" }
     }
 
     fun seedIdentities() {
-        execute { dataSeeder.seedIdentities(); "Identities seeded successfully!" }
+        execute("seed_identities") { dataSeeder.seedIdentities(); "Identities seeded successfully!" }
     }
 
     fun clearAll() {
-        execute { dataSeeder.clearAll(); "All data cleared successfully!" }
+        execute("clear_all") { dataSeeder.clearAll(); "All data cleared successfully!" }
     }
 
-    private fun execute(action: suspend () -> String) {
+    private fun execute(actionName: String, action: suspend () -> String) {
         viewModelScope.launch {
             isLoading = true
+            activeAction = actionName
             statusMessage = ""
             try {
                 statusMessage = action()
@@ -60,6 +63,7 @@ class DevelopmentViewModel @Inject constructor(
                 statusMessage = "Error: ${e.message}"
             } finally {
                 isLoading = false
+                activeAction = ""
             }
         }
     }
@@ -117,6 +121,8 @@ fun DevelopmentScreen(
             DevActionRow(
                 title = "Seed All Data",
                 icon = Icons.Default.Dataset,
+                isLoading = viewModel.activeAction == "seed_all",
+                enabled = !viewModel.isLoading,
                 onClick = { viewModel.seedAll() }
             )
 
@@ -125,24 +131,32 @@ fun DevelopmentScreen(
             DevActionRow(
                 title = "Seed Passwords",
                 icon = Icons.Default.Password,
+                isLoading = viewModel.activeAction == "seed_passwords",
+                enabled = !viewModel.isLoading,
                 onClick = { viewModel.seedPasswords() }
             )
 
             DevActionRow(
                 title = "Seed Cards",
                 icon = Icons.Default.CreditCard,
+                isLoading = viewModel.activeAction == "seed_cards",
+                enabled = !viewModel.isLoading,
                 onClick = { viewModel.seedCards() }
             )
 
             DevActionRow(
                 title = "Seed Notes",
                 icon = Icons.Default.Notes,
+                isLoading = viewModel.activeAction == "seed_notes",
+                enabled = !viewModel.isLoading,
                 onClick = { viewModel.seedNotes() }
             )
 
             DevActionRow(
                 title = "Seed Identities",
                 icon = Icons.Default.Badge,
+                isLoading = viewModel.activeAction == "seed_identities",
+                enabled = !viewModel.isLoading,
                 onClick = { viewModel.seedIdentities() }
             )
 
@@ -152,9 +166,18 @@ fun DevelopmentScreen(
             Button(
                 onClick = { viewModel.clearAll() },
                 modifier = Modifier.fillMaxWidth(),
+                enabled = !viewModel.isLoading,
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
             ) {
-                Icon(Icons.Default.DeleteForever, contentDescription = null)
+                if (viewModel.activeAction == "clear_all") {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Icon(Icons.Default.DeleteForever, contentDescription = null)
+                }
                 Spacer(Modifier.width(8.dp))
                 Text("Clear All Data")
             }
@@ -166,16 +189,31 @@ fun DevelopmentScreen(
 fun DevActionRow(
     title: String,
     icon: ImageVector,
+    isLoading: Boolean = false,
+    enabled: Boolean = true,
     onClick: () -> Unit
 ) {
     OutlinedButton(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
+        enabled = enabled,
         contentPadding = PaddingValues(12.dp)
     ) {
-        Icon(icon, contentDescription = null)
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(18.dp),
+                color = MaterialTheme.colorScheme.primary,
+                strokeWidth = 2.dp
+            )
+        } else {
+            Icon(icon, contentDescription = null)
+        }
         Spacer(Modifier.width(12.dp))
         Text(title, modifier = Modifier.weight(1f))
-        Icon(Icons.Default.ChevronRight, contentDescription = null)
+        if (!isLoading) {
+            Icon(Icons.Default.ChevronRight, contentDescription = null)
+        } else {
+            Spacer(modifier = Modifier.size(24.dp))
+        }
     }
 }

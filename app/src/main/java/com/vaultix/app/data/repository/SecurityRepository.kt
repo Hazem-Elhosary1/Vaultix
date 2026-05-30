@@ -2,6 +2,9 @@ package com.vaultix.app.data.repository
 
 import com.vaultix.app.data.local.dao.SecurityLogDao
 import com.vaultix.app.data.local.entity.SecurityLogEntity
+import com.vaultix.app.debug.DebugCategory
+import com.vaultix.app.debug.DebugEventBus
+import com.vaultix.app.debug.DebugSeverity
 import com.vaultix.app.security.CryptoManager
 import com.vaultix.app.security.KeystoreManager
 import kotlinx.coroutines.flow.Flow
@@ -42,13 +45,28 @@ class SecurityRepository @Inject constructor(
     }
 
     suspend fun logEvent(eventType: String, details: String, severity: String = "INFO") {
+        // Emit to in-memory debug bus first (no-op in release builds)
+        val debugSeverity = when (severity.uppercase()) {
+            "CRITICAL" -> DebugSeverity.CRITICAL
+            "WARNING"  -> DebugSeverity.WARNING
+            else       -> DebugSeverity.INFO
+        }
+        DebugEventBus.log(
+            category  = DebugCategory.SECURITY,
+            eventType = eventType,
+            details   = details,
+            severity  = debugSeverity,
+            source    = "SecurityRepository"
+        )
+
+        // Persist encrypted log to Room DB
         try {
             val databaseKey = key ?: return
             val entity = SecurityLogEntity(
                 eventType = cryptoManager.encrypt(eventType, databaseKey),
-                details = cryptoManager.encrypt(details, databaseKey),
+                details   = cryptoManager.encrypt(details, databaseKey),
                 timestamp = System.currentTimeMillis(),
-                severity = severity
+                severity  = severity
             )
             securityLogDao.insertLog(entity)
         } catch (e: Exception) {
@@ -58,6 +76,7 @@ class SecurityRepository @Inject constructor(
 
     suspend fun clearLogs() {
         securityLogDao.clearLogs()
+        DebugEventBus.clear()
     }
 
     private fun SecurityLogEntity.toDecrypted(): SecurityLog? {

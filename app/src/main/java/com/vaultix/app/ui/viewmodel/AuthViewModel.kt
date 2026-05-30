@@ -4,6 +4,9 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vaultix.app.data.model.AuthState
+import com.vaultix.app.debug.DebugCategory
+import com.vaultix.app.debug.DebugEventBus
+import com.vaultix.app.debug.DebugSeverity
 import com.vaultix.app.security.KeyDerivationManager
 import com.vaultix.app.security.KeystoreManager
 import com.vaultix.app.security.SecurePreferences
@@ -86,6 +89,13 @@ class AuthViewModel @Inject constructor(
 
     private fun initializeApp() {
         viewModelScope.launch {
+            DebugEventBus.log(
+                category  = DebugCategory.SYSTEM,
+                eventType = "APP_INIT",
+                details   = "Vaultix initializing — running security checks",
+                source    = "AuthViewModel"
+            )
+
             // Check security threats
             val threats = securityChecker.performSecurityChecks()
             _securityThreats.value = threats
@@ -122,6 +132,13 @@ class AuthViewModel @Inject constructor(
             // Initial auth state
             _authState.value = AuthState.Unauthenticated
             _isLoading.value = false
+
+            DebugEventBus.log(
+                category  = DebugCategory.SYSTEM,
+                eventType = "APP_READY",
+                details   = "setup=${_isSetupComplete.value}, onboarding=${_isOnboardingComplete.value}, biometric=${_isBiometricEnabled.value}",
+                source    = "AuthViewModel"
+            )
 
             // Start inactivity monitor
             startInactivityMonitor()
@@ -376,6 +393,12 @@ class AuthViewModel @Inject constructor(
      * Mark biometric authentication as successful.
      */
     fun onBiometricSuccess() {
+        DebugEventBus.log(
+            category  = DebugCategory.AUTH,
+            eventType = "BIOMETRIC_AUTH",
+            details   = "Biometric prompt accepted",
+            source    = "AuthViewModel"
+        )
         handleAuthSuccess()
     }
 
@@ -460,11 +483,24 @@ class AuthViewModel @Inject constructor(
         if (!isManual && _gracePeriodSeconds.value > 0) {
             // If locking due to backgrounding, set the exit time for grace period check
             lastAppExitTime = System.currentTimeMillis()
+            DebugEventBus.log(
+                category  = DebugCategory.AUTH,
+                eventType = "GRACE_PERIOD_STARTED",
+                details   = "gracePeriod=${_gracePeriodSeconds.value}s",
+                source    = "AuthViewModel"
+            )
         } else {
             // Manual lock or grace period disabled: reset exit time and lock immediately
             lastAppExitTime = 0L
             _authState.value = AuthState.Unauthenticated
             com.vaultix.app.security.VaultSession.isAuthenticated = false
+            DebugEventBus.log(
+                category  = DebugCategory.AUTH,
+                eventType = "VAULT_LOCKED",
+                details   = "manual=$isManual",
+                severity  = DebugSeverity.WARNING,
+                source    = "AuthViewModel"
+            )
         }
     }
 
@@ -592,6 +628,12 @@ class AuthViewModel @Inject constructor(
     suspend fun completeSetup() {
         securePreferences.putBoolean(SecurePreferences.KEY_IS_SETUP_COMPLETE, true)
         _isSetupComplete.value = true
+        DebugEventBus.log(
+            category  = DebugCategory.SYSTEM,
+            eventType = "SETUP_COMPLETE",
+            details   = "Vault setup finished successfully",
+            source    = "AuthViewModel"
+        )
     }
 
     /**
@@ -600,6 +642,12 @@ class AuthViewModel @Inject constructor(
     suspend fun completeOnboarding() {
         securePreferences.putBoolean(SecurePreferences.KEY_ONBOARDING_COMPLETE, true)
         _isOnboardingComplete.value = true
+        DebugEventBus.log(
+            category  = DebugCategory.SYSTEM,
+            eventType = "ONBOARDING_COMPLETE",
+            details   = "User completed onboarding flow",
+            source    = "AuthViewModel"
+        )
     }
 
     /**

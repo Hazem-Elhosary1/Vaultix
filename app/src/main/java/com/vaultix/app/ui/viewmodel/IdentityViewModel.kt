@@ -6,6 +6,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vaultix.app.data.model.Identity
 import com.vaultix.app.data.repository.IdentityRepository
+import com.vaultix.app.debug.DebugCategory
+import com.vaultix.app.debug.DebugEventBus
+import com.vaultix.app.debug.DebugSeverity
 import com.vaultix.app.security.CryptoManager
 import com.vaultix.app.security.KeystoreManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -152,11 +155,23 @@ class IdentityViewModel @Inject constructor(
     fun saveIdentity() {
         viewModelScope.launch {
             val current = _identity.value.copy(updatedAt = System.currentTimeMillis())
-            
-            if (current.id.isEmpty()) {
+            val isNew = current.id.isEmpty()
+            if (isNew) {
                 identityRepository.insertIdentity(current)
+                DebugEventBus.log(
+                    category  = DebugCategory.CRUD,
+                    eventType = "IDENTITY_CREATED",
+                    details   = "name=${current.fullName}, type=${current.documentType}",
+                    source    = "IdentityViewModel"
+                )
             } else {
                 identityRepository.updateIdentity(current)
+                DebugEventBus.log(
+                    category  = DebugCategory.CRUD,
+                    eventType = "IDENTITY_UPDATED",
+                    details   = "id=${current.id}, name=${current.fullName}",
+                    source    = "IdentityViewModel"
+                )
             }
             resetState()
         }
@@ -203,12 +218,25 @@ class IdentityViewModel @Inject constructor(
     fun deleteIdentity(identity: Identity) {
         viewModelScope.launch {
             identityRepository.deleteIdentity(identity.id)
+            DebugEventBus.log(
+                category  = DebugCategory.CRUD,
+                eventType = "IDENTITY_DELETED",
+                details   = "id=${identity.id}, name=${identity.fullName}",
+                severity  = DebugSeverity.WARNING,
+                source    = "IdentityViewModel"
+            )
         }
     }
 
     fun toggleFavorite(identity: Identity) {
         viewModelScope.launch {
             identityRepository.updateIdentity(identity.copy(isFavorite = !identity.isFavorite))
+            DebugEventBus.log(
+                category  = DebugCategory.CRUD,
+                eventType = "IDENTITY_FAVORITE_TOGGLED",
+                details   = "id=${identity.id}, isFavorite=${!identity.isFavorite}",
+                source    = "IdentityViewModel"
+            )
         }
     }
 }

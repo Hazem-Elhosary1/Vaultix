@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.vaultix.app.data.model.Password
 import com.vaultix.app.data.model.PasswordStrength
 import com.vaultix.app.data.repository.PasswordRepository
+import com.vaultix.app.debug.DebugCategory
+import com.vaultix.app.debug.DebugEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -69,8 +71,21 @@ class PasswordViewModel @Inject constructor(
                         passwordStrength = calculateStrength(password.password).level
                     )
                 )
+                DebugEventBus.log(
+                    category  = DebugCategory.CRUD,
+                    eventType = "PASSWORD_CREATED",
+                    details   = "title=${password.title}, site=${password.website.ifBlank { "n/a" }}",
+                    source    = "PasswordViewModel"
+                )
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message) }
+                DebugEventBus.log(
+                    category  = DebugCategory.CRUD,
+                    eventType = "PASSWORD_CREATE_FAILED",
+                    details   = e.message ?: "unknown error",
+                    severity  = com.vaultix.app.debug.DebugSeverity.WARNING,
+                    source    = "PasswordViewModel"
+                )
             }
         }
     }
@@ -84,6 +99,12 @@ class PasswordViewModel @Inject constructor(
                         passwordStrength = calculateStrength(password.password).level
                     )
                 )
+                DebugEventBus.log(
+                    category  = DebugCategory.CRUD,
+                    eventType = "PASSWORD_UPDATED",
+                    details   = "id=${password.id}, title=${password.title}",
+                    source    = "PasswordViewModel"
+                )
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message) }
             }
@@ -93,12 +114,25 @@ class PasswordViewModel @Inject constructor(
     fun deletePassword(id: String) {
         viewModelScope.launch {
             passwordRepository.deletePassword(id)
+            DebugEventBus.log(
+                category  = DebugCategory.CRUD,
+                eventType = "PASSWORD_DELETED",
+                details   = "id=$id",
+                severity  = com.vaultix.app.debug.DebugSeverity.WARNING,
+                source    = "PasswordViewModel"
+            )
         }
     }
 
     fun toggleFavorite(password: Password) {
         viewModelScope.launch {
             passwordRepository.updatePassword(password.copy(isFavorite = !password.isFavorite))
+            DebugEventBus.log(
+                category  = DebugCategory.CRUD,
+                eventType = "PASSWORD_FAVORITE_TOGGLED",
+                details   = "id=${password.id}, isFavorite=${!password.isFavorite}",
+                source    = "PasswordViewModel"
+            )
         }
     }
 
