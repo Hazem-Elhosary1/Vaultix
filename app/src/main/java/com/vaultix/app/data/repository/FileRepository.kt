@@ -172,6 +172,20 @@ class FileRepository @Inject constructor(
         folderDao.deleteFolderById(id)
     }
 
+    suspend fun updateFileFolder(fileId: String, folderId: String?) {
+        val fileEntity = fileDao.getFileById(fileId)
+        fileEntity?.let {
+            fileDao.updateFile(it.copy(folderId = folderId, updatedAt = System.currentTimeMillis()))
+        }
+    }
+
+    suspend fun updateFolderParent(folderId: String, parentFolderId: String?) {
+        val folderEntity = folderDao.getFolderById(folderId)
+        folderEntity?.let {
+            folderDao.updateFolder(it.copy(parentFolderId = parentFolderId, updatedAt = System.currentTimeMillis()))
+        }
+    }
+
     private fun FileEntity.toVaultFile(): VaultFile? {
         return try {
             VaultFile(
