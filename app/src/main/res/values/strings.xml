@@ -97,4 +97,18 @@
     <string name="delete_password">Delete Item</string>
     <string name="delete_confirm">Are you sure you want to delete \'%1$s\'?</string>
     <string name="autofill_service_label">Vaultix Autofill Service</string>
+
+    <!-- Security & Expiry Notifications -->
+    <string name="password_expiring_soon_title">🔑 Password Expiring Soon</string>
+    <string name="password_expiring_soon_msg">\'%1$s\' expires in %2$d days</string>
+    <string name="card_expiring_soon_title">💳 Card Expiring Soon</string>
+    <string name="card_expiring_soon_msg">\'%1$s\' expires in %2$d days</string>
+    <string name="id_expiring_soon_title">🪪 ID Expiring Soon</string>
+    <string name="id_expiring_soon_msg">\'%1$s\' expires in %2$d days</string>
+    <string name="weak_passwords_title">🔒 Security Alert: Weak Passwords</string>
+    <string name="weak_passwords_msg">You have %1$d weak passwords in your vault. Open Vaultix to update them and stay safe!</string>
+    <string name="weak_wifi_title">⚠️ Security Alert: Insecure Wi-Fi</string>
+    <string name="weak_wifi_msg">You have %1$d weak or insecure Wi-Fi passwords. Open Vaultix to review them.</string>
+    <string name="vault_secure_title">🛡️ Your Digital Vault is Secure</string>
+    <string name="vault_secure_msg">Great! All passwords and your data in Vaultix are secure and fully protected. Keep maintaining your digital safety!</string>
 </resources>

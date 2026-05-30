@@ -91,4 +91,18 @@
     <string name="add">إضافة</string>
     <string name="delete_password">حذف العنصر</string>
     <string name="delete_confirm">هل أنت متأكد من حذف \'%1$s\'؟</string>
+
+    <!-- Security & Expiry Notifications -->
+    <string name="password_expiring_soon_title">🔑 كلمة المرور تقترب من الانتهاء</string>
+    <string name="password_expiring_soon_msg">\'%1$s\' تنتهي صلاحيتها خلال %2$d أيام</string>
+    <string name="card_expiring_soon_title">💳 البطاقة تقترب من الانتهاء</string>
+    <string name="card_expiring_soon_msg">\'%1$s\' تنتهي صلاحيتها خلال %2$d أيام</string>
+    <string name="id_expiring_soon_title">🪪 الهوية تقترب من الانتهاء</string>
+    <string name="id_expiring_soon_msg">\'%1$s\' تنتهي صلاحيتها خلال %2$d أيام</string>
+    <string name="weak_passwords_title">🔒 تنبيه أمان: كلمات مرور ضعيفة</string>
+    <string name="weak_passwords_msg">لديك %1$d كلمة مرور ضعيفة قد تهدد حساباتك. افتح Vaultix لتحديثها وحماية بياناتك!</string>
+    <string name="weak_wifi_title">⚠️ تنبيه أمان: شبكات واي فاي غير آمنة</string>
+    <string name="weak_wifi_msg">تم رصد %1$d شبكة واي فاي غير آمنة أو بتشفير ضعيف. افتح التطبيق لمراجعتها وتأمين اتصالك.</string>
+    <string name="vault_secure_title">🛡️ حصنك الرقمي في أمان</string>
+    <string name="vault_secure_msg">رائع! جميع بياناتك وكلمات المرور في Vaultix آمنة ومحمية بالكامل. تابع الحفاظ على سلامتك الرقمية!</string>
 </resources>
