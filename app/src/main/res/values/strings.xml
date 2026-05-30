@@ -117,4 +117,11 @@
     <string name="shortcut_add_password_long">Add a new password to your vault</string>
     <string name="shortcut_add_note_short">Add Note</string>
     <string name="shortcut_add_note_long">Add a new secure note to your vault</string>
+
+    <!-- File Vault Deletion Rules -->
+    <string name="folder_not_empty_title">Folder is Not Empty</string>
+    <string name="folder_not_empty_msg">You must empty this folder first by moving or deleting all files and subfolders inside before you can delete it.</string>
+    <string name="delete_empty_folder_title">Delete Folder?</string>
+    <string name="delete_empty_folder_msg">Are you sure you want to delete this empty folder?</string>
+    <string name="ok_action">OK</string>
 </resources>

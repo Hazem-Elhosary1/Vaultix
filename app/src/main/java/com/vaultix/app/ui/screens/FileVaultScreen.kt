@@ -30,11 +30,13 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.vaultix.app.R
 import com.vaultix.app.data.model.VaultFile
 import com.vaultix.app.data.model.VaultFolder
 import com.vaultix.app.ui.theme.*
@@ -399,40 +401,51 @@ fun FileVaultScreen(
                 }
             }
 
-            // Floating drag preview item under the dragging finger
+            // Floating drag preview item under the dragging finger (Enhanced Large Preview)
             if (dragDropState.isDragging && dragDropState.draggedItemId != null) {
+                val cardWidthDp = 260.dp
+                val cardHeightOffsetDp = 75.dp
                 Card(
                     modifier = Modifier
                         .offset {
                             IntOffset(
-                                x = (dragDropState.dragPosition.x - 100.dp.toPx()).roundToInt(),
-                                y = (dragDropState.dragPosition.y - 80.dp.toPx()).roundToInt()
+                                x = (dragDropState.dragPosition.x - cardWidthDp.toPx() / 2f).roundToInt(),
+                                y = (dragDropState.dragPosition.y - cardHeightOffsetDp.toPx()).roundToInt()
                             )
                         }
-                        .alpha(0.85f),
+                        .width(cardWidthDp)
+                        .alpha(0.9f),
                     colors = CardDefaults.cardColors(containerColor = VaultOrange),
-                    shape = RoundedCornerShape(10.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
+                    shape = RoundedCornerShape(14.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 14.dp),
+                    border = BorderStroke(2.dp, VaultBlack.copy(alpha = 0.15f))
                 ) {
                     Row(
-                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                        modifier = Modifier.padding(horizontal = 18.dp, vertical = 14.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = if (dragDropState.draggedItemType == "folder") Icons.Default.Folder else Icons.Default.InsertDriveFile,
-                            contentDescription = null,
-                            tint = VaultBlack,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(Modifier.width(8.dp))
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .background(VaultBlack.copy(alpha = 0.12f), RoundedCornerShape(8.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = if (dragDropState.draggedItemType == "folder") Icons.Default.Folder else Icons.Default.InsertDriveFile,
+                                contentDescription = null,
+                                tint = VaultBlack,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        Spacer(Modifier.width(12.dp))
                         Text(
                             text = dragDropState.draggedItemName,
                             color = VaultBlack,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 15.sp,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.widthIn(max = 140.dp)
+                            modifier = Modifier.weight(1f)
                         )
                     }
                 }
@@ -533,35 +546,35 @@ private fun FolderItem(
         }
     }
     
-    // Safety check Folder deletion alerts
+    // Safety check Folder deletion alerts (Fully localized using strings.xml)
     if (showDeleteDialog) {
         if (hasContents) {
             AlertDialog(
                 onDismissRequest = { showDeleteDialog = false },
                 containerColor = VaultSurface,
-                title = { Text("المجلد غير فارغ", color = VaultOrange, fontWeight = FontWeight.Bold) },
-                text = { Text("يجب إفراغ المجلد أولاً بنقل أو حذف كافة الملفات والمجلدات الداخلية لتتمكن من حذفه.", color = VaultTextPrimary) },
+                title = { Text(stringResource(R.string.folder_not_empty_title), color = VaultOrange, fontWeight = FontWeight.Bold) },
+                text = { Text(stringResource(R.string.folder_not_empty_msg), color = VaultTextPrimary) },
                 confirmButton = {
                     Button(
                         onClick = { showDeleteDialog = false },
                         colors = ButtonDefaults.buttonColors(containerColor = VaultOrange)
-                    ) { Text("حسناً", color = VaultBlack, fontWeight = FontWeight.SemiBold) }
+                    ) { Text(stringResource(R.string.ok_action), color = VaultBlack, fontWeight = FontWeight.SemiBold) }
                 }
             )
         } else {
             AlertDialog(
                 onDismissRequest = { showDeleteDialog = false },
                 containerColor = VaultSurface,
-                title = { Text("حذف المجلد؟", color = VaultTextPrimary) },
-                text = { Text("هل تريد حذف هذا المجلد الفارغ بشكل نهائي؟", color = VaultTextSecondary) },
+                title = { Text(stringResource(R.string.delete_empty_folder_title), color = VaultTextPrimary) },
+                text = { Text(stringResource(R.string.delete_empty_folder_msg), color = VaultTextSecondary) },
                 confirmButton = {
                     Button(
                         onClick = { onDelete(); showDeleteDialog = false },
                         colors = ButtonDefaults.buttonColors(containerColor = VaultError)
-                    ) { Text("حذف", color = VaultTextPrimary) }
+                    ) { Text(stringResource(R.string.delete), color = VaultTextPrimary) }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showDeleteDialog = false }) { Text("إلغاء") }
+                    TextButton(onClick = { showDeleteDialog = false }) { Text(stringResource(R.string.cancel)) }
                 }
             )
         }

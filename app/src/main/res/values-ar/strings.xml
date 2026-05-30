@@ -111,4 +111,11 @@
     <string name="shortcut_add_password_long">إضافة كلمة مرور جديدة لخزنتك</string>
     <string name="shortcut_add_note_short">إضافة ملاحظة</string>
     <string name="shortcut_add_note_long">إضافة ملاحظة آمنة جديدة لخزنتك</string>
+
+    <!-- File Vault Deletion Rules -->
+    <string name="folder_not_empty_title">المجلد غير فارغ</string>
+    <string name="folder_not_empty_msg">يجب إفراغ المجلد أولاً بنقل أو حذف كافة الملفات والمجلدات الداخلية لتتمكن من حذفه.</string>
+    <string name="delete_empty_folder_title">حذف المجلد؟</string>
+    <string name="delete_empty_folder_msg">هل تريد حذف هذا المجلد الفارغ بشكل نهائي؟</string>
+    <string name="ok_action">حسناً</string>
 </resources>
