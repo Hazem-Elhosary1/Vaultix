@@ -13,6 +13,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 data class SecurityHealthState(
     val score: Int = 100,
     val weakPasswordsCount: Int = 0,
+    val weakWifiCount: Int = 0,
     val expiredItemsCount: Int = 0,
     val totalItems: Int = 0
 )
@@ -33,7 +34,19 @@ class SecurityHealthViewModel @Inject constructor(
             cardRepository.getAllCards(),
             identityRepository.getAllIdentities()
         ) { passwords, cards, identities ->
-            val weak = passwords.count { it.passwordStrength < 3 }
+            // Separate standard passwords from Wi-Fi entries
+            val standardPasswords = passwords.filter { it.website != "vaultix://wifi" }
+            val wifiEntries = passwords.filter { it.website == "vaultix://wifi" }
+
+            val weak = standardPasswords.count { it.passwordStrength < 3 }
+
+            // Wi-Fi is weak if: Open, WEP, or password strength < 3
+            val weakWifi = wifiEntries.count { wifi ->
+                wifi.appPackageName == "Open" ||
+                wifi.appPackageName == "WEP" ||
+                wifi.passwordStrength < 3
+            }
+
             val expiredCards = cards.count { it.isExpired }
             // Basic expiry check for identities
             val expiredIDs = identities.count { id ->
@@ -53,12 +66,14 @@ class SecurityHealthViewModel @Inject constructor(
             var score = 100
             if (total > 0) {
                 score -= (weak * 10)
+                score -= (weakWifi * 10)
                 score -= (expired * 15)
             }
             
             SecurityHealthState(
                 score = score.coerceIn(0, 100),
                 weakPasswordsCount = weak,
+                weakWifiCount = weakWifi,
                 expiredItemsCount = expired,
                 totalItems = total
             )

@@ -934,6 +934,28 @@ fun WifiDetailScreen(
         }
     }
 
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+    // Delete confirmation dialog
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            containerColor = VaultSurface,
+            title = { Text("Delete Wi-Fi", color = VaultTextPrimary, fontWeight = FontWeight.Bold) },
+            text = { Text("Are you sure you want to delete \"${wifi.title}\"? This action cannot be undone.", color = VaultTextSecondary) },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.deletePassword(wifi.id)
+                    showDeleteDialog = false
+                    onBack()
+                }) { Text("Delete", color = VaultError, fontWeight = FontWeight.Bold) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel", color = accentColor) }
+            }
+        )
+    }
+
     Scaffold(
         containerColor = VaultBlack,
         topBar = {
@@ -941,8 +963,18 @@ fun WifiDetailScreen(
                 title = { Text(wifi.title, fontWeight = FontWeight.Bold, color = VaultTextPrimary) },
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, null, tint = VaultTextPrimary) } },
                 actions = {
+                    IconButton(onClick = { viewModel.toggleFavorite(wifi) }) {
+                        Icon(
+                            if (wifi.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            "Favorite",
+                            tint = if (wifi.isFavorite) VaultError else accentColor
+                        )
+                    }
                     IconButton(onClick = onEdit) {
                         Icon(Icons.Default.Edit, "Edit", tint = accentColor)
+                    }
+                    IconButton(onClick = { showDeleteDialog = true }) {
+                        Icon(Icons.Default.Delete, "Delete", tint = VaultError)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = VaultBlack)
