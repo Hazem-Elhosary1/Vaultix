@@ -69,9 +69,10 @@ fun DashboardScreen(
     val configState by appConfigViewModel.configState.collectAsStateWithLifecycle()
 
     // Aggregate favorites sorted by last modification (updatedAt)
-    val favoriteItems = remember(passwordState.passwords, cardState.cards, noteState.notes, identityState) {
+    val favoriteItems = remember(passwordState.passwords, passwordState.wifiPasswords, cardState.cards, noteState.notes, identityState) {
         val favs = mutableListOf<FavoriteDisplayItem>()
         passwordState.passwords.filter { it.isFavorite }.forEach { favs.add(FavoriteDisplayItem(it.id, it.title, "Password", Icons.Default.Key, CategoryPasswords, "passwords", it.updatedAt)) }
+        passwordState.wifiPasswords.filter { it.isFavorite }.forEach { favs.add(FavoriteDisplayItem(it.id, it.title, "Wi-Fi", Icons.Default.Wifi, CategoryWifi, "wifi", it.updatedAt)) }
         cardState.cards.filter { it.isFavorite }.forEach { favs.add(FavoriteDisplayItem(it.id, it.cardName, "Card", Icons.Default.CreditCard, CategoryCards, "cards", it.updatedAt)) }
         noteState.notes.filter { it.isFavorite }.forEach { favs.add(FavoriteDisplayItem(it.id, it.title, "Note", Icons.Default.Note, CategoryNotes, "notes", it.updatedAt)) }
         identityState.filter { it.isFavorite }.forEach { favs.add(FavoriteDisplayItem(it.id, it.documentName, "ID", Icons.Default.Badge, CategoryIDs, "identities", it.updatedAt)) }
@@ -79,9 +80,10 @@ fun DashboardScreen(
     }
 
     // Unified Recent Activities (Sorted by updatedAt)
-    val recentActivities = remember(passwordState.passwords, cardState.cards, noteState.notes, fileState, identityState) {
+    val recentActivities = remember(passwordState.passwords, passwordState.wifiPasswords, cardState.cards, noteState.notes, fileState, identityState) {
         val items = mutableListOf<RecentActivityItem>()
         passwordState.passwords.take(5).forEach { items.add(RecentActivityItem(it.id, it.title, it.username, "passwords", Icons.Default.Key, CategoryPasswords, it.updatedAt)) }
+        passwordState.wifiPasswords.take(5).forEach { items.add(RecentActivityItem(it.id, it.title, "Wi-Fi Network", "wifi", Icons.Default.Wifi, CategoryWifi, it.updatedAt)) }
         cardState.cards.take(5).forEach { items.add(RecentActivityItem(it.id, it.cardName, "**** ${it.cardNumber.takeLast(4)}", "cards", Icons.Default.CreditCard, CategoryCards, it.updatedAt)) }
         noteState.notes.take(5).forEach { items.add(RecentActivityItem(it.id, it.title, "Secure Note", "notes", Icons.Default.Note, CategoryNotes, it.updatedAt)) }
         identityState.take(3).forEach { items.add(RecentActivityItem(it.id, it.documentName, it.documentNumber, "identities", Icons.Default.Badge, CategoryIDs, it.updatedAt)) }
@@ -146,7 +148,12 @@ fun DashboardScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Stats overview
+            // 1. Quick Search — first touchpoint for instant access
+            item {
+                QuickSearchBar(onClick = onNavigateToGlobalSearch)
+            }
+
+            // 2. Stats overview & Security Health
             item {
                 DashboardStatsCard(
                     passwordCount = passwordState.passwords.size,
@@ -158,12 +165,11 @@ fun DashboardScreen(
                 )
             }
 
-            // Security Health Card
             item {
                 SecurityHealthCard(healthState, onClick = onNavigateToSecurityAudit)
             }
 
-            // Favorites Carousel
+            // 3. Favorites Carousel — quick access to starred items
             if (favoriteItems.isNotEmpty()) {
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -188,24 +194,7 @@ fun DashboardScreen(
                 }
             }
 
-            // Password Timeline Section (NEW)
-            if (lastPasswords.isNotEmpty()) {
-                item {
-                    PasswordTimelineSection(
-                        passwords = lastPasswords,
-                        isPremium = configState.isPremium,
-                        onUpgrade = onNavigateToPremium,
-                        onNavigateToDetail = onNavigateToDetail
-                    )
-                }
-            }
-
-            // Quick search
-            item {
-                QuickSearchBar(onClick = onNavigateToGlobalSearch)
-            }
-
-            // Categories
+            // 4. Categories — main navigation hub
             item {
                 Text(
                     stringResource(R.string.categories),
@@ -219,7 +208,7 @@ fun DashboardScreen(
                 CategoryGrid(onNavigateToCategory = onNavigateToCategory)
             }
 
-            // Quick Actions
+            // 5. Quick Actions — utility shortcuts
             item {
                 Text(
                     stringResource(R.string.quick_actions),
@@ -229,34 +218,45 @@ fun DashboardScreen(
                 )
             }
 
-            // Quick Actions (Optimized Grid Layout)
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         QuickActionCard(
+                            icon = Icons.Default.VpnKey,
+                            title = stringResource(R.string.password_generator),
+                            subtitle = stringResource(R.string.generate_strong_passwords),
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.weight(1f),
+                            onClick = onNavigateToGenerator
+                        )
+                        QuickActionCard(
                             icon = Icons.Default.CameraAlt,
                             title = stringResource(R.string.scan_card),
                             subtitle = stringResource(R.string.ocr),
-                            color = MaterialTheme.colorScheme.primary,
+                            color = MaterialTheme.colorScheme.tertiary,
                             modifier = Modifier.weight(1f),
                             onClick = onNavigateToScan
                         )
-                        QuickActionCard(
-                            icon = Icons.Default.FolderOpen,
-                            title = stringResource(R.string.file_vault),
-                            subtitle = stringResource(R.string.encrypt_files),
-                            color = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier.weight(1f),
-                            onClick = onNavigateToFileVault
-                        )
                     }
                     QuickActionCard(
-                        icon = Icons.Default.VpnKey,
-                        title = stringResource(R.string.password_generator),
-                        subtitle = stringResource(R.string.generate_strong_passwords),
-                        color = MaterialTheme.colorScheme.tertiary,
+                        icon = Icons.Default.FolderOpen,
+                        title = stringResource(R.string.file_vault),
+                        subtitle = stringResource(R.string.encrypt_files),
+                        color = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.fillMaxWidth(),
-                        onClick = onNavigateToGenerator
+                        onClick = onNavigateToFileVault
+                    )
+                }
+            }
+
+            // 6. Password Timeline
+            if (lastPasswords.isNotEmpty()) {
+                item {
+                    PasswordTimelineSection(
+                        passwords = lastPasswords,
+                        isPremium = configState.isPremium,
+                        onUpgrade = onNavigateToPremium,
+                        onNavigateToDetail = onNavigateToDetail
                     )
                 }
             }
@@ -471,10 +471,10 @@ private fun CategoryGrid(onNavigateToCategory: (String) -> Unit) {
     val categories = listOf(
         CategoryItem("Passwords", Icons.Default.Key, CategoryPasswords, "passwords"),
         CategoryItem("Cards", Icons.Default.CreditCard, CategoryCards, "cards"),
+        CategoryItem("Wi-Fi", Icons.Default.Wifi, CategoryWifi, "wifi"),
         CategoryItem("Notes", Icons.Default.Note, CategoryNotes, "notes"),
         CategoryItem("Files", Icons.Default.Folder, CategoryFiles, "files"),
-        CategoryItem("IDs", Icons.Default.Badge, CategoryIDs, "identities"),
-        CategoryItem("Wi-Fi", Icons.Default.Wifi, CategoryWifi, "wifi")
+        CategoryItem("IDs", Icons.Default.Badge, CategoryIDs, "identities")
     )
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -673,13 +673,16 @@ private fun SecurityHealthCard(
                 }
             }
 
-            if (state.weakPasswordsCount > 0 || state.expiredItemsCount > 0) {
+            if (state.weakPasswordsCount > 0 || state.weakWifiCount > 0 || state.expiredItemsCount > 0) {
                 Spacer(Modifier.height(16.dp))
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 Spacer(Modifier.height(12.dp))
                 
                 if (state.weakPasswordsCount > 0) {
                     HealthAlertItem(Icons.Default.Warning, "${state.weakPasswordsCount} weak passwords", VaultWarning)
+                }
+                if (state.weakWifiCount > 0) {
+                    HealthAlertItem(Icons.Default.WifiOff, "${state.weakWifiCount} insecure Wi-Fi", CategoryWifi)
                 }
                 if (state.expiredItemsCount > 0) {
                     HealthAlertItem(Icons.Default.ErrorOutline, "${state.expiredItemsCount} items expired", VaultError)

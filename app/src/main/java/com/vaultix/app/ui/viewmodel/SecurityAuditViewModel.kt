@@ -49,13 +49,27 @@ class SecurityAuditViewModel @Inject constructor(
                 cardRepository.getAllCards(),
                 identityRepository.getAllIdentities()
             ) { passwords, cards, identities ->
-                val passwordReport = healthAnalyzer.analyze(passwords)
+                // Separate standard passwords from Wi-Fi entries
+                val standardPasswords = passwords.filter { it.website != "vaultix://wifi" }
+                val wifiEntries = passwords.filter { it.website == "vaultix://wifi" }
+
+                // Analyze only standard passwords for health report
+                val passwordReport = healthAnalyzer.analyze(standardPasswords)
                 
+                // Analyze Wi-Fi security
+                val weakWifiItems = wifiEntries.filter { wifi ->
+                    wifi.appPackageName == "Open" ||
+                    wifi.appPackageName == "WEP" ||
+                    wifi.passwordStrength < 3
+                }
+
                 val expiringCards = cards.filter { isCardExpiringSoon(it.expiryMonth, it.expiryYear) }
                 val expiringIdentities = identities.filter { isIdentityExpiringSoon(it.expiryDate) }
 
                 SecurityAuditUiState(
                     passwordReport = passwordReport,
+                    weakWifiCount = weakWifiItems.size,
+                    weakWifiItems = weakWifiItems,
                     expiringCardsCount = expiringCards.size,
                     expiringIdentitiesCount = expiringIdentities.size,
                     expiringCards = expiringCards.map { "${it.holderName} (${it.cardNumber.takeLast(4)})" },
@@ -106,6 +120,8 @@ class SecurityAuditViewModel @Inject constructor(
 
 data class SecurityAuditUiState(
     val passwordReport: PasswordHealthReport = PasswordHealthReport(),
+    val weakWifiCount: Int = 0,
+    val weakWifiItems: List<com.vaultix.app.data.model.Password> = emptyList(),
     val expiringCardsCount: Int = 0,
     val expiringIdentitiesCount: Int = 0,
     val expiringCards: List<String> = emptyList(),

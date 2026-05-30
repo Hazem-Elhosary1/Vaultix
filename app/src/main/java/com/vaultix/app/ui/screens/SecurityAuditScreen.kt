@@ -115,6 +115,27 @@ fun SecurityAuditScreen(
                 description = "IDs/Passports near expiration."
             )
 
+            // Network Health
+            SectionHeader("Network Health")
+            
+            var showWeakWifiDialog by remember { mutableStateOf(false) }
+            
+            AuditItem(
+                title = "Weak/Insecure Wi-Fi",
+                count = uiState.weakWifiCount,
+                icon = Icons.Default.Wifi,
+                color = Color(0xFF0288D1),
+                description = "Open, WEP, or weak-password networks.",
+                onClick = { showWeakWifiDialog = true }
+            )
+            
+            if (showWeakWifiDialog) {
+                WeakWifiDetailsDialog(
+                    weakWifiItems = uiState.weakWifiItems,
+                    onDismiss = { showWeakWifiDialog = false }
+                )
+            }
+
             // Activity Logs
             SectionHeader("Security Activity Logs")
             if (!configState.isPremium) {
@@ -340,6 +361,65 @@ fun DuplicateDetailsDialog(duplicates: List<com.vaultix.app.data.model.Password>
         },
         confirmButton = {
             TextButton(onClick = onDismiss) { Text("Close", color = VaultOrange) }
+        }
+    )
+}
+
+@Composable
+fun WeakWifiDetailsDialog(weakWifiItems: List<com.vaultix.app.data.model.Password>, onDismiss: () -> Unit) {
+    val wifiColor = Color(0xFF0288D1)
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = VaultSurface,
+        title = { Text("Insecure Wi-Fi Networks", color = wifiColor, fontWeight = FontWeight.Bold) },
+        text = {
+            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                Text(
+                    "The following Wi-Fi networks have weak security. Consider using WPA2/WPA3 encryption with strong passwords.",
+                    fontSize = 12.sp, color = VaultTextSecondary, modifier = Modifier.padding(bottom = 16.dp)
+                )
+                
+                weakWifiItems.forEach { wifi ->
+                    val reason = when {
+                        wifi.appPackageName == "Open" -> "No encryption"
+                        wifi.appPackageName == "WEP" -> "WEP (outdated)"
+                        else -> "Weak password"
+                    }
+                    Card(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                        colors = CardDefaults.cardColors(containerColor = VaultBlack.copy(0.3f))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Default.Wifi, null, tint = wifiColor, modifier = Modifier.size(20.dp))
+                            Spacer(Modifier.width(12.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(wifi.title, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = VaultTextPrimary)
+                                Text("SSID: ${wifi.username}", fontSize = 11.sp, color = VaultTextSecondary)
+                                Text("Security: ${wifi.appPackageName}", fontSize = 11.sp, color = VaultTextSecondary)
+                            }
+                            Spacer(Modifier.width(8.dp))
+                            androidx.compose.material3.Surface(
+                                color = VaultError.copy(alpha = 0.15f),
+                                shape = RoundedCornerShape(6.dp)
+                            ) {
+                                Text(
+                                    text = reason,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = VaultError
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("Close", color = wifiColor) }
         }
     )
 }

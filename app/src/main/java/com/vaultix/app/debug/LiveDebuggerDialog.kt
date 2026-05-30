@@ -177,7 +177,7 @@ fun LiveDebuggerDialog(
                             modifier = Modifier.size(30.dp)
                         ) {
                             Icon(
-                                if (autoScroll) Icons.Default.VerticalAlignBottom else Icons.Default.PauseCircleOutline,
+                                if (autoScroll) Icons.Default.PlayArrow else Icons.Default.Pause,
                                 null,
                                 tint = if (autoScroll) C_GREEN else Color(0xFF444444),
                                 modifier = Modifier.size(15.dp)
@@ -192,10 +192,43 @@ fun LiveDebuggerDialog(
                                 }
                                 val cb = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                                 cb.setPrimaryClip(ClipData.newPlainText("vaultix_debug", text))
+                                android.widget.Toast.makeText(context, "Logs copied to clipboard", android.widget.Toast.LENGTH_SHORT).show()
                             },
                             modifier = Modifier.size(30.dp)
                         ) {
                             Icon(Icons.Default.ContentCopy, null, tint = Color(0xFF888888), modifier = Modifier.size(15.dp))
+                        }
+                        // Export / Download logs to file
+                        IconButton(
+                            onClick = {
+                                try {
+                                    val text = events.joinToString("\n") { e ->
+                                        val t = SimpleDateFormat("HH:mm:ss.SSS", Locale.US).format(Date(e.timestamp))
+                                        "[$t][${e.severity.label}][${e.category.label}][${e.source}] ${e.eventType}: ${e.details}"
+                                    }
+                                    val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+                                    val fileName = "vaultix_debug_$timestamp.txt"
+                                    val downloadsDir = android.os.Environment.getExternalStoragePublicDirectory(
+                                        android.os.Environment.DIRECTORY_DOWNLOADS
+                                    )
+                                    val file = java.io.File(downloadsDir, fileName)
+                                    file.writeText(text)
+                                    android.widget.Toast.makeText(
+                                        context,
+                                        "Logs exported to Downloads/$fileName",
+                                        android.widget.Toast.LENGTH_LONG
+                                    ).show()
+                                } catch (e: Exception) {
+                                    android.widget.Toast.makeText(
+                                        context,
+                                        "Export failed: ${e.message}",
+                                        android.widget.Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            },
+                            modifier = Modifier.size(30.dp)
+                        ) {
+                            Icon(Icons.Default.FileDownload, null, tint = Color(0xFF888888), modifier = Modifier.size(15.dp))
                         }
                         // Close
                         IconButton(onClick = onDismiss, modifier = Modifier.size(30.dp)) {
