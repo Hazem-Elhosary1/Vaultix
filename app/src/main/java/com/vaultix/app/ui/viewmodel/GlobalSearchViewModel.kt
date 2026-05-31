@@ -13,7 +13,8 @@ data class GlobalSearchState(
     val passwordResults: List<Password> = emptyList(),
     val cardResults: List<Card> = emptyList(),
     val noteResults: List<Note> = emptyList(),
-    val identityResults: List<Identity> = emptyList()
+    val identityResults: List<Identity> = emptyList(),
+    val wifiResults: List<Password> = emptyList()
 )
 
 @HiltViewModel
@@ -37,12 +38,16 @@ class GlobalSearchViewModel @Inject constructor(
                 noteRepository.getAllNotes(),
                 identityRepository.getAllIdentities()
             ) { passwords, cards, notes, identities ->
+                val standardPasswords = passwords.filter { it.website != "vaultix://wifi" }
+                val wifiPasswords = passwords.filter { it.website == "vaultix://wifi" }
+
                 GlobalSearchState(
                     query = query,
-                    passwordResults = passwords.filter { it.title.contains(query, true) || it.username.contains(query, true) },
+                    passwordResults = standardPasswords.filter { it.title.contains(query, true) || it.username.contains(query, true) },
                     cardResults = cards.filter { it.cardName.contains(query, true) || it.holderName.contains(query, true) },
                     noteResults = notes.filter { it.title.contains(query, true) || it.content.contains(query, true) },
-                    identityResults = identities.filter { it.documentName.contains(query, true) || it.fullName.contains(query, true) }
+                    identityResults = identities.filter { it.documentName.contains(query, true) || it.fullName.contains(query, true) },
+                    wifiResults = wifiPasswords.filter { it.title.contains(query, true) }
                 )
             }
         }

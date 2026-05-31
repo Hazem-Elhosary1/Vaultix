@@ -114,6 +114,7 @@ dependencies {
     // ML Kit (on-device, offline)
     implementation(libs.mlkit.text.recognition)
     implementation(libs.mlkit.barcode.scanning)
+    implementation(libs.mlkit.document.scanner)
 
     // CameraX
     implementation(libs.camerax.core)

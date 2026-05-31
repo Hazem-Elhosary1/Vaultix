@@ -340,6 +340,7 @@ fun VaultixNavGraph(
             val fileViewModel: FileViewModel = hiltViewModel()
             FileVaultScreen(
                 fileViewModel = fileViewModel,
+                authViewModel = authViewModel,
                 onBack = { navController.popBackStack() },
                 onViewPdf = { id, name ->
                     navController.navigate(Screen.PdfViewer.createRoute(id, name))
@@ -368,6 +369,7 @@ fun VaultixNavGraph(
             val identityViewModel: IdentityViewModel = hiltViewModel()
             IdentityEditScreen(
                 identityViewModel = identityViewModel,
+                authViewModel = authViewModel,
                 onClose = { navController.popBackStack() },
                 existingId = id
             )

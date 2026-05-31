@@ -132,6 +132,13 @@ class FileRepository @Inject constructor(
         }
     }
 
+    suspend fun toggleFavorite(file: VaultFile) {
+        val fileEntity = fileDao.getFileById(file.id)
+        fileEntity?.let {
+            fileDao.updateFile(it.copy(isFavorite = !file.isFavorite, updatedAt = System.currentTimeMillis()))
+        }
+    }
+
     suspend fun deleteAllFiles() {
         vaultFilesDir.listFiles()?.forEach { it.delete() }
         fileDao.deleteAllFiles()

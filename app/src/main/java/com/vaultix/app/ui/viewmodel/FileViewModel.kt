@@ -104,6 +104,18 @@ class FileViewModel @Inject constructor(
         }
     }
 
+    fun toggleFavorite(file: VaultFile) {
+        viewModelScope.launch {
+            fileRepository.toggleFavorite(file)
+            DebugEventBus.log(
+                category  = DebugCategory.FILE,
+                eventType = "FILE_FAVORITE_TOGGLED",
+                details   = "fileId=${file.id}, isFavorite=${!file.isFavorite}",
+                source    = "FileViewModel"
+            )
+        }
+    }
+
     fun moveFileToFolder(fileId: String, targetFolderId: String?) {
         viewModelScope.launch {
             fileRepository.updateFileFolder(fileId, targetFolderId)

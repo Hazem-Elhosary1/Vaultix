@@ -73,7 +73,8 @@ fun GlobalSearchScreen(
                 Text("Type at least 2 characters...", color = VaultTextSecondary)
             }
         } else if (state.passwordResults.isEmpty() && state.cardResults.isEmpty() && 
-                   state.noteResults.isEmpty() && state.identityResults.isEmpty()) {
+                   state.noteResults.isEmpty() && state.identityResults.isEmpty() &&
+                   state.wifiResults.isEmpty()) {
             Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
                 Text("No results found for '$query'", color = VaultTextSecondary)
             }
@@ -116,6 +117,15 @@ fun GlobalSearchScreen(
                     items(state.identityResults) { id ->
                         SearchResultItem(id.documentName, id.fullName, Icons.Default.Badge, CategoryIDs) {
                             onNavigateToDetail(id.id, "identities")
+                        }
+                    }
+                }
+                // Wi-Fi Networks
+                if (state.wifiResults.isNotEmpty()) {
+                    item { SearchSectionHeader("Wi-Fi Networks", VaultOrange) }
+                    items(state.wifiResults) { wifi ->
+                        SearchResultItem(wifi.title, "Wi-Fi Network", Icons.Default.Wifi, VaultOrange) {
+                            onNavigateToDetail(wifi.id, "wifi")
                         }
                     }
                 }

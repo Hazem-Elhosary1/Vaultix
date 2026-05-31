@@ -201,7 +201,12 @@ fun CategoryScreen(
                     onItemClick = onNavigateToDetail,
                     accentColor = accentColor
                 )
-                "files" -> FileList(sortKey = currentSort, isAscending = isAscending, accentColor = accentColor)
+                "files" -> FileList(
+                    searchQuery = searchQuery,
+                    sortKey = currentSort,
+                    isAscending = isAscending,
+                    accentColor = accentColor
+                )
                 "identities" -> IdentityList(
                     searchQuery = searchQuery,
                     sortKey = currentSort,
@@ -257,7 +262,8 @@ private fun PasswordList(
                 password = password,
                 accentColor = accentColor,
                 onClick = { onItemClick(password.id) },
-                onDelete = { viewModel.deletePassword(password.id) }
+                onDelete = { viewModel.deletePassword(password.id) },
+                onToggleFavorite = { viewModel.toggleFavorite(password) }
             )
         }
     }
@@ -268,66 +274,163 @@ private fun PasswordListItem(
     password: Password,
     accentColor: Color,
     onClick: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onToggleFavorite: () -> Unit
 ) {
-    var showDelete by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    val offsetXAnim = remember { androidx.compose.animation.core.Animatable(0f) }
+    val scope = rememberCoroutineScope()
+    val density = androidx.compose.ui.platform.LocalDensity.current
 
-    Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = VaultSurface)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(androidx.compose.foundation.layout.IntrinsicSize.Min)
+            .padding(vertical = 4.dp),
+        contentAlignment = Alignment.CenterStart
     ) {
-        Row(
-            Modifier.fillMaxWidth().padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
+        // 1. Background Action Rows Layer
+        if (kotlin.math.abs(offsetXAnim.value) > 1f) {
+            val isSwipingRight = offsetXAnim.value > 0f
+            Row(
                 modifier = Modifier
-                    .size(44.dp)
-                    .background(accentColor.copy(alpha = 0.15f), RoundedCornerShape(12.dp)),
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+                    .background(VaultSurface, RoundedCornerShape(12.dp))
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = if (isSwipingRight) Arrangement.Start else Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    password.title.take(1).uppercase(),
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = accentColor
-                )
-            }
-
-            Spacer(Modifier.width(12.dp))
-
-            Column(Modifier.weight(1f)) {
-                Text(password.title, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
-                Text(password.username, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                if (password.website.isNotEmpty()) {
-                    Text(password.website, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.7f))
+                if (isSwipingRight) {
+                    IconButton(
+                        onClick = {
+                            scope.launch { offsetXAnim.animateTo(0f) }
+                            onToggleFavorite()
+                        },
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(VaultOrange.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
+                    ) {
+                        Icon(
+                            if (password.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = "Toggle Favorite",
+                            tint = if (password.isFavorite) VaultOrange else VaultTextSecondary.copy(alpha = 0.5f),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                } else {
+                    IconButton(
+                        onClick = {
+                            scope.launch { offsetXAnim.animateTo(0f) }
+                            showDeleteDialog = true
+                        },
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(VaultError.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
+                    ) {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = "Delete Password",
+                            tint = VaultError,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
             }
+        }
 
-            // Strength indicator
-            StrengthDot(strength = password.passwordStrength)
+        // 2. Foreground Card Layer
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .offset { IntOffset(offsetXAnim.value.roundToInt(), 0) }
+                .pointerInput(password.id) {
+                    detectHorizontalDragGestures(
+                        onDragEnd = {
+                            scope.launch {
+                                val target = when {
+                                    offsetXAnim.value > 40.dp.toPx() -> 70.dp.toPx()
+                                    offsetXAnim.value < -40.dp.toPx() -> -70.dp.toPx()
+                                    else -> 0f
+                                }
+                                offsetXAnim.animateTo(target)
+                            }
+                        },
+                        onHorizontalDrag = { change, dragAmount ->
+                            change.consume()
+                            scope.launch {
+                                val newOffset = (offsetXAnim.value + dragAmount).coerceIn(-90.dp.toPx(), 90.dp.toPx())
+                                offsetXAnim.snapTo(newOffset)
+                            }
+                        }
+                    )
+                }
+                .clickable(onClick = onClick),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(containerColor = VaultSurface)
+        ) {
+            Row(
+                Modifier.fillMaxWidth().padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .background(accentColor.copy(alpha = 0.15f), RoundedCornerShape(12.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        password.title.take(1).uppercase(),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = accentColor
+                    )
+                }
 
-            Spacer(Modifier.width(8.dp))
+                Spacer(Modifier.width(12.dp))
 
-            IconButton(onClick = { showDelete = !showDelete }) {
-                Icon(Icons.Default.MoreVert, null, tint = VaultTextSecondary)
+                Column(Modifier.weight(1f)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(password.title, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface, maxLines = 1)
+                        if (password.isFavorite) {
+                            Spacer(Modifier.width(6.dp))
+                            Icon(Icons.Default.Star, null, tint = VaultOrange, modifier = Modifier.size(16.dp))
+                        }
+                    }
+                    Text(password.username, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (password.website.isNotEmpty()) {
+                        Text(password.website, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.7f))
+                    }
+                }
+
+                StrengthDot(strength = password.passwordStrength)
+
+                Spacer(Modifier.width(8.dp))
+
+                IconButton(onClick = {
+                    scope.launch {
+                        val target = if (offsetXAnim.value == 0f) with(density) { -70.dp.toPx() } else 0f
+                        offsetXAnim.animateTo(target)
+                    }
+                }) {
+                    Icon(Icons.Default.MoreVert, null, tint = VaultTextSecondary)
+                }
             }
         }
     }
 
-    if (showDelete) {
+    if (showDeleteDialog) {
         AlertDialog(
-            onDismissRequest = { showDelete = false },
+            onDismissRequest = { showDeleteDialog = false },
             title = { Text(stringResource(R.string.delete_password)) },
             text = { Text(stringResource(R.string.delete_confirm, password.title)) },
             confirmButton = {
-                TextButton(onClick = { onDelete(); showDelete = false }) {
+                TextButton(onClick = { onDelete(); showDeleteDialog = false }) {
                     Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDelete = false }) { Text(stringResource(R.string.cancel)) }
+                TextButton(onClick = { showDeleteDialog = false }) { Text(stringResource(R.string.cancel)) }
             },
             containerColor = MaterialTheme.colorScheme.surface
         )
@@ -380,48 +483,168 @@ private fun CardList(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         items(filtered, key = { it.id }) { card ->
-            CardListItem(card = card, onClick = { onItemClick(card.id) }, onDelete = { viewModel.deleteCard(card.id) })
+            CardListItem(
+                card = card,
+                onClick = { onItemClick(card.id) },
+                onDelete = { viewModel.deleteCard(card.id) },
+                onToggleFavorite = { viewModel.toggleFavorite(card) }
+            )
         }
     }
 }
 
 @Composable
-private fun CardListItem(card: Card, onClick: () -> Unit, onDelete: () -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary)
+private fun CardListItem(
+    card: Card,
+    onClick: () -> Unit,
+    onDelete: () -> Unit,
+    onToggleFavorite: () -> Unit
+) {
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    val offsetXAnim = remember { androidx.compose.animation.core.Animatable(0f) }
+    val scope = rememberCoroutineScope()
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(androidx.compose.foundation.layout.IntrinsicSize.Min)
+            .padding(vertical = 4.dp),
+        contentAlignment = Alignment.CenterStart
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    androidx.compose.ui.graphics.Brush.horizontalGradient(
-                        colors = listOf(VaultNavy, VaultNavyLight)
-                    )
-                )
-                .padding(20.dp)
-        ) {
-            Column {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(card.cardName, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSecondary)
-                    Text(card.cardType, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSecondary.copy(0.8f), fontWeight = FontWeight.Medium)
-                }
-                Spacer(Modifier.height(16.dp))
-                Text(card.maskedCardNumber, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSecondary, letterSpacing = 2.sp)
-                Spacer(Modifier.height(12.dp))
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Column {
-                        Text(stringResource(R.string.accent_color).uppercase(), fontSize = 10.sp, color = MaterialTheme.colorScheme.onSecondary.copy(0.6f), letterSpacing = 1.sp)
-                        Text(card.holderName, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSecondary, fontWeight = FontWeight.Medium)
+        // 1. Background Action Rows Layer
+        if (kotlin.math.abs(offsetXAnim.value) > 1f) {
+            val isSwipingRight = offsetXAnim.value > 0f
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+                    .background(VaultSurface, RoundedCornerShape(16.dp))
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = if (isSwipingRight) Arrangement.Start else Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (isSwipingRight) {
+                    IconButton(
+                        onClick = {
+                            scope.launch { offsetXAnim.animateTo(0f) }
+                            onToggleFavorite()
+                        },
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(VaultOrange.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
+                    ) {
+                        Icon(
+                            if (card.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = "Toggle Favorite",
+                            tint = if (card.isFavorite) VaultOrange else VaultTextSecondary.copy(alpha = 0.5f),
+                            modifier = Modifier.size(18.dp)
+                        )
                     }
-                    Column(horizontalAlignment = Alignment.End) {
-                        Text(stringResource(R.string.appearance).uppercase(), fontSize = 10.sp, color = MaterialTheme.colorScheme.onSecondary.copy(0.6f), letterSpacing = 1.sp)
-                        Text("${card.expiryMonth}/${card.expiryYear}", fontSize = 14.sp, color = if (card.isExpired) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSecondary, fontWeight = FontWeight.Medium)
+                } else {
+                    IconButton(
+                        onClick = {
+                            scope.launch { offsetXAnim.animateTo(0f) }
+                            showDeleteDialog = true
+                        },
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(VaultError.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
+                    ) {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = "Delete Card",
+                            tint = VaultError,
+                            modifier = Modifier.size(18.dp)
+                        )
                     }
                 }
             }
         }
+
+        // 2. Foreground Card Layer (Swipeable & Clickable)
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .offset { IntOffset(offsetXAnim.value.roundToInt(), 0) }
+                .pointerInput(card.id) {
+                    detectHorizontalDragGestures(
+                        onDragEnd = {
+                            scope.launch {
+                                val target = when {
+                                    offsetXAnim.value > 40.dp.toPx() -> 70.dp.toPx()
+                                    offsetXAnim.value < -40.dp.toPx() -> -70.dp.toPx()
+                                    else -> 0f
+                                }
+                                offsetXAnim.animateTo(target)
+                            }
+                        },
+                        onHorizontalDrag = { change, dragAmount ->
+                            change.consume()
+                            scope.launch {
+                                val newOffset = (offsetXAnim.value + dragAmount).coerceIn(-90.dp.toPx(), 90.dp.toPx())
+                                offsetXAnim.snapTo(newOffset)
+                            }
+                        }
+                    )
+                }
+                .clickable(onClick = onClick),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        androidx.compose.ui.graphics.Brush.horizontalGradient(
+                            colors = listOf(VaultNavy, VaultNavyLight)
+                        )
+                    )
+                    .padding(20.dp)
+            ) {
+                Column {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(card.cardName, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSecondary)
+                            if (card.isFavorite) {
+                                Spacer(Modifier.width(6.dp))
+                                Icon(Icons.Default.Star, null, tint = VaultOrange, modifier = Modifier.size(16.dp))
+                            }
+                        }
+                        Text(card.cardType, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSecondary.copy(0.8f), fontWeight = FontWeight.Medium)
+                    }
+                    Spacer(Modifier.height(16.dp))
+                    Text(card.maskedCardNumber, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSecondary, letterSpacing = 2.sp)
+                    Spacer(Modifier.height(12.dp))
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Column {
+                            Text(stringResource(R.string.accent_color).uppercase(), fontSize = 10.sp, color = MaterialTheme.colorScheme.onSecondary.copy(0.6f), letterSpacing = 1.sp)
+                            Text(card.holderName, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSecondary, fontWeight = FontWeight.Medium)
+                        }
+                        Column(horizontalAlignment = Alignment.End) {
+                            Text(stringResource(R.string.appearance).uppercase(), fontSize = 10.sp, color = MaterialTheme.colorScheme.onSecondary.copy(0.6f), letterSpacing = 1.sp)
+                            Text("${card.expiryMonth}/${card.expiryYear}", fontSize = 14.sp, color = if (card.isExpired) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSecondary, fontWeight = FontWeight.Medium)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Delete Card") },
+            text = { Text("Are you sure you want to delete \"${card.cardName}\"? This action cannot be undone.") },
+            confirmButton = {
+                TextButton(onClick = { onDelete(); showDeleteDialog = false }) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") }
+            },
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     }
 }
 
@@ -728,7 +951,7 @@ private fun EmptyState(category: String, icon: androidx.compose.ui.graphics.vect
 }
 
 @Composable
-private fun FileList(sortKey: String, isAscending: Boolean, accentColor: Color) {
+private fun FileList(searchQuery: String, sortKey: String, isAscending: Boolean, accentColor: Color) {
     val viewModel: FileViewModel = hiltViewModel()
     val files by viewModel.files.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -745,17 +968,19 @@ private fun FileList(sortKey: String, isAscending: Boolean, accentColor: Color) 
         uri?.let { selectedFile?.let { file -> viewModel.exportFile(file, it, context) } }
     }
 
-    if (files.isEmpty()) {
-        EmptyState(stringResource(R.string.files), Icons.Default.FolderOpen, accentColor)
-        return
+    val sorted = remember(files, searchQuery, sortKey, isAscending) {
+        val base = if (searchQuery.isBlank()) files
+        else files.filter { it.fileName.contains(searchQuery, true) }
+        when (sortKey) {
+            "name" -> if (!isAscending) base.sortedBy { it.fileName.lowercase() } else base.sortedByDescending { it.fileName.lowercase() }
+            "size" -> if (!isAscending) base.sortedByDescending { it.fileSizeBytes } else base.sortedBy { it.fileSizeBytes }
+            else -> if (!isAscending) base.sortedByDescending { it.updatedAt } else base.sortedBy { it.updatedAt }
+        }
     }
 
-    val sorted = remember(files, sortKey, isAscending) {
-        when (sortKey) {
-            "name" -> if (!isAscending) files.sortedBy { it.fileName.lowercase() } else files.sortedByDescending { it.fileName.lowercase() }
-            "size" -> if (!isAscending) files.sortedByDescending { it.fileSizeBytes } else files.sortedBy { it.fileSizeBytes }
-            else -> if (!isAscending) files.sortedByDescending { it.updatedAt } else files.sortedBy { it.updatedAt }
-        }
+    if (sorted.isEmpty()) {
+        EmptyState(stringResource(R.string.files), Icons.Default.FolderOpen, accentColor)
+        return
     }
 
     LazyColumn(
@@ -770,41 +995,16 @@ private fun FileList(sortKey: String, isAscending: Boolean, accentColor: Color) 
             )
         }
         items(sorted, key = { it.id }) { file ->
-            Card(
-                modifier = Modifier.fillMaxWidth().clickable { 
+            FileListItem(
+                file = file,
+                accentColor = accentColor,
+                onClick = {
                     selectedFile = file
-                    showActionSheet = true 
+                    showActionSheet = true
                 },
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(0.4f))
-            ) {
-                Row(
-                    Modifier.fillMaxWidth().padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
-                        Modifier.size(44.dp).background(accentColor.copy(0.15f), RoundedCornerShape(10.dp)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = when {
-                                file.mimeType.startsWith("image") -> Icons.Default.Image
-                                file.mimeType.contains("pdf") -> Icons.Default.PictureAsPdf
-                                else -> Icons.Default.InsertDriveFile
-                            },
-                            contentDescription = null,
-                            tint = accentColor,
-                            modifier = Modifier.size(22.dp)
-                        )
-                    }
-                    Spacer(Modifier.width(12.dp))
-                    Column(Modifier.weight(1f)) {
-                        Text(file.fileName, fontSize = 15.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface, maxLines = 1)
-                        Text("${(file.fileSizeBytes / 1024)} KB • 🔒 Encrypted", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                    Icon(Icons.Default.MoreVert, null, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f))
-                }
-            }
+                onDelete = { viewModel.deleteFile(file.id) },
+                onToggleFavorite = { viewModel.toggleFavorite(file) }
+            )
         }
     }
 
@@ -890,6 +1090,166 @@ private fun FileList(sortKey: String, isAscending: Boolean, accentColor: Color) 
     }
 }
 
+@Composable
+private fun FileListItem(
+    file: com.vaultix.app.data.model.VaultFile,
+    accentColor: Color,
+    onClick: () -> Unit,
+    onDelete: () -> Unit,
+    onToggleFavorite: () -> Unit
+) {
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    val offsetXAnim = remember { androidx.compose.animation.core.Animatable(0f) }
+    val scope = rememberCoroutineScope()
+    val density = androidx.compose.ui.platform.LocalDensity.current
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(androidx.compose.foundation.layout.IntrinsicSize.Min)
+            .padding(vertical = 4.dp),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        // 1. Background Action Rows Layer
+        if (kotlin.math.abs(offsetXAnim.value) > 1f) {
+            val isSwipingRight = offsetXAnim.value > 0f
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+                    .background(VaultSurface, RoundedCornerShape(12.dp))
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = if (isSwipingRight) Arrangement.Start else Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (isSwipingRight) {
+                    IconButton(
+                        onClick = {
+                            scope.launch { offsetXAnim.animateTo(0f) }
+                            onToggleFavorite()
+                        },
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(VaultOrange.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
+                    ) {
+                        Icon(
+                            if (file.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = "Toggle Favorite",
+                            tint = if (file.isFavorite) VaultOrange else VaultTextSecondary.copy(alpha = 0.5f),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                } else {
+                    IconButton(
+                        onClick = {
+                            scope.launch { offsetXAnim.animateTo(0f) }
+                            showDeleteDialog = true
+                        },
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(VaultError.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
+                    ) {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = "Delete File",
+                            tint = VaultError,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
+        }
+
+        // 2. Foreground Card Layer
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .offset { IntOffset(offsetXAnim.value.roundToInt(), 0) }
+                .pointerInput(file.id) {
+                    detectHorizontalDragGestures(
+                        onDragEnd = {
+                            scope.launch {
+                                val target = when {
+                                    offsetXAnim.value > 40.dp.toPx() -> 70.dp.toPx()
+                                    offsetXAnim.value < -40.dp.toPx() -> -70.dp.toPx()
+                                    else -> 0f
+                                }
+                                offsetXAnim.animateTo(target)
+                            }
+                        },
+                        onHorizontalDrag = { change, dragAmount ->
+                            change.consume()
+                            scope.launch {
+                                val newOffset = (offsetXAnim.value + dragAmount).coerceIn(-90.dp.toPx(), 90.dp.toPx())
+                                offsetXAnim.snapTo(newOffset)
+                            }
+                        }
+                    )
+                }
+                .clickable(onClick = onClick),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(0.4f))
+        ) {
+            Row(
+                Modifier.fillMaxWidth().padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    Modifier.size(44.dp).background(accentColor.copy(0.15f), RoundedCornerShape(10.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = when {
+                            file.mimeType.startsWith("image") -> Icons.Default.Image
+                            file.mimeType.contains("pdf") -> Icons.Default.PictureAsPdf
+                            else -> Icons.Default.InsertDriveFile
+                        },
+                        contentDescription = null,
+                        tint = accentColor,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(file.fileName, fontSize = 15.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface, maxLines = 1, modifier = Modifier.weight(1f, fill = false))
+                        if (file.isFavorite) {
+                            Spacer(Modifier.width(6.dp))
+                            Icon(Icons.Default.Star, null, tint = VaultOrange, modifier = Modifier.size(16.dp))
+                        }
+                    }
+                    Text("${(file.fileSizeBytes / 1024)} KB • 🔒 Encrypted", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                IconButton(onClick = {
+                    scope.launch {
+                        val target = if (offsetXAnim.value == 0f) with(density) { -70.dp.toPx() } else 0f
+                        offsetXAnim.animateTo(target)
+                    }
+                }) {
+                    Icon(Icons.Default.MoreVert, null, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f))
+                }
+            }
+        }
+    }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Delete File") },
+            text = { Text("Are you sure you want to delete \"${file.fileName}\"? This action cannot be undone.") },
+            confirmButton = {
+                TextButton(onClick = { onDelete(); showDeleteDialog = false }) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") }
+            },
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+    }
+}
+
 
 @Composable
 private fun IdentityList(
@@ -927,60 +1287,186 @@ private fun IdentityList(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(filtered, key = { it.id }) { identity ->
-            Card(
-                modifier = Modifier.fillMaxWidth().clickable { onItemClick(identity.id) },
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(0.4f))
+            IdentityListItem(
+                identity = identity,
+                accentColor = accentColor,
+                onClick = { onItemClick(identity.id) },
+                onDelete = { viewModel.deleteIdentity(identity) },
+                onToggleFavorite = { viewModel.toggleFavorite(identity) }
+            )
+        }
+    }
+}
+
+@Composable
+private fun IdentityListItem(
+    identity: Identity,
+    accentColor: Color,
+    onClick: () -> Unit,
+    onDelete: () -> Unit,
+    onToggleFavorite: () -> Unit
+) {
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    val offsetXAnim = remember { androidx.compose.animation.core.Animatable(0f) }
+    val scope = rememberCoroutineScope()
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(androidx.compose.foundation.layout.IntrinsicSize.Min)
+            .padding(vertical = 4.dp),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        // 1. Background Action Rows Layer
+        if (kotlin.math.abs(offsetXAnim.value) > 1f) {
+            val isSwipingRight = offsetXAnim.value > 0f
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+                    .background(VaultSurface, RoundedCornerShape(12.dp))
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = if (isSwipingRight) Arrangement.Start else Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    Modifier.fillMaxWidth().padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
-                        Modifier.size(44.dp).background(accentColor.copy(0.15f), RoundedCornerShape(12.dp)),
-                        contentAlignment = Alignment.Center
+                if (isSwipingRight) {
+                    IconButton(
+                        onClick = {
+                            scope.launch { offsetXAnim.animateTo(0f) }
+                            onToggleFavorite()
+                        },
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(VaultOrange.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
                     ) {
                         Icon(
-                            when (identity.documentType.lowercase()) {
-                                "passport" -> Icons.Default.Flight
-                                "driver license" -> Icons.Default.DirectionsCar
-                                else -> Icons.Default.Badge
-                            },
-                            null, tint = accentColor, modifier = Modifier.size(22.dp)
+                            if (identity.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = "Toggle Favorite",
+                            tint = if (identity.isFavorite) VaultOrange else VaultTextSecondary.copy(alpha = 0.5f),
+                            modifier = Modifier.size(18.dp)
                         )
                     }
-                    Spacer(Modifier.width(12.dp))
-                    Column(Modifier.weight(1f)) {
-                        Text(identity.documentName.ifEmpty { identity.documentType }, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
-                        Text(identity.fullName, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        
-                        // Check if expired
-                        val isExpired = remember(identity.expiryDate) {
-                            try {
-                                if (identity.expiryDate.isEmpty()) false
-                                else {
-                                    val parts = identity.expiryDate.split("/", "-")
-                                    val calendar = java.util.Calendar.getInstance()
-                                    if (parts[0].length == 4) {
-                                        calendar.set(parts[0].toInt(), parts[1].toInt() - 1, parts[2].toInt())
-                                    } else {
-                                        calendar.set(parts[2].toInt(), parts[1].toInt() - 1, parts[0].toInt())
-                                    }
-                                    java.util.Calendar.getInstance().after(calendar)
-                                }
-                            } catch (_: Exception) { false }
-                        }
-                        
-                        if (isExpired) {
-                            Text("EXPIRED", fontSize = 10.sp, color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Black)
-                        } else if (identity.expiryDate.isNotEmpty()) {
-                            Text("Expires: ${identity.expiryDate}", fontSize = 11.sp, color = VaultWarning)
-                        }
+                } else {
+                    IconButton(
+                        onClick = {
+                            scope.launch { offsetXAnim.animateTo(0f) }
+                            showDeleteDialog = true
+                        },
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(VaultError.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
+                    ) {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = "Delete Identity",
+                            tint = VaultError,
+                            modifier = Modifier.size(18.dp)
+                        )
                     }
-                    Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f))
                 }
             }
         }
+
+        // 2. Foreground Card Layer
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .offset { IntOffset(offsetXAnim.value.roundToInt(), 0) }
+                .pointerInput(identity.id) {
+                    detectHorizontalDragGestures(
+                        onDragEnd = {
+                            scope.launch {
+                                val target = when {
+                                    offsetXAnim.value > 40.dp.toPx() -> 70.dp.toPx()
+                                    offsetXAnim.value < -40.dp.toPx() -> -70.dp.toPx()
+                                    else -> 0f
+                                }
+                                offsetXAnim.animateTo(target)
+                            }
+                        },
+                        onHorizontalDrag = { change, dragAmount ->
+                            change.consume()
+                            scope.launch {
+                                val newOffset = (offsetXAnim.value + dragAmount).coerceIn(-90.dp.toPx(), 90.dp.toPx())
+                                offsetXAnim.snapTo(newOffset)
+                            }
+                        }
+                    )
+                }
+                .clickable(onClick = onClick),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(0.4f))
+        ) {
+            Row(
+                Modifier.fillMaxWidth().padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    Modifier.size(44.dp).background(accentColor.copy(0.15f), RoundedCornerShape(12.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        when (identity.documentType.lowercase()) {
+                            "passport" -> Icons.Default.Flight
+                            "driver license" -> Icons.Default.DirectionsCar
+                            else -> Icons.Default.Badge
+                        },
+                        null, tint = accentColor, modifier = Modifier.size(22.dp)
+                    )
+                }
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(identity.documentName.ifEmpty { identity.documentType }, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface, maxLines = 1)
+                        if (identity.isFavorite) {
+                            Spacer(Modifier.width(6.dp))
+                            Icon(Icons.Default.Star, null, tint = VaultOrange, modifier = Modifier.size(16.dp))
+                        }
+                    }
+                    Text(identity.fullName, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    
+                    val isExpired = remember(identity.expiryDate) {
+                        try {
+                            if (identity.expiryDate.isEmpty()) false
+                            else {
+                                val parts = identity.expiryDate.split("/", "-")
+                                val calendar = java.util.Calendar.getInstance()
+                                if (parts[0].length == 4) {
+                                    calendar.set(parts[0].toInt(), parts[1].toInt() - 1, parts[2].toInt())
+                                } else {
+                                    calendar.set(parts[2].toInt(), parts[1].toInt() - 1, parts[0].toInt())
+                                }
+                                java.util.Calendar.getInstance().after(calendar)
+                            }
+                        } catch (_: Exception) { false }
+                    }
+                    
+                    if (isExpired) {
+                        Text("EXPIRED", fontSize = 10.sp, color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Black)
+                    } else if (identity.expiryDate.isNotEmpty()) {
+                        Text("Expires: ${identity.expiryDate}", fontSize = 11.sp, color = VaultWarning)
+                    }
+                }
+                Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f))
+            }
+        }
+    }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Delete Identity") },
+            text = { Text("Are you sure you want to delete \"${identity.documentName}\"? This action cannot be undone.") },
+            confirmButton = {
+                TextButton(onClick = { onDelete(); showDeleteDialog = false }) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") }
+            },
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     }
 }
 

@@ -245,12 +245,12 @@ fun WifiListItem(
                             },
                             modifier = Modifier
                                 .size(40.dp)
-                                .background(VaultError.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
+                                .background(VaultOrange.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
                         ) {
                             Icon(
                                 if (password.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                                 contentDescription = "Favorite",
-                                tint = if (password.isFavorite) VaultError else VaultTextSecondary.copy(alpha = 0.5f),
+                                tint = if (password.isFavorite) VaultOrange else VaultTextSecondary.copy(alpha = 0.5f),
                                 modifier = Modifier.size(18.dp)
                             )
                         }

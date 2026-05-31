@@ -26,8 +26,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.activity.result.IntentSenderRequest
+import androidx.compose.ui.graphics.Color
 import com.vaultix.app.ui.theme.*
+import com.vaultix.app.ui.viewmodel.AuthViewModel
 import com.vaultix.app.ui.viewmodel.IdentityViewModel
+import com.vaultix.app.util.DocumentScannerHelper
 
 /**
  * Identity document add/edit screen with photo support.
@@ -36,15 +40,28 @@ import com.vaultix.app.ui.viewmodel.IdentityViewModel
 @Composable
 fun IdentityEditScreen(
     identityViewModel: IdentityViewModel,
+    authViewModel: AuthViewModel,
     onClose: () -> Unit,
     existingId: String? = null
 ) {
     val context = LocalContext.current
     val identityState by identityViewModel.identity.collectAsState()
+    var showSelectionSheet by remember { mutableStateOf(false) }
 
     val pickImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri -> uri?.let { identityViewModel.addImage(it) } }
+
+    val scannerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartIntentSenderForResult()
+    ) { result ->
+        if (result.resultCode == android.app.Activity.RESULT_OK) {
+            val scanningResult = com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult.fromActivityResultIntent(result.data)
+            scanningResult?.pages?.firstOrNull()?.imageUri?.let { uri ->
+                identityViewModel.addImage(uri)
+            }
+        }
+    }
 
     LaunchedEffect(existingId) {
         if (existingId != null) {
@@ -144,7 +161,7 @@ fun IdentityEditScreen(
                                     .size(100.dp)
                                     .clip(RoundedCornerShape(12.dp))
                                     .background(VaultSurfaceVariant.copy(0.5f))
-                                    .clickable { pickImageLauncher.launch("image/*") },
+                                    .clickable { showSelectionSheet = true },
                                 contentAlignment = Alignment.Center
                             ) {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -300,6 +317,62 @@ fun IdentityEditScreen(
             }
 
             Spacer(Modifier.height(16.dp))
+        }
+    }
+
+    if (showSelectionSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showSelectionSheet = false },
+            containerColor = VaultSurface,
+            dragHandle = { BottomSheetDefaults.DragHandle(color = VaultBorder) }
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 32.dp, start = 16.dp, end = 16.dp)
+            ) {
+                Text(
+                    text = "Add Photo",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = VaultTextPrimary,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                
+                ListItem(
+                    headlineContent = { Text("Upload from Gallery", color = VaultTextPrimary) },
+                    supportingContent = { Text("Select an existing image from your device", color = VaultTextSecondary) },
+                    leadingContent = { Icon(Icons.Default.PhotoLibrary, "Gallery", tint = VaultOrange) },
+                    modifier = Modifier.clickable {
+                        pickImageLauncher.launch("image/*")
+                        showSelectionSheet = false
+                    },
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                )
+                
+                ListItem(
+                    headlineContent = { Text("Scan Document", color = VaultTextPrimary) },
+                    supportingContent = { Text("Scan ID card or document using camera", color = VaultTextSecondary) },
+                    leadingContent = { Icon(Icons.Default.DocumentScanner, "Scan", tint = VaultOrange) },
+                    modifier = Modifier.clickable {
+                        showSelectionSheet = false
+                        authViewModel.setSystemActivityActive(true)
+                        DocumentScannerHelper.startScan(
+                            context = context,
+                            options = DocumentScannerHelper.createScannerOptions(pageLimit = 1, isPdfEnabled = false),
+                            onIntentSenderReady = { intentSender ->
+                                scannerLauncher.launch(
+                                    androidx.activity.result.IntentSenderRequest.Builder(intentSender).build()
+                                )
+                            },
+                            onFailure = { e ->
+                                Toast.makeText(context, "Scanner error: ${e.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                    },
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                )
+            }
         }
     }
 }
