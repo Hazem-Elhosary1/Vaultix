@@ -17,6 +17,31 @@ import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
 
+enum class ExportFormat {
+    VBK_FILE,
+    QR_IMAGES,
+    QR_PDF
+}
+
+data class ExportResult(
+    val success: Boolean,
+    val format: ExportFormat,
+    val totalItems: Int = 0,
+    val message: String = "",
+    val qrCodeCount: Int = 0
+)
+
+data class ImportResult(
+    val success: Boolean,
+    val passwordCount: Int = 0,
+    val cardCount: Int = 0,
+    val noteCount: Int = 0,
+    val fileCount: Int = 0,
+    val identityCount: Int = 0,
+    val totalCount: Int = 0,
+    val message: String = ""
+)
+
 data class BackupUiState(
     val isExporting: Boolean = false,
     val isImporting: Boolean = false,
@@ -25,7 +50,11 @@ data class BackupUiState(
     val backupFrequency: String = "DAILY",
     val lastBackupTime: Long = 0L,
     val message: String? = null,
-    val error: String? = null
+    val error: String? = null,
+    val exportProgress: Float = 0f,
+    val importProgress: Float = 0f,
+    val exportResult: ExportResult? = null,
+    val importResult: ImportResult? = null
 )
 
 @HiltViewModel
@@ -320,6 +349,41 @@ class BackupViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(message = null, error = null)
     }
 
+    fun clearResults() {
+        _uiState.value = _uiState.value.copy(
+            exportResult = null,
+            importResult = null,
+            exportProgress = 0f,
+            importProgress = 0f,
+            error = null,
+            message = null
+        )
+    }
+
+    fun updateExportProgress(progress: Float) {
+        _uiState.value = _uiState.value.copy(exportProgress = progress.coerceIn(0f, 1f))
+    }
+
+    fun updateImportProgress(progress: Float) {
+        _uiState.value = _uiState.value.copy(importProgress = progress.coerceIn(0f, 1f))
+    }
+
+    fun setExportResult(result: ExportResult) {
+        _uiState.value = _uiState.value.copy(
+            isExporting = false,
+            exportProgress = 1f,
+            exportResult = result
+        )
+    }
+
+    fun setImportResult(result: ImportResult) {
+        _uiState.value = _uiState.value.copy(
+            isImporting = false,
+            importProgress = 1f,
+            importResult = result
+        )
+    }
+
     suspend fun getScopeCount(scope: BackupScope): Int {
         return withContext(Dispatchers.IO) {
             when (scope) {
@@ -339,4 +403,17 @@ class BackupViewModel @Inject constructor(
             }
         }
     }
+
+    suspend fun getAllScopeCounts(): Map<BackupScope, Int> {
+        return withContext(Dispatchers.IO) {
+            mapOf(
+                BackupScope.PASSWORDS to passwordRepository.getPasswordCount(),
+                BackupScope.CARDS to cardRepository.getCardCount(),
+                BackupScope.NOTES to noteRepository.getNoteCount(),
+                BackupScope.FILES to fileRepository.getFileCount(),
+                BackupScope.IDENTITIES to identityRepository.getIdentityCount()
+            )
+        }
+    }
 }
+

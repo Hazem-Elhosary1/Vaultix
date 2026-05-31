@@ -1,15 +1,27 @@
 package com.vaultix.app.ui.theme
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 
-// Primary Brand Colors
+// Global Dynamic Theme Accent Bridge
+var DynamicThemeAccent by mutableStateOf(Color(0xFFFF7A00))
+
+// Primary Brand Colors (linked dynamically to current accent)
 val VaultNavy = Color(0xFF0A1F44)
 val VaultNavyLight = Color(0xFF1A3460)
 val VaultNavyDark = Color(0xFF060F22)
 val VaultBlack = Color(0xFF000000)
-val VaultOrange = Color(0xFFFF7A00)
-val VaultOrangeLight = Color(0xFFFF9A33)
-val VaultOrangeDark = Color(0xFFCC6200)
+
+val VaultOrange: Color
+    get() = DynamicThemeAccent
+
+val VaultOrangeLight: Color
+    get() = DynamicThemeAccent.copy(alpha = 0.8f)
+
+val VaultOrangeDark: Color
+    get() = DynamicThemeAccent
 
 // Surface Colors
 val VaultSurface = Color(0xFF0D1B35)
@@ -66,15 +78,26 @@ val AccentBlue = Color(0xFF2196F3)
 val AccentGreen = Color(0xFF4CAF50)
 val AccentPurple = Color(0xFF9C27B0)
 val AccentRed = Color(0xFFF44336)
+val AccentTeal = Color(0xFF009688)
+val AccentPink = Color(0xFFE91E63)
+val AccentIndigo = Color(0xFF3F51B5)
+val AccentAmber = Color(0xFFFFC107)
+val AccentCyan = Color(0xFF00BCD4)
 
 val AccentOptions = mapOf(
     "Orange" to AccentOrange,
     "Blue" to AccentBlue,
     "Green" to AccentGreen,
     "Purple" to AccentPurple,
-    "Red" to AccentRed
+    "Red" to AccentRed,
+    "Teal" to AccentTeal,
+    "Pink" to AccentPink,
+    "Indigo" to AccentIndigo,
+    "Amber" to AccentAmber,
+    "Cyan" to AccentCyan
 )
 
 // Gradient combinations
 val GradientNavyOrange = listOf(VaultNavy, VaultOrangeDark)
 val GradientDarkNavy = listOf(VaultBlack, VaultNavy)
+

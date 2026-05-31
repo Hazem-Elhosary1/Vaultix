@@ -11,6 +11,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -20,7 +21,10 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.vaultix.app.ui.theme.VaultOrange
 import androidx.compose.ui.window.Dialog
@@ -35,7 +39,9 @@ import java.util.concurrent.Executors
 @Composable
 fun QRCodeScannerDialog(
     onQRScanned: (ByteArray) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    scannedCount: Int = 0,
+    totalChunks: Int = 0
 ) {
     val context = LocalContext.current
     Dialog(
@@ -57,8 +63,7 @@ fun QRCodeScannerDialog(
                             
                             onQRScanned(rawBytes)
                         } else {
-                            // ... (rest of the logic)
-                            // Try to decode from string if raw bytes are null (though for our binary QR, they should be there)
+                            // Try to decode from string if raw bytes are null
                             val rawValue = barcode.rawValue
                             if (rawValue != null) {
                                 try {
@@ -80,11 +85,58 @@ fun QRCodeScannerDialog(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(
-                        "Scan Backup QR Code",
-                        color = Color.White,
-                        style = MaterialTheme.typography.titleLarge
-                    )
+                    // Top section with title and progress
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            "Scan Backup QR Code",
+                            color = Color.White,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                        
+                        // Progress indicator
+                        if (totalChunks > 0 || scannedCount > 0) {
+                            Card(
+                                colors = CardDefaults.cardColors(
+                                    containerColor = Color.Black.copy(alpha = 0.7f)
+                                ),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    if (scannedCount > 0 && scannedCount == totalChunks) {
+                                        Icon(
+                                            Icons.Default.CheckCircle,
+                                            contentDescription = null,
+                                            tint = Color(0xFF4CAF50),
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    } else {
+                                        CircularProgressIndicator(
+                                            progress = { if (totalChunks > 0) scannedCount.toFloat() / totalChunks else 0f },
+                                            modifier = Modifier.size(20.dp),
+                                            color = VaultOrange,
+                                            strokeWidth = 3.dp,
+                                            trackColor = Color.White.copy(alpha = 0.2f)
+                                        )
+                                    }
+                                    Text(
+                                        if (totalChunks > 0) "Scanned $scannedCount of $totalChunks chunks"
+                                        else "Scanned $scannedCount chunk(s)",
+                                        color = Color.White,
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+                            }
+                        }
+                    }
                     
                     // Center frame indicator
                     Box(
@@ -103,11 +155,26 @@ fun QRCodeScannerDialog(
                         )
                     }
 
-                    Button(
-                        onClick = onDismiss,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(alpha = 0.2f))
+                    // Bottom section
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text("Close", color = Color.White)
+                        if (scannedCount > 0 && totalChunks > 0 && scannedCount < totalChunks) {
+                            Text(
+                                "Point at the next QR code",
+                                color = Color.White.copy(alpha = 0.8f),
+                                fontSize = 14.sp,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                        
+                        Button(
+                            onClick = onDismiss,
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(alpha = 0.2f))
+                        ) {
+                            Text("Close", color = Color.White)
+                        }
                     }
                 }
             }

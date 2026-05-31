@@ -21,7 +21,7 @@ import kotlin.math.ceil
 class QRCodeBackupGenerator @Inject constructor() {
     
     companion object {
-        private const val MAX_BYTES_PER_QR = 1000 // Safer limit for scanning from screens
+        private const val MAX_BYTES_PER_QR = 500 // Reduced for more reliable scanning
         private const val QR_CODE_SIZE = 512
         private const val HEADER_HEIGHT = 80
         private const val FOOTER_HEIGHT = 50
@@ -135,11 +135,7 @@ class QRCodeBackupGenerator @Inject constructor() {
     
     fun parseChunkHeader(chunk: ByteArray): ChunkMetadata {
         // Handle Base64 encoding
-        val data = try {
-            android.util.Base64.decode(chunk, android.util.Base64.DEFAULT)
-        } catch (e: Exception) {
-            chunk
-        }
+        val data = tryDecodeChunk(chunk)
 
         if (data.size < HEADER_SIZE) {
             throw IllegalArgumentException("Invalid QR code: Data is too small to be a Vaultix backup")
@@ -177,13 +173,7 @@ class QRCodeBackupGenerator @Inject constructor() {
     private fun mergeChunks(chunks: List<ByteArray>): ByteArray {
         if (chunks.isEmpty()) throw IllegalArgumentException("No chunks provided")
         
-        val decodedChunks = chunks.map { chunk ->
-            try {
-                android.util.Base64.decode(chunk, android.util.Base64.DEFAULT)
-            } catch (e: Exception) {
-                chunk
-            }
-        }
+        val decodedChunks = chunks.map { chunk -> tryDecodeChunk(chunk) }
 
         val sortedChunks = decodedChunks.sortedBy { parseChunkHeader(it).chunkIndex }
         val firstMeta = parseChunkHeader(sortedChunks[0])
@@ -278,4 +268,35 @@ class QRCodeBackupGenerator @Inject constructor() {
         val chunkIndex: Int,
         val chunkSize: Int
     )
+
+    /**
+     * Smart decode: if the data already starts with the VLX signature, return as-is.
+     * Otherwise, try Base64 decoding.
+     */
+    private fun tryDecodeChunk(chunk: ByteArray): ByteArray {
+        // Check if already raw (starts with VLX signature)
+        if (chunk.size >= 3 &&
+            chunk[0] == SIGNATURE[0] &&
+            chunk[1] == SIGNATURE[1] &&
+            chunk[2] == SIGNATURE[2]
+        ) {
+            return chunk
+        }
+        // Otherwise, try Base64 decoding
+        return try {
+            val decoded = android.util.Base64.decode(chunk, android.util.Base64.DEFAULT)
+            // Validate that the decoded data starts with VLX
+            if (decoded.size >= 3 &&
+                decoded[0] == SIGNATURE[0] &&
+                decoded[1] == SIGNATURE[1] &&
+                decoded[2] == SIGNATURE[2]
+            ) {
+                decoded
+            } else {
+                chunk // Fallback to original
+            }
+        } catch (e: Exception) {
+            chunk
+        }
+    }
 }

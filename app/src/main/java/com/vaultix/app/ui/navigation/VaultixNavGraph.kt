@@ -310,11 +310,11 @@ fun VaultixNavGraph(
                 onNavigateToPremium = {
                     navController.navigate(Screen.Premium.route)
                 },
-                onNavigateToQRCodeBackup = { masterPassword ->
-                    navController.navigate(com.vaultix.app.ui.navigation.Screen.QRCodeBackup.createRoute(masterPassword))
+                onNavigateToExport = {
+                    navController.navigate(Screen.BackupExport.route)
                 },
-                onNavigateToQRCodeRestore = {
-                    navController.navigate(Screen.QRCodeRestore.route)
+                onNavigateToImport = {
+                    navController.navigate(Screen.BackupImport.route)
                 },
                 onNavigateToDevelopment = {
                     navController.navigate(Screen.Development.route)
@@ -430,24 +430,17 @@ fun VaultixNavGraph(
             )
         }
 
-        // QR Code Backup (Export)
-        composable(
-            route = Screen.QRCodeBackup.route,
-            arguments = listOf(
-                navArgument("masterPassword") { type = NavType.StringType }
-            )
-        ) { backStackEntry ->
-            val masterPassword = backStackEntry.arguments?.getString("masterPassword") ?: ""
-            QRCodeBackupScreen(
-                masterPassword = java.net.URLDecoder.decode(masterPassword, "UTF-8"),
-                onBackupComplete = { navController.popBackStack() }
+        // Unified Backup Export Wizard
+        composable(Screen.BackupExport.route) {
+            BackupExportScreen(
+                onBack = { navController.popBackStack() }
             )
         }
 
-        // QR Code Restore (Import)
-        composable(Screen.QRCodeRestore.route) {
-            QRCodeRestoreScreen(
-                onRestoreComplete = { navController.popBackStack() }
+        // Unified Backup Import Wizard
+        composable(Screen.BackupImport.route) {
+            BackupImportScreen(
+                onBack = { navController.popBackStack() }
             )
         }
 

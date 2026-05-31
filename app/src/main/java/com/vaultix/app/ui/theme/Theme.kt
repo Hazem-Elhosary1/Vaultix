@@ -96,8 +96,11 @@ fun VaultixTheme(
     val accentColor = try {
         Color(android.graphics.Color.parseColor(accentColorHex))
     } catch (e: Exception) {
-        VaultOrange
+        Color(0xFFFF9800) // Fallback to safe AccentOrange constant to prevent recursive property calling
     }
+
+    // DynamicThemeAccent update propagates color changes to all hardcoded VaultOrange elements!
+    DynamicThemeAccent = accentColor
 
     val colorScheme = if (darkTheme) {
         getDarkColorScheme(accentColor)

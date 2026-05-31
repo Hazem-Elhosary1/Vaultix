@@ -39,12 +39,9 @@ sealed class Screen(val route: String) {
     object FileVault : Screen("file_vault")
     object SecurityAudit : Screen("security_audit")
 
-    // QR Code Backup & Restore
-    object QRCodeBackup : Screen("qr_code_backup/{masterPassword}") {
-        fun createRoute(masterPassword: String) = "qr_code_backup/${java.net.URLEncoder.encode(masterPassword, "UTF-8")}"
-    }
-
-    object QRCodeRestore : Screen("qr_code_restore")
+    // Unified Backup Export & Import Wizards
+    object BackupExport : Screen("backup_export")
+    object BackupImport : Screen("backup_import")
 
     object IdentityEdit : Screen("identity_edit?id={id}") {
         fun createRoute(id: String? = null) =

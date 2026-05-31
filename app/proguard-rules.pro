@@ -1,6 +1,4 @@
 # Add project specific ProGuard rules here.
--dontoptimize
--dontshrink
 
 # Keep for Gson serialization in BackupManager
 -keep class com.vaultix.app.util.BackupManager$BackupPayload { *; }
