@@ -47,9 +47,9 @@ fun SettingsScreen(
     authViewModel: AuthViewModel,
     onBack: () -> Unit,
     onLogout: () -> Unit,
-    onNavigateToPremium: () -> Unit,
-    onNavigateToQRCodeBackup: (String) -> Unit = {},
-    onNavigateToQRCodeRestore: () -> Unit = {},
+    onNavigateToPremium: () -> Unit = {},
+    onNavigateToExport: () -> Unit = {},
+    onNavigateToImport: () -> Unit = {},
     onNavigateToDevelopment: () -> Unit = {},
     appConfigViewModel: AppConfigViewModel = hiltViewModel()
 ) {
@@ -158,36 +158,7 @@ fun SettingsScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Premium Card
-            if (!configState.isPremium) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onNavigateToPremium() },
-                    colors = CardDefaults.cardColors(containerColor = VaultOrange),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(48.dp)
-                                .background(Color.White.copy(alpha = 0.2f), CircleShape),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(Icons.Default.WorkspacePremium, null, tint = Color.White)
-                        }
-                        Spacer(Modifier.width(16.dp))
-                        Column(Modifier.weight(1f)) {
-                            Text(stringResource(R.string.go_pro), fontWeight = FontWeight.Bold, color = Color.White, fontSize = 18.sp)
-                            Text(stringResource(R.string.premium_features), color = Color.White.copy(alpha = 0.8f), fontSize = 13.sp)
-                        }
-                        Icon(Icons.Default.ChevronRight, null, tint = Color.White)
-                    }
-                }
-            }
+            // Premium Card removed — all features are now free
 
             // Security Section
             SettingsSection(title = stringResource(R.string.security)) {
@@ -208,11 +179,7 @@ fun SettingsScreen(
                 }
                 SettingsDivider()
                 SettingsClickItem(Icons.Default.Security, "Setup Fake Vault", "Create a decoy vault with a secondary password", VaultError) {
-                    if (configState.isPremium) {
-                        showFakeVaultDialog = true
-                    } else {
-                        showProLockDialog = true
-                    }
+                    showFakeVaultDialog = true
                 }
                 SettingsDivider()
                 SettingsClickItem(Icons.Default.Article, "Emergency Recovery Sheet", "View or print your recovery key for emergency access", VaultOrange) {
@@ -370,6 +337,7 @@ fun SettingsScreen(
                 }
 
                 // â”€â”€ 3. Last backup + Backup Now â”€â”€
+                // ── 3. Last backup + Backup Now ──
                 if (backupState.lastBackupTime > 0L) {
                     val lastDate = remember(backupState.lastBackupTime) {
                         java.text.SimpleDateFormat("dd MMM yyyy, hh:mm a", java.util.Locale.getDefault())
@@ -390,71 +358,38 @@ fun SettingsScreen(
 
                 SettingsDivider()
 
-                // â”€â”€ 4. Backup History (Premium) â”€â”€
+                // ── 4. Backup History ──
                 SettingsClickItem(
                     icon = Icons.Default.History,
                     title = "Backup History",
                     subtitle = "${backupState.localBackups.size} backups stored on device",
                     iconTint = VaultOrange
                 ) {
-                    if (configState.isPremium) {
-                        backupViewModel.refreshLocalBackups()
-                        showBackupHistoryDialog = true
-                    } else {
-                        showProLockDialog = true
-                    }
+                    backupViewModel.refreshLocalBackups()
+                    showBackupHistoryDialog = true
                 }
             }
 
-            // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-            // â•â•  Transfer Data  â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-            // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+            // ╔══════════════════════════════════════════════
+            // ║  Transfer Data  ═════════════════════════════
+            // ╚══════════════════════════════════════════════
             SettingsSection(title = "Transfer Data") {
                 SettingsClickItem(
                     icon = Icons.Default.Upload,
-                    title = stringResource(R.string.export_backup),
-                    subtitle = if (backupState.isExporting) "Exporting..." else "Save an encrypted file to move to another device",
+                    title = "Export Data",
+                    subtitle = "Export your vault as encrypted file, QR codes, or PDF",
                     iconTint = MaterialTheme.colorScheme.primary
                 ) {
-                    if (configState.isPremium) {
-                        selectedBackupScopes.clear()
-                        selectedBackupScopes.add(BackupScope.FULL)
-                        showBackupTypeDialog = true
-                    } else {
-                        showProLockDialog = true
-                    }
+                    onNavigateToExport()
                 }
                 SettingsDivider()
                 SettingsClickItem(
                     icon = Icons.Default.Download,
-                    title = stringResource(R.string.import_backup),
-                    subtitle = if (backupState.isImporting) "Importing..." else "Restore from a .vbk backup file",
+                    title = "Import Data",
+                    subtitle = "Restore from file, QR codes, or backup history",
                     iconTint = VaultInfo
                 ) {
-                    importLauncher.launch(arrayOf("*/*"))
-                }
-
-                SettingsDivider()
-
-                // QR Code Backup / Restore
-                SettingsClickItem(
-                    icon = Icons.Default.QrCode,
-                    title = "Export as QR",
-                    subtitle = "Generate printable QR codes for offline backup",
-                    iconTint = MaterialTheme.colorScheme.primary
-                ) {
-                    qrActionIsExport = true
-                    qrMasterPassword = ""
-                    showQRCodePasswordDialog = true
-                }
-                SettingsDivider()
-                SettingsClickItem(
-                    icon = Icons.Default.QrCodeScanner,
-                    title = "Restore from QR",
-                    subtitle = "Scan QR codes to restore a backup",
-                    iconTint = VaultInfo
-                ) {
-                    onNavigateToQRCodeRestore()
+                    onNavigateToImport()
                 }
             }
 
@@ -464,20 +399,19 @@ fun SettingsScreen(
                     Text(stringResource(R.string.accent_color), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
                     Spacer(Modifier.height(8.dp))
                     Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        val colors = listOf(VaultOrange, AccentBlue, AccentGreen, AccentPurple, AccentRed)
+                        val colors = listOf(
+                            AccentOrange, AccentBlue, AccentGreen, AccentPurple, AccentRed,
+                            AccentTeal, AccentPink, AccentIndigo, AccentAmber, AccentCyan
+                        )
                         colors.forEach { color ->
                             val hex = "#" + Integer.toHexString(color.toArgb()).substring(2).uppercase()
                             val isSelected = configState.accentColorHex == hex
                             Box(
                                 modifier = Modifier
                                     .size(40.dp)
-                                    .background(color, androidx.compose.foundation.shape.CircleShape)
-                                    .clickable { 
-                                        if (hex == "#FF9800" || configState.isPremium) {
-                                            appConfigViewModel.setAccentColor(hex)
-                                        } else {
-                                            showProLockDialog = true
-                                        }
+                                    .background(color, CircleShape)
+                                    .clickable {
+                                        appConfigViewModel.setAccentColor(hex)
                                     },
                                 contentAlignment = Alignment.Center
                             ) {
@@ -494,7 +428,7 @@ fun SettingsScreen(
 
             // App Info
             SettingsSection(title = stringResource(R.string.about)) {
-                SettingsInfoItem("Version", if (configState.isPremium) "1.0.0 PRO" else "1.0.0")
+                SettingsInfoItem("Version", "1.0.0")
                 SettingsDivider()
                 SettingsInfoItem("Encryption", "AES-256-GCM")
                 SettingsDivider()
@@ -1187,48 +1121,6 @@ fun SettingsScreen(
             }
         )
     }
-    
-        if (showQRCodePasswordDialog) {
-            var errorMsg by remember { mutableStateOf<String?>(null) }
-            AlertDialog(
-                onDismissRequest = { showQRCodePasswordDialog = false },
-                containerColor = VaultSurface,
-                title = { Text("Export as QR", color = VaultOrange) },
-                text = {
-                    Column {
-                        Text("Enter your master password to generate QR backup.", fontSize = 13.sp, color = VaultTextSecondary)
-                        Spacer(Modifier.height(12.dp))
-                        OutlinedTextField(
-                            value = qrMasterPassword,
-                            onValueChange = { qrMasterPassword = it; errorMsg = null },
-                            label = { Text("Master Password") },
-                            singleLine = true,
-                            visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        if (errorMsg != null) {
-                            Spacer(Modifier.height(8.dp))
-                            Text(errorMsg!!, color = MaterialTheme.colorScheme.error)
-                        }
-                    }
-                },
-                confirmButton = {
-                    Button(onClick = {
-                        if (qrMasterPassword.isBlank()) {
-                            errorMsg = "Password is required"
-                            return@Button
-                        }
-                        showQRCodePasswordDialog = false
-                        onNavigateToQRCodeBackup(qrMasterPassword)
-                    }, colors = ButtonDefaults.buttonColors(containerColor = VaultOrange)) {
-                        Text("Generate", color = VaultBlack)
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showQRCodePasswordDialog = false }) { Text("Cancel") }
-                }
-            )
-        }
     }
 
 @Composable

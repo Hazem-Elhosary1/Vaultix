@@ -41,7 +41,7 @@ class QRCodeBackupViewModel @Inject constructor(
     /**
      * Generate QR codes from current vault backup with app logo
      */
-    fun generateQRCodesFromBackup(masterPassword: String, logo: Bitmap? = null) {
+    fun generateQRCodesFromBackup(masterPassword: String, scopes: Set<com.vaultix.app.util.BackupScope> = setOf(com.vaultix.app.util.BackupScope.FULL), logo: Bitmap? = null) {
         viewModelScope.launch {
             try {
                 _uiState.value = QRBackupUIState.Generating
@@ -49,7 +49,7 @@ class QRCodeBackupViewModel @Inject constructor(
                 // Step 1: Create encrypted backup
                 val backupResult = backupManager.exportBackup(
                     masterPassword.toCharArray(),
-                    setOf(com.vaultix.app.util.BackupScope.FULL)
+                    scopes
                 )
                 val backupFile = backupResult.getOrThrow()
                 val encryptedBackup = backupFile.readBytes()
