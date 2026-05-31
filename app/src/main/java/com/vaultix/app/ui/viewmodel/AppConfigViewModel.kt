@@ -22,7 +22,7 @@ data class AppConfigState(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val accentColorHex: String = "#FF9800", // Default VaultOrange
     val language: String = "en",
-    val isPremium: Boolean = false,
+    val isPremium: Boolean = true,
     val availablePlans: List<PremiumPlan> = listOf(
         PremiumPlan("monthly", "Monthly", "$4.99", "per month"),
         PremiumPlan("yearly", "Yearly", "$39.99", "per year", "Best Value!"),
@@ -48,13 +48,13 @@ class AppConfigViewModel @Inject constructor(
                 securePreferences.getPlainStringFlow(SecurePreferences.KEY_THEME_MODE),
                 securePreferences.getPlainStringFlow(SecurePreferences.KEY_ACCENT_COLOR),
                 securePreferences.getPlainStringFlow(SecurePreferences.KEY_APP_LANGUAGE),
-                securePreferences.getBooleanFlow(SecurePreferences.KEY_IS_PREMIUM, false)
-            ) { theme, color, lang, isPremium ->
+                securePreferences.getBooleanFlow(SecurePreferences.KEY_IS_PREMIUM, true)
+            ) { theme, color, lang, _ ->
                 AppConfigState(
                     themeMode = theme?.let { ThemeMode.valueOf(it) } ?: ThemeMode.SYSTEM,
                     accentColorHex = color ?: "#FF9800",
                     language = lang ?: "en",
-                    isPremium = isPremium
+                    isPremium = true
                 )
             }.collect {
                 _configState.value = it
