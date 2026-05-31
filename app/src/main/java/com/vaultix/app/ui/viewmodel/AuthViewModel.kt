@@ -86,6 +86,18 @@ class AuthViewModel @Inject constructor(
     private val _pendingShortcutAction = MutableStateFlow<String?>(null)
     val pendingShortcutAction: StateFlow<String?> = _pendingShortcutAction.asStateFlow()
 
+    // Flag to temporarily bypass auto-lock when launching system/external intents (e.g. ML Kit Document Scanner)
+    private var isSystemActivityActive = false
+
+    fun setSystemActivityActive(active: Boolean) {
+        isSystemActivityActive = active
+        if (active) {
+            updateActivity()
+        }
+    }
+
+    fun isSystemActivityActive(): Boolean = isSystemActivityActive
+
     fun setPendingShortcutAction(action: String?) {
         _pendingShortcutAction.value = action
     }

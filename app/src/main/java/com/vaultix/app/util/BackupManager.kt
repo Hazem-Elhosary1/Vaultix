@@ -152,24 +152,65 @@ class BackupManager @Inject constructor(
     }
 
     private suspend fun restorePayload(payload: BackupPayload) {
-        val scopes = payload.scopes ?: setOf(BackupScope.FULL)
-        val includeFull = scopes.contains(BackupScope.FULL)
-        
-        if (includeFull) {
-            passwordRepository.deleteAllPasswords()
-            cardRepository.deleteAllCards()
-            noteRepository.deleteAllNotes()
-            fileRepository.deleteAllFiles()
-            fileRepository.deleteAllFolders()
-            identityRepository.deleteAllIdentities()
+        // 1. Folders
+        payload.folders?.forEach { folder ->
+            val existing = fileRepository.getAllFolders().first().find { it.id == folder.id }
+            if (existing == null) {
+                fileRepository.insertFolder(folder)
+            } else if (folder.updatedAt > existing.updatedAt) {
+                fileRepository.insertFolder(folder)
+            }
         }
 
-        payload.folders?.forEach { fileRepository.insertFolder(it) }
-        payload.passwords?.forEach { passwordRepository.insertPassword(it) }
-        payload.cards?.forEach { cardRepository.insertCard(it) }
-        payload.notes?.forEach { noteRepository.insertNote(it) }
-        payload.files?.forEach { fileRepository.insertFile(it) }
-        payload.identities?.forEach { identityRepository.insertIdentity(it) }
+        // 2. Passwords
+        payload.passwords?.forEach { password ->
+            val existing = passwordRepository.getPasswordById(password.id)
+            if (existing == null) {
+                passwordRepository.insertPassword(password)
+            } else if (password.updatedAt > existing.updatedAt) {
+                passwordRepository.updatePassword(password)
+            }
+        }
+
+        // 3. Cards
+        payload.cards?.forEach { card ->
+            val existing = cardRepository.getCardById(card.id)
+            if (existing == null) {
+                cardRepository.insertCard(card)
+            } else if (card.updatedAt > existing.updatedAt) {
+                cardRepository.updateCard(card)
+            }
+        }
+
+        // 4. Notes
+        payload.notes?.forEach { note ->
+            val existing = noteRepository.getNoteById(note.id)
+            if (existing == null) {
+                noteRepository.insertNote(note)
+            } else if (note.updatedAt > existing.updatedAt) {
+                noteRepository.updateNote(note)
+            }
+        }
+
+        // 5. Files
+        payload.files?.forEach { file ->
+            val existing = fileRepository.getFileById(file.id)
+            if (existing == null) {
+                fileRepository.insertFile(file)
+            } else if (file.updatedAt > existing.updatedAt) {
+                fileRepository.insertFile(file)
+            }
+        }
+
+        // 6. Identities
+        payload.identities?.forEach { identity ->
+            val existing = identityRepository.getIdentityById(identity.id)
+            if (existing == null) {
+                identityRepository.insertIdentity(identity)
+            } else if (identity.updatedAt > existing.updatedAt) {
+                identityRepository.updateIdentity(identity)
+            }
+        }
     }
 
     private fun calculateHmac(input: String, key: javax.crypto.SecretKey): String {

@@ -103,6 +103,8 @@ fun serializeWifiNotes(details: WifiDetails): String {
 @Composable
 fun WifiList(
     searchQuery: String,
+    sortKey: String,
+    isAscending: Boolean,
     onItemClick: (String) -> Unit,
     accentColor: Color
 ) {
@@ -111,11 +113,13 @@ fun WifiList(
 
     LaunchedEffect(searchQuery) { viewModel.setSearchQuery(searchQuery) }
 
-    val sortedWifi = remember(state.wifiPasswords, searchQuery) {
-        state.wifiPasswords.sortedWith(
-            compareByDescending<Password> { parseWifiNotes(it.notes).isPinned }
-                .thenByDescending { it.updatedAt }
-        )
+    val sortedWifi = remember(state.wifiPasswords, sortKey, isAscending) {
+        val base = when (sortKey) {
+            "name" -> if (!isAscending) state.wifiPasswords.sortedBy { it.title.lowercase() } else state.wifiPasswords.sortedByDescending { it.title.lowercase() }
+            "strength" -> if (!isAscending) state.wifiPasswords.sortedByDescending { it.passwordStrength } else state.wifiPasswords.sortedBy { it.passwordStrength }
+            else -> if (!isAscending) state.wifiPasswords.sortedByDescending { it.updatedAt } else state.wifiPasswords.sortedBy { it.updatedAt }
+        }
+        base.sortedByDescending { parseWifiNotes(it.notes).isPinned }
     }
 
     if (sortedWifi.isEmpty()) {
@@ -241,12 +245,12 @@ fun WifiListItem(
                             },
                             modifier = Modifier
                                 .size(40.dp)
-                                .background(VaultError.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
+                                .background(VaultOrange.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
                         ) {
                             Icon(
                                 if (password.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                                 contentDescription = "Favorite",
-                                tint = if (password.isFavorite) VaultError else VaultTextSecondary.copy(alpha = 0.5f),
+                                tint = if (password.isFavorite) VaultOrange else VaultTextSecondary.copy(alpha = 0.5f),
                                 modifier = Modifier.size(18.dp)
                             )
                         }

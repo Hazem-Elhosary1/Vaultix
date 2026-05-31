@@ -67,6 +67,7 @@ fun AddEditItemScreen(
             val identityViewModel: com.vaultix.app.ui.viewmodel.IdentityViewModel = hiltViewModel()
             IdentityEditScreen(
                 identityViewModel = identityViewModel,
+                authViewModel = authViewModel,
                 onClose = onSaved,
                 existingId = itemId
             )

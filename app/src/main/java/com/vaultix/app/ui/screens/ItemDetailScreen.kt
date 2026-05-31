@@ -155,8 +155,50 @@ private fun IdentityDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () 
                     scope.launch { copyMessage = "ID Number copied!"; delay(2000); copyMessage = null }
                 }
 
-                if (id.expiryDate.isNotEmpty()) {
-                    DetailField("EXPIRY DATE", id.expiryDate, onCopy = null)
+                if (id.dateOfBirth.isNotEmpty()) {
+                    DetailField("DATE OF BIRTH", id.dateOfBirth) {
+                        copyToClipboard(context, "Date of Birth", id.dateOfBirth)
+                        scope.launch { copyMessage = "Date of Birth copied!"; delay(2000); copyMessage = null }
+                    }
+                }
+
+                if (id.nationality.isNotEmpty()) {
+                    DetailField("NATIONALITY", id.nationality) {
+                        copyToClipboard(context, "Nationality", id.nationality)
+                        scope.launch { copyMessage = "Nationality copied!"; delay(2000); copyMessage = null }
+                    }
+                }
+
+                if (id.issuedBy.isNotEmpty()) {
+                    DetailField("ISSUED BY", id.issuedBy) {
+                        copyToClipboard(context, "Issued By", id.issuedBy)
+                        scope.launch { copyMessage = "Issued By copied!"; delay(2000); copyMessage = null }
+                    }
+                }
+
+                if (id.issuedDate.isNotEmpty() || id.expiryDate.isNotEmpty()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        if (id.issuedDate.isNotEmpty()) {
+                            Box(modifier = Modifier.weight(1f)) {
+                                DetailField("ISSUED DATE", id.issuedDate, onCopy = null)
+                            }
+                        }
+                        if (id.expiryDate.isNotEmpty()) {
+                            Box(modifier = Modifier.weight(1f)) {
+                                DetailField("EXPIRY DATE", id.expiryDate, onCopy = null)
+                            }
+                        }
+                    }
+                }
+
+                if (id.notes.isNotEmpty()) {
+                    DetailField("NOTES", id.notes) {
+                        copyToClipboard(context, "Notes", id.notes)
+                        scope.launch { copyMessage = "Notes copied!"; delay(2000); copyMessage = null }
+                    }
                 }
 
                 copyMessage?.let { msg ->

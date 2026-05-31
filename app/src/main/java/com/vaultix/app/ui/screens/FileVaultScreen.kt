@@ -40,7 +40,10 @@ import com.vaultix.app.R
 import com.vaultix.app.data.model.VaultFile
 import com.vaultix.app.data.model.VaultFolder
 import com.vaultix.app.ui.theme.*
+import androidx.activity.result.IntentSenderRequest
+import com.vaultix.app.ui.viewmodel.AuthViewModel
 import com.vaultix.app.ui.viewmodel.FileViewModel
+import com.vaultix.app.util.DocumentScannerHelper
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlin.math.roundToInt
 
@@ -67,6 +70,7 @@ class DragDropState {
 @Composable
 fun FileVaultScreen(
     fileViewModel: FileViewModel,
+    authViewModel: AuthViewModel,
     onBack: () -> Unit,
     onViewPdf: (String, String) -> Unit,
     onViewImage: (String) -> Unit,
@@ -81,13 +85,59 @@ fun FileVaultScreen(
     
     var showNewFolderDialog by remember { mutableStateOf(false) }
     var showProRequiredDialog by remember(configState.isPremium) { mutableStateOf(false) }
-    
+    var showImportSheet by remember { mutableStateOf(false) }
+    var searchQuery by remember { mutableStateOf("") }
     val dragDropState = remember { DragDropState() }
     
-    val currentFiles = files.filter { it.folderId == currentFolderId }
-    val currentFolders = folders.filter { it.parentFolderId == currentFolderId }
+    val currentFiles = files.filter { 
+        it.folderId == currentFolderId && 
+        (searchQuery.isBlank() || it.fileName.contains(searchQuery, true))
+    }
+    val currentFolders = folders.filter { 
+        it.parentFolderId == currentFolderId && 
+        (searchQuery.isBlank() || it.name.contains(searchQuery, true))
+    }
     
     val currentFolderName = folders.find { it.id == currentFolderId }?.name ?: "File Vault"
+
+    val scannerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartIntentSenderForResult()
+    ) { result ->
+        if (result.resultCode == android.app.Activity.RESULT_OK) {
+            val scanningResult = com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult.fromActivityResultIntent(result.data)
+            
+            // Prioritize PDF if generated
+            val pdf = scanningResult?.pdf
+            if (pdf != null) {
+                if (!configState.isPremium && files.size >= 5) {
+                    showProRequiredDialog = true
+                } else {
+                    val pdfUri = pdf.uri
+                    val fileName = "Scanned_Doc_${System.currentTimeMillis()}.pdf"
+                    val mimeType = "application/pdf"
+                    fileViewModel.importFile(pdfUri, fileName, mimeType)
+                    Toast.makeText(context, "Scanned PDF imported & encrypted!", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                // Fallback to pages as JPEG
+                val pages = scanningResult?.pages ?: emptyList()
+                if (pages.isNotEmpty()) {
+                    if (!configState.isPremium && (files.size + pages.size) > 5) {
+                        showProRequiredDialog = true
+                    } else {
+                        pages.forEachIndexed { index, page ->
+                            val pageUri = page.imageUri
+                            val suffix = if (pages.size > 1) "_Page_${index + 1}" else ""
+                            val fileName = "Scanned_Doc_${System.currentTimeMillis()}$suffix.jpg"
+                            val mimeType = "image/jpeg"
+                            fileViewModel.importFile(pageUri, fileName, mimeType)
+                        }
+                        Toast.makeText(context, "Scanned page(s) imported & encrypted!", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+    }
 
     // SAF file picker
     val filePickerLauncher = rememberLauncherForActivityResult(
@@ -156,36 +206,61 @@ fun FileVaultScreen(
     Scaffold(
         containerColor = VaultBlack,
         topBar = {
-            TopAppBar(
-                title = { Text("File Vault", fontWeight = FontWeight.Bold, color = VaultTextPrimary) },
-                navigationIcon = {
-                    IconButton(onClick = { 
-                        if (currentFolderId != null) {
-                            val parentId = folders.find { it.id == currentFolderId }?.parentFolderId
-                            fileViewModel.navigateToFolder(parentId)
-                        } else {
-                            onBack()
+            Column {
+                TopAppBar(
+                    title = { Text("File Vault", fontWeight = FontWeight.Bold, color = VaultTextPrimary) },
+                    navigationIcon = {
+                        IconButton(onClick = { 
+                            if (currentFolderId != null) {
+                                val parentId = folders.find { it.id == currentFolderId }?.parentFolderId
+                                fileViewModel.navigateToFolder(parentId)
+                            } else {
+                                onBack()
+                            }
+                        }) {
+                            Icon(if (currentFolderId != null) Icons.Default.ArrowUpward else Icons.Default.ArrowBack, "Back", tint = VaultTextPrimary)
                         }
-                    }) {
-                        Icon(if (currentFolderId != null) Icons.Default.ArrowUpward else Icons.Default.ArrowBack, "Back", tint = VaultTextPrimary)
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { showNewFolderDialog = true }) {
-                        Icon(Icons.Default.CreateNewFolder, "New Folder", tint = VaultOrange)
-                    }
-                    IconButton(onClick = {
-                        filePickerLauncher.launch(arrayOf("*/*"))
-                    }) {
-                        Icon(Icons.Default.Add, "Import File", tint = VaultOrange)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = VaultBlack)
-            )
+                    },
+                    actions = {
+                        IconButton(onClick = { showNewFolderDialog = true }) {
+                            Icon(Icons.Default.CreateNewFolder, "New Folder", tint = VaultOrange)
+                        }
+                        IconButton(onClick = {
+                            showImportSheet = true
+                        }) {
+                            Icon(Icons.Default.Add, "Import File", tint = VaultOrange)
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = VaultBlack)
+                )
+                // Search bar
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    placeholder = { Text("Search files & folders...", color = VaultTextDisabled) },
+                    leadingIcon = { Icon(Icons.Default.Search, null, tint = VaultTextDisabled) },
+                    trailingIcon = if (searchQuery.isNotEmpty()) {
+                        { IconButton(onClick = { searchQuery = "" }) {
+                            Icon(Icons.Default.Clear, null, tint = VaultTextDisabled)
+                        }}
+                    } else null,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = VaultOrange,
+                        unfocusedBorderColor = VaultBorder,
+                        focusedContainerColor = VaultSurface.copy(0.3f),
+                        unfocusedContainerColor = VaultSurface.copy(0.3f),
+                        cursorColor = VaultOrange,
+                        focusedTextColor = VaultTextPrimary,
+                        unfocusedTextColor = VaultTextPrimary
+                    )
+                )
+            }
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { filePickerLauncher.launch(arrayOf("*/*")) },
+                onClick = { showImportSheet = true },
                 containerColor = VaultOrange,
                 contentColor = VaultBlack
             ) {
@@ -279,7 +354,7 @@ fun FileVaultScreen(
                             if (currentFolderId == null) {
                                 Spacer(Modifier.height(24.dp))
                                 Button(
-                                    onClick = { filePickerLauncher.launch(arrayOf("*/*")) },
+                                    onClick = { showImportSheet = true },
                                     colors = ButtonDefaults.buttonColors(containerColor = VaultOrange),
                                     shape = RoundedCornerShape(12.dp)
                                 ) {
@@ -449,6 +524,62 @@ fun FileVaultScreen(
                         )
                     }
                 }
+            }
+        }
+    }
+
+    if (showImportSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showImportSheet = false },
+            containerColor = VaultSurface,
+            dragHandle = { BottomSheetDefaults.DragHandle(color = VaultBorder) }
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 32.dp, start = 16.dp, end = 16.dp)
+            ) {
+                Text(
+                    text = "Import / Add File",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = VaultTextPrimary,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                
+                ListItem(
+                    headlineContent = { Text("Import File", color = VaultTextPrimary) },
+                    supportingContent = { Text("Select any file or photo from your device", color = VaultTextSecondary) },
+                    leadingContent = { Icon(Icons.Default.UploadFile, "Import", tint = VaultOrange) },
+                    modifier = Modifier.clickable {
+                        filePickerLauncher.launch(arrayOf("*/*"))
+                        showImportSheet = false
+                    },
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                )
+                
+                ListItem(
+                    headlineContent = { Text("Scan Document", color = VaultTextPrimary) },
+                    supportingContent = { Text("Scan paper documents or photos with auto-edge detection", color = VaultTextSecondary) },
+                    leadingContent = { Icon(Icons.Default.DocumentScanner, "Scan", tint = VaultOrange) },
+                    modifier = Modifier.clickable {
+                        showImportSheet = false
+                        authViewModel.setSystemActivityActive(true)
+                        DocumentScannerHelper.startScan(
+                            context = context,
+                            options = DocumentScannerHelper.createScannerOptions(pageLimit = 5, isPdfEnabled = true),
+                            onIntentSenderReady = { intentSender ->
+                                scannerLauncher.launch(
+                                    androidx.activity.result.IntentSenderRequest.Builder(intentSender).build()
+                                )
+                            },
+                            onFailure = { e ->
+                                Toast.makeText(context, "Scanner error: ${e.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                    },
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                )
             }
         }
     }

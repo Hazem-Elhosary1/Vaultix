@@ -39,6 +39,11 @@ class MainActivity : FragmentActivity() {
         }
 
         override fun onStop(owner: LifecycleOwner) {
+            // If returning from or transitioning to a system activity (like document scanner), bypass automatic lock
+            if (authViewModel.isSystemActivityActive()) {
+                return
+            }
+
             // App went to background - lock but allow grace period
             authViewModel.lock(isManual = false)
 
@@ -161,6 +166,8 @@ class MainActivity : FragmentActivity() {
 
     override fun onResume() {
         super.onResume()
+        // Reset the system activity bypass flag upon returning
+        authViewModel.setSystemActivityActive(false)
         // Remove privacy overlay
         hidePrivacyOverlay()
         // Re-apply FLAG_SECURE on resume (allowed only in debug builds)
