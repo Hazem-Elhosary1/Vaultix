@@ -10,6 +10,15 @@ android {
     namespace = "com.vaultix.app"
     compileSdk = 34
 
+    splits {
+        abi {
+            isEnable = true
+            reset()
+            include("armeabi-v7a", "arm64-v8a")
+            isUniversalApk = true
+        }
+    }
+
     defaultConfig {
         applicationId = "com.vaultix.app"
         minSdk = 26
@@ -39,6 +48,12 @@ android {
             // Disable debugging in release
             isDebuggable = false
             signingConfig = signingConfigs.getByName("debug")
+
+            // Limit release ABI filters to real devices only (armeabi-v7a, arm64-v8a) to save size
+            ndk {
+                abiFilters.clear()
+                abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a"))
+            }
         }
         debug {
             isDebuggable = true
