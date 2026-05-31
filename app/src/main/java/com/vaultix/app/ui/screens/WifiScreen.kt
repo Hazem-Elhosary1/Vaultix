@@ -104,6 +104,7 @@ fun serializeWifiNotes(details: WifiDetails): String {
 fun WifiList(
     searchQuery: String,
     sortKey: String,
+    isAscending: Boolean,
     onItemClick: (String) -> Unit,
     accentColor: Color
 ) {
@@ -112,11 +113,11 @@ fun WifiList(
 
     LaunchedEffect(searchQuery) { viewModel.setSearchQuery(searchQuery) }
 
-    val sortedWifi = remember(state.wifiPasswords, sortKey) {
+    val sortedWifi = remember(state.wifiPasswords, sortKey, isAscending) {
         val base = when (sortKey) {
-            "name" -> state.wifiPasswords.sortedBy { it.title.lowercase() }
-            "strength" -> state.wifiPasswords.sortedBy { it.passwordStrength }
-            else -> state.wifiPasswords.sortedByDescending { it.updatedAt }
+            "name" -> if (!isAscending) state.wifiPasswords.sortedBy { it.title.lowercase() } else state.wifiPasswords.sortedByDescending { it.title.lowercase() }
+            "strength" -> if (!isAscending) state.wifiPasswords.sortedByDescending { it.passwordStrength } else state.wifiPasswords.sortedBy { it.passwordStrength }
+            else -> if (!isAscending) state.wifiPasswords.sortedByDescending { it.updatedAt } else state.wifiPasswords.sortedBy { it.updatedAt }
         }
         base.sortedByDescending { parseWifiNotes(it.notes).isPinned }
     }

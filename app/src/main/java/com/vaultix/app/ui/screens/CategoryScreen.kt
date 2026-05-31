@@ -1,6 +1,7 @@
 package com.vaultix.app.ui.screens
 
 import androidx.compose.animation.*
+import androidx.compose.animation.core.animateFloatAsState
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -59,17 +60,18 @@ fun CategoryScreen(
     val accentColor = MaterialTheme.colorScheme.primary
 
     var searchQuery by remember { mutableStateOf("") }
-    var currentSort by remember { mutableStateOf("date_newest") }
+    var currentSort by remember { mutableStateOf("date") }
+    var isAscending by remember { mutableStateOf(false) }
 
     val sortOptions = remember(categoryType) {
         when (categoryType) {
-            "passwords" -> listOf("date_newest", "date_oldest", "name", "strength")
-            "cards" -> listOf("date_newest", "name", "expiry")
-            "notes" -> listOf("date_newest", "date_oldest", "name")
-            "files" -> listOf("date_newest", "name", "size_largest", "size_smallest")
-            "identities" -> listOf("date_newest", "name", "type", "expiry")
-            "wifi" -> listOf("date_newest", "name", "strength")
-            else -> listOf("date_newest", "name")
+            "passwords" -> listOf("date", "name", "strength")
+            "cards" -> listOf("date", "name", "expiry")
+            "notes" -> listOf("date", "name")
+            "files" -> listOf("date", "name", "size")
+            "identities" -> listOf("date", "name", "type", "expiry")
+            "wifi" -> listOf("date", "name", "strength")
+            else -> listOf("date", "name")
         }
     }
 
@@ -114,6 +116,8 @@ fun CategoryScreen(
                     options = sortOptions,
                     selected = currentSort,
                     onSelect = { currentSort = it },
+                    isAscending = isAscending,
+                    onToggleOrder = { isAscending = !isAscending },
                     accentColor = accentColor
                 )
             }
@@ -179,31 +183,36 @@ fun CategoryScreen(
                 "passwords" -> PasswordList(
                     searchQuery = searchQuery,
                     sortKey = currentSort,
+                    isAscending = isAscending,
                     onItemClick = onNavigateToDetail,
                     accentColor = accentColor
                 )
                 "cards" -> CardList(
                     searchQuery = searchQuery,
                     sortKey = currentSort,
+                    isAscending = isAscending,
                     onItemClick = onNavigateToDetail,
                     accentColor = accentColor
                 )
                 "notes" -> NoteList(
                     searchQuery = searchQuery,
                     sortKey = currentSort,
+                    isAscending = isAscending,
                     onItemClick = onNavigateToDetail,
                     accentColor = accentColor
                 )
-                "files" -> FileList(sortKey = currentSort, accentColor = accentColor)
+                "files" -> FileList(sortKey = currentSort, isAscending = isAscending, accentColor = accentColor)
                 "identities" -> IdentityList(
                     searchQuery = searchQuery,
                     sortKey = currentSort,
+                    isAscending = isAscending,
                     accentColor = accentColor,
                     onItemClick = { id -> onNavigateToDetail(id) }
                 )
                 "wifi" -> WifiList(
                     searchQuery = searchQuery,
                     sortKey = currentSort,
+                    isAscending = isAscending,
                     onItemClick = onNavigateToDetail,
                     accentColor = accentColor
                 )
@@ -217,6 +226,7 @@ fun CategoryScreen(
 private fun PasswordList(
     searchQuery: String,
     sortKey: String,
+    isAscending: Boolean,
     onItemClick: (String) -> Unit,
     accentColor: Color
 ) {
@@ -225,12 +235,11 @@ private fun PasswordList(
 
     LaunchedEffect(searchQuery) { viewModel.setSearchQuery(searchQuery) }
 
-    val sorted = remember(state.passwords, sortKey) {
+    val sorted = remember(state.passwords, sortKey, isAscending) {
         when (sortKey) {
-            "name" -> state.passwords.sortedBy { it.title.lowercase() }
-            "date_oldest" -> state.passwords.sortedBy { it.updatedAt }
-            "strength" -> state.passwords.sortedBy { it.passwordStrength }
-            else -> state.passwords.sortedByDescending { it.updatedAt }
+            "name" -> if (!isAscending) state.passwords.sortedBy { it.title.lowercase() } else state.passwords.sortedByDescending { it.title.lowercase() }
+            "strength" -> if (!isAscending) state.passwords.sortedByDescending { it.passwordStrength } else state.passwords.sortedBy { it.passwordStrength }
+            else -> if (!isAscending) state.passwords.sortedByDescending { it.updatedAt } else state.passwords.sortedBy { it.updatedAt }
         }
     }
 
@@ -341,19 +350,23 @@ private fun StrengthDot(strength: Int) {
 private fun CardList(
     searchQuery: String,
     sortKey: String,
+    isAscending: Boolean,
     onItemClick: (String) -> Unit,
     accentColor: Color
 ) {
     val viewModel: CardViewModel = hiltViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    val filtered = remember(state.cards, searchQuery, sortKey) {
+    val filtered = remember(state.cards, searchQuery, sortKey, isAscending) {
         val base = if (searchQuery.isBlank()) state.cards
         else state.cards.filter { it.cardName.contains(searchQuery, true) || it.holderName.contains(searchQuery, true) }
         when (sortKey) {
-            "name" -> base.sortedBy { it.cardName.lowercase() }
-            "expiry" -> base.sortedBy { (it.expiryYear.toIntOrNull() ?: 99) * 100 + (it.expiryMonth.toIntOrNull() ?: 99) }
-            else -> base.sortedByDescending { it.updatedAt }
+            "name" -> if (!isAscending) base.sortedBy { it.cardName.lowercase() } else base.sortedByDescending { it.cardName.lowercase() }
+            "expiry" -> {
+                val selector: (Card) -> Int = { (it.expiryYear.toIntOrNull() ?: 99) * 100 + (it.expiryMonth.toIntOrNull() ?: 99) }
+                if (!isAscending) base.sortedBy(selector) else base.sortedByDescending(selector)
+            }
+            else -> if (!isAscending) base.sortedByDescending { it.updatedAt } else base.sortedBy { it.updatedAt }
         }
     }
 
@@ -416,6 +429,7 @@ private fun CardListItem(card: Card, onClick: () -> Unit, onDelete: () -> Unit) 
 private fun NoteList(
     searchQuery: String,
     sortKey: String,
+    isAscending: Boolean,
     onItemClick: (String) -> Unit,
     accentColor: Color
 ) {
@@ -424,13 +438,12 @@ private fun NoteList(
 
     LaunchedEffect(searchQuery) { viewModel.setSearchQuery(searchQuery) }
 
-    val sorted = remember(state.notes, sortKey) {
+    val sorted = remember(state.notes, sortKey, isAscending) {
         val pinned = state.notes.filter { it.isPinned }
         val unpinned = state.notes.filter { !it.isPinned }
         val sortedUnpinned = when (sortKey) {
-            "name" -> unpinned.sortedBy { it.title.lowercase() }
-            "date_oldest" -> unpinned.sortedBy { it.updatedAt }
-            else -> unpinned.sortedByDescending { it.updatedAt }
+            "name" -> if (!isAscending) unpinned.sortedBy { it.title.lowercase() } else unpinned.sortedByDescending { it.title.lowercase() }
+            else -> if (!isAscending) unpinned.sortedByDescending { it.updatedAt } else unpinned.sortedBy { it.updatedAt }
         }
         pinned.sortedByDescending { it.updatedAt } + sortedUnpinned
     }
@@ -715,7 +728,7 @@ private fun EmptyState(category: String, icon: androidx.compose.ui.graphics.vect
 }
 
 @Composable
-private fun FileList(sortKey: String, accentColor: Color) {
+private fun FileList(sortKey: String, isAscending: Boolean, accentColor: Color) {
     val viewModel: FileViewModel = hiltViewModel()
     val files by viewModel.files.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -737,12 +750,11 @@ private fun FileList(sortKey: String, accentColor: Color) {
         return
     }
 
-    val sorted = remember(files, sortKey) {
+    val sorted = remember(files, sortKey, isAscending) {
         when (sortKey) {
-            "name" -> files.sortedBy { it.fileName.lowercase() }
-            "size_largest" -> files.sortedByDescending { it.fileSizeBytes }
-            "size_smallest" -> files.sortedBy { it.fileSizeBytes }
-            else -> files.sortedByDescending { it.updatedAt }
+            "name" -> if (!isAscending) files.sortedBy { it.fileName.lowercase() } else files.sortedByDescending { it.fileName.lowercase() }
+            "size" -> if (!isAscending) files.sortedByDescending { it.fileSizeBytes } else files.sortedBy { it.fileSizeBytes }
+            else -> if (!isAscending) files.sortedByDescending { it.updatedAt } else files.sortedBy { it.updatedAt }
         }
     }
 
@@ -883,13 +895,14 @@ private fun FileList(sortKey: String, accentColor: Color) {
 private fun IdentityList(
     searchQuery: String,
     sortKey: String,
+    isAscending: Boolean,
     accentColor: Color,
     onItemClick: (String) -> Unit
 ) {
     val viewModel: IdentityViewModel = hiltViewModel()
     val identities by viewModel.allIdentities.collectAsStateWithLifecycle()
 
-    val filtered = remember(identities, searchQuery, sortKey) {
+    val filtered = remember(identities, searchQuery, sortKey, isAscending) {
         val base = if (searchQuery.isBlank()) identities
         else identities.filter {
             it.fullName.contains(searchQuery, true) ||
@@ -897,10 +910,10 @@ private fun IdentityList(
             it.documentNumber.contains(searchQuery, true)
         }
         when (sortKey) {
-            "name" -> base.sortedBy { it.fullName.lowercase() }
-            "type" -> base.sortedBy { it.documentType.lowercase() }
-            "expiry" -> base.sortedBy { it.expiryDate }
-            else -> base.sortedByDescending { it.updatedAt }
+            "name" -> if (!isAscending) base.sortedBy { it.fullName.lowercase() } else base.sortedByDescending { it.fullName.lowercase() }
+            "type" -> if (!isAscending) base.sortedBy { it.documentType.lowercase() } else base.sortedByDescending { it.documentType.lowercase() }
+            "expiry" -> if (!isAscending) base.sortedBy { it.expiryDate } else base.sortedByDescending { it.expiryDate }
+            else -> if (!isAscending) base.sortedByDescending { it.updatedAt } else base.sortedBy { it.updatedAt }
         }
     }
 
@@ -993,57 +1006,84 @@ private fun SortChipRow(
     options: List<String>,
     selected: String,
     onSelect: (String) -> Unit,
+    isAscending: Boolean,
+    onToggleOrder: () -> Unit,
     accentColor: Color
 ) {
-    LazyRow(
+    val rotationAngle by animateFloatAsState(
+        targetValue = if (isAscending) 180f else 0f,
+        label = "rotationAngle"
+    )
+
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+            .padding(end = 8.dp), // Adjust padding slightly to make arrow fit nicely
         verticalAlignment = Alignment.CenterVertically
     ) {
-        item {
-            Icon(
-                imageVector = Icons.Default.Sort,
-                contentDescription = "Sort Options",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
-                modifier = Modifier.size(20.dp)
-            )
-        }
-        items(options) { key ->
-            val labelRes = when (key) {
-                "name" -> R.string.sort_name
-                "date_newest" -> R.string.sort_date_newest
-                "date_oldest" -> R.string.sort_date_oldest
-                "strength" -> R.string.sort_strength
-                "size_largest" -> R.string.sort_size_largest
-                "size_smallest" -> R.string.sort_size_smallest
-                "expiry" -> R.string.sort_expiry
-                "type" -> R.string.sort_type
-                else -> R.string.sort_date_newest
-            }
-            val isSelected = key == selected
-            FilterChip(
-                selected = isSelected,
-                onClick = { onSelect(key) },
-                label = { Text(stringResource(labelRes), fontSize = 12.sp, fontWeight = FontWeight.Medium) },
-                shape = RoundedCornerShape(8.dp),
-                colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = accentColor.copy(alpha = 0.2f),
-                    selectedLabelColor = accentColor,
-                    selectedLeadingIconColor = accentColor,
-                    containerColor = VaultSurface,
-                    labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    iconColor = MaterialTheme.colorScheme.onSurfaceVariant
-                ),
-                border = FilterChipDefaults.filterChipBorder(
-                    enabled = true,
-                    selected = isSelected,
-                    borderColor = if (isSelected) accentColor else MaterialTheme.colorScheme.outlineVariant,
-                    selectedBorderColor = accentColor,
-                    borderWidth = 1.dp,
-                    selectedBorderWidth = 1.dp
+        LazyRow(
+            modifier = Modifier
+                .weight(1f)
+                .padding(vertical = 4.dp),
+            contentPadding = PaddingValues(start = 16.dp, end = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            item {
+                Icon(
+                    imageVector = Icons.Default.Sort,
+                    contentDescription = "Sort Options",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                    modifier = Modifier.size(20.dp)
                 )
+            }
+            items(options) { key ->
+                val labelRes = when (key) {
+                    "name" -> R.string.sort_name
+                    "date" -> if (isAscending) R.string.sort_date_oldest else R.string.sort_date_newest
+                    "strength" -> R.string.sort_strength
+                    "size" -> if (isAscending) R.string.sort_size_smallest else R.string.sort_size_largest
+                    "expiry" -> R.string.sort_expiry
+                    "type" -> R.string.sort_type
+                    else -> R.string.sort_date_newest
+                }
+                val isSelected = key == selected
+                FilterChip(
+                    selected = isSelected,
+                    onClick = { onSelect(key) },
+                    label = { Text(stringResource(labelRes), fontSize = 12.sp, fontWeight = FontWeight.Medium) },
+                    shape = RoundedCornerShape(8.dp),
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = accentColor.copy(alpha = 0.2f),
+                        selectedLabelColor = accentColor,
+                        selectedLeadingIconColor = accentColor,
+                        containerColor = VaultSurface,
+                        labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        iconColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    ),
+                    border = FilterChipDefaults.filterChipBorder(
+                        enabled = true,
+                        selected = isSelected,
+                        borderColor = if (isSelected) accentColor else MaterialTheme.colorScheme.outlineVariant,
+                        selectedBorderColor = accentColor,
+                        borderWidth = 1.dp,
+                        selectedBorderWidth = 1.dp
+                    )
+                )
+            }
+        }
+
+        IconButton(
+            onClick = onToggleOrder,
+            modifier = Modifier.padding(end = 8.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.ArrowDownward,
+                contentDescription = "Toggle Sort Order",
+                tint = accentColor,
+                modifier = Modifier
+                    .graphicsLayer(rotationZ = rotationAngle)
+                    .size(22.dp)
             )
         }
     }
