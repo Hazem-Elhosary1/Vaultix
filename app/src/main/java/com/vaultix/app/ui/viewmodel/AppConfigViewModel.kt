@@ -41,6 +41,32 @@ class AppConfigViewModel @Inject constructor(
     val configState: StateFlow<AppConfigState> = _configState.asStateFlow()
 
     init {
+        var initialTheme: String? = null
+        var initialColor: String? = null
+        var initialLang: String? = null
+        var initialPremium = true
+        var initialFontScale: String? = null
+
+        try {
+            kotlinx.coroutines.runBlocking {
+                initialTheme = securePreferences.getPlainString(SecurePreferences.KEY_THEME_MODE)
+                initialColor = securePreferences.getPlainString(SecurePreferences.KEY_ACCENT_COLOR)
+                initialLang = securePreferences.getPlainString(SecurePreferences.KEY_APP_LANGUAGE)
+                initialPremium = securePreferences.getBoolean(SecurePreferences.KEY_IS_PREMIUM, true)
+                initialFontScale = securePreferences.getPlainString(SecurePreferences.KEY_FONT_SIZE_SCALE)
+            }
+        } catch (e: Exception) {
+            // Fallback to defaults if runBlocking fails
+        }
+
+        _configState.value = AppConfigState(
+            themeMode = initialTheme?.let { runCatching { ThemeMode.valueOf(it) }.getOrNull() } ?: ThemeMode.SYSTEM,
+            accentColorHex = initialColor ?: "#FF9800",
+            language = initialLang ?: "en",
+            fontSizeScale = initialFontScale?.let { runCatching { FontSizeScale.valueOf(it) }.getOrNull() } ?: FontSizeScale.MEDIUM,
+            isPremium = initialPremium
+        )
+
         loadConfig()
     }
 

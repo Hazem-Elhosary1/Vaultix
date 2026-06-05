@@ -24,6 +24,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -138,14 +140,14 @@ fun WifiList(
                 )
                 Spacer(Modifier.height(16.dp))
                 Text(
-                    "No Wi-Fi Networks",
+                    stringResource(R.string.no_wifi_networks),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = VaultTextPrimary
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "Securely store your Wi-Fi details and generate offline connection QR codes.",
+                    stringResource(R.string.wifi_empty_desc),
                     fontSize = 14.sp,
                     color = VaultTextSecondary,
                     textAlign = TextAlign.Center
@@ -392,7 +394,7 @@ fun WifiListItem(
                     }
 
                     Icon(
-                        Icons.Default.ChevronRight,
+                        Icons.AutoMirrored.Filled.KeyboardArrowRight,
                         contentDescription = null,
                         tint = VaultTextSecondary.copy(alpha = 0.5f)
                     )
@@ -404,19 +406,19 @@ fun WifiListItem(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Delete Wi-Fi Network?", color = VaultTextPrimary) },
-            text = { Text("Are you sure you want to remove the credentials for '${password.title}'?", color = VaultTextSecondary) },
+            title = { Text(stringResource(R.string.delete_wifi_title), color = VaultTextPrimary) },
+            text = { Text(stringResource(R.string.delete_wifi_confirm, password.title), color = VaultTextSecondary) },
             confirmButton = {
                 TextButton(onClick = {
                     onDelete()
                     showDeleteDialog = false
                 }) {
-                    Text("Delete", color = VaultError, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.delete), color = VaultError, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancel", color = VaultTextSecondary)
+                    Text(stringResource(R.string.cancel), color = VaultTextSecondary)
                 }
             },
             containerColor = VaultSurface,
@@ -481,14 +483,14 @@ fun AddEditWifiScreen(
             } catch (e: SecurityException) {
                 Toast.makeText(
                     context, 
-                    "يرجى تفعيل الـ GPS وصلاحية الموقع الدقيق (Fine Location) للبحث عن الشبكات.", 
+                    context.getString(R.string.wifi_scan_gps_permission), 
                     Toast.LENGTH_LONG
                 ).show()
             }
         } else {
             Toast.makeText(
                 context, 
-                "صلاحية الموقع الدقيق (Precise Location) مطلوبة لتمكين مسح شبكات الواي فاي.", 
+                context.getString(R.string.wifi_scan_precise_location_required), 
                 Toast.LENGTH_LONG
             ).show()
         }
@@ -504,7 +506,7 @@ fun AddEditWifiScreen(
             } catch (e: SecurityException) {
                 Toast.makeText(
                     context, 
-                    "يرجى التأكد من تفعيل الـ GPS وصلاحية الموقع الدقيق (Fine Location) للبحث عن الشبكات.", 
+                    context.getString(R.string.wifi_scan_ensure_gps_permission), 
                     Toast.LENGTH_LONG
                 ).show()
             }
@@ -545,17 +547,17 @@ fun AddEditWifiScreen(
         containerColor = VaultBlack,
         topBar = {
             TopAppBar(
-                title = { Text(if (itemId == null) "Add Wi-Fi" else "Edit Wi-Fi", fontWeight = FontWeight.Bold, color = VaultTextPrimary) },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, null, tint = VaultTextPrimary) } },
+                title = { Text(stringResource(if (itemId == null) R.string.add_wifi else R.string.edit_wifi), fontWeight = FontWeight.Bold, color = VaultTextPrimary) },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = VaultTextPrimary) } },
                 actions = {
                     TextButton(
                         onClick = {
                             if (ssid.isBlank()) {
-                                Toast.makeText(context, "SSID is required", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, context.getString(R.string.ssid_required), Toast.LENGTH_SHORT).show()
                                 return@TextButton
                             }
                             if (securityType != "Open" && wifiPassword.isBlank()) {
-                                Toast.makeText(context, "Password is required for encrypted network", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, context.getString(R.string.password_required_encrypted), Toast.LENGTH_SHORT).show()
                                 return@TextButton
                             }
 
@@ -593,7 +595,7 @@ fun AddEditWifiScreen(
                             onSaved()
                         }
                     ) {
-                        Text("Save", color = accentColor, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        Text(stringResource(R.string.save), color = accentColor, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = VaultBlack)
@@ -618,10 +620,10 @@ fun AddEditWifiScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text("Connection Details", color = accentColor, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text(stringResource(R.string.connection_details), color = accentColor, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                     
                     VaultTextField(
-                        label = "Network Name (e.g. Home Wi-Fi)",
+                        label = stringResource(R.string.network_name_hint),
                         value = title,
                         onValueChange = { title = it },
                         leadingIcon = Icons.Default.Label
@@ -634,7 +636,7 @@ fun AddEditWifiScreen(
                     ) {
                         Box(modifier = Modifier.weight(1f)) {
                             VaultTextField(
-                                label = "SSID * (Network Name)",
+                                label = stringResource(R.string.ssid_label),
                                 value = ssid,
                                 onValueChange = { ssid = it },
                                 leadingIcon = Icons.Default.Wifi
@@ -649,14 +651,14 @@ fun AddEditWifiScreen(
                                 .background(accentColor.copy(alpha = 0.15f), RoundedCornerShape(12.dp))
                                 .border(1.dp, accentColor.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
                         ) {
-                            Icon(Icons.Default.Search, "Scan Nearby", tint = accentColor)
+                            Icon(Icons.Default.Search, stringResource(R.string.scan_nearby), tint = accentColor)
                         }
                     }
 
                     // Security Type Tabs Segmented Selector
                     Column(modifier = Modifier.padding(top = 4.dp)) {
                         Text(
-                            "Security Type",
+                            stringResource(R.string.security_type),
                             color = VaultTextSecondary,
                             fontSize = 12.sp,
                             modifier = Modifier.padding(bottom = 6.dp)
@@ -687,8 +689,9 @@ fun AddEditWifiScreen(
                                         .padding(vertical = 12.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
+                                    val optLabel = if (opt == "Open") stringResource(R.string.wifi_security_open) else opt
                                     Text(
-                                        text = opt,
+                                        text = optLabel,
                                         color = if (isSelected) accentColor else VaultTextSecondary,
                                         fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                                         fontSize = 12.sp
@@ -703,7 +706,7 @@ fun AddEditWifiScreen(
                         OutlinedTextField(
                             value = wifiPassword,
                             onValueChange = { wifiPassword = it },
-                            label = { Text("Password *") },
+                            label = { Text(stringResource(R.string.password_label)) },
                             leadingIcon = { Icon(Icons.Default.Lock, null, tint = VaultTextSecondary) },
                             trailingIcon = {
                                 IconButton(onClick = { showPassword = !showPassword }) {
@@ -743,7 +746,7 @@ fun AddEditWifiScreen(
                             Icon(Icons.Default.Settings, null, tint = accentColor, modifier = Modifier.size(20.dp))
                             Spacer(Modifier.width(10.dp))
                             Text(
-                                "Router Admin Credentials",
+                                stringResource(R.string.router_admin_credentials),
                                 color = VaultTextPrimary,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp
@@ -764,14 +767,14 @@ fun AddEditWifiScreen(
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             VaultTextField(
-                                label = "Router IP / Address (e.g. 192.168.1.1)",
+                                label = stringResource(R.string.router_ip_hint),
                                 value = routerIp,
                                 onValueChange = { routerIp = it },
                                 leadingIcon = Icons.Default.SettingsInputComponent
                             )
 
                             VaultTextField(
-                                label = "Admin Username",
+                                label = stringResource(R.string.admin_username),
                                 value = routerUsername,
                                 onValueChange = { routerUsername = it },
                                 leadingIcon = Icons.Default.Person
@@ -780,7 +783,7 @@ fun AddEditWifiScreen(
                             OutlinedTextField(
                                 value = routerPassword,
                                 onValueChange = { routerPassword = it },
-                                label = { Text("Admin Password") },
+                                label = { Text(stringResource(R.string.admin_password)) },
                                 leadingIcon = { Icon(Icons.Default.LockOpen, null, tint = VaultTextSecondary) },
                                 trailingIcon = {
                                     IconButton(onClick = { showRouterPassword = !showRouterPassword }) {
@@ -809,10 +812,10 @@ fun AddEditWifiScreen(
                 border = BorderStroke(1.dp, VaultBorder)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text("General Notes", color = accentColor, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text(stringResource(R.string.general_notes), color = accentColor, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                     Spacer(Modifier.height(10.dp))
                     VaultTextField(
-                        label = "Notes (e.g. router location, network limits)",
+                        label = stringResource(R.string.notes_hint),
                         value = wifiNotes,
                         onValueChange = { wifiNotes = it },
                         leadingIcon = Icons.Default.Note,
@@ -844,7 +847,7 @@ fun AddEditWifiScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Select Local Network", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = VaultTextPrimary)
+                        Text(stringResource(R.string.select_local_network), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = VaultTextPrimary)
                         IconButton(onClick = { showScanDialog = false }) {
                             Icon(Icons.Default.Close, null, tint = VaultTextSecondary)
                         }
@@ -859,7 +862,7 @@ fun AddEditWifiScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                "No active scan results. Ensure Wi-Fi and Location are active, then scan again.",
+                                stringResource(R.string.no_scan_results),
                                 color = VaultTextSecondary,
                                 textAlign = TextAlign.Center,
                                 fontSize = 14.sp
@@ -945,17 +948,17 @@ fun WifiDetailScreen(
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
             containerColor = VaultSurface,
-            title = { Text("Delete Wi-Fi", color = VaultTextPrimary, fontWeight = FontWeight.Bold) },
-            text = { Text("Are you sure you want to delete \"${wifi.title}\"? This action cannot be undone.", color = VaultTextSecondary) },
+            title = { Text(stringResource(R.string.delete_wifi_title), color = VaultTextPrimary, fontWeight = FontWeight.Bold) },
+            text = { Text(stringResource(R.string.delete_wifi_confirm_undone, wifi.title), color = VaultTextSecondary) },
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.deletePassword(wifi.id)
                     showDeleteDialog = false
                     onBack()
-                }) { Text("Delete", color = VaultError, fontWeight = FontWeight.Bold) }
+                }) { Text(stringResource(R.string.delete), color = VaultError, fontWeight = FontWeight.Bold) }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel", color = accentColor) }
+                TextButton(onClick = { showDeleteDialog = false }) { Text(stringResource(R.string.cancel), color = accentColor) }
             }
         )
     }
@@ -965,7 +968,7 @@ fun WifiDetailScreen(
         topBar = {
             TopAppBar(
                 title = { Text(wifi.title, fontWeight = FontWeight.Bold, color = VaultTextPrimary) },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, null, tint = VaultTextPrimary) } },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = VaultTextPrimary) } },
                 actions = {
                     IconButton(onClick = { viewModel.toggleFavorite(wifi) }) {
                         Icon(
@@ -1015,7 +1018,8 @@ fun WifiDetailScreen(
                         Spacer(Modifier.width(14.dp))
                         Column {
                             Text(wifi.title, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = VaultTextPrimary)
-                            Text("Security: ${wifi.appPackageName}", fontSize = 13.sp, color = VaultTextSecondary)
+                            val displaySecurity = if (wifi.appPackageName == "Open") stringResource(R.string.wifi_security_open) else wifi.appPackageName
+                            Text(stringResource(R.string.wifi_security_format, displaySecurity), fontSize = 13.sp, color = VaultTextSecondary)
                         }
                     }
 
@@ -1023,11 +1027,11 @@ fun WifiDetailScreen(
 
                     // SSID Info Item
                     DetailItem(
-                        label = "SSID (Network Name)",
+                        label = stringResource(R.string.ssid_network_name),
                         value = wifi.username,
                         onCopy = {
                             clipboardManager.setText(AnnotatedString(wifi.username))
-                            copyMessage = "SSID Copied"
+                            copyMessage = context.getString(R.string.ssid_copied)
                         }
                     )
 
@@ -1036,14 +1040,14 @@ fun WifiDetailScreen(
                         val passString = remember(wifi.password) { wifi.password.concatToString() }
                         Spacer(Modifier.height(14.dp))
                         DetailItem(
-                            label = "Password",
+                            label = stringResource(R.string.password),
                             value = passString,
                             isPassword = true,
                             showPassword = showPassword,
                             onToggleVisibility = { showPassword = !showPassword },
                             onCopy = {
                                 clipboardManager.setText(AnnotatedString(passString))
-                                copyMessage = "Password Copied"
+                                copyMessage = context.getString(R.string.password_copied)
                             }
                         )
                     }
@@ -1058,7 +1062,7 @@ fun WifiDetailScreen(
                     ) {
                         Icon(Icons.Default.QrCode, null, tint = VaultBlack)
                         Spacer(Modifier.width(8.dp))
-                        Text("Share via QR Code", color = VaultBlack, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.share_via_qr), color = VaultBlack, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -1072,16 +1076,16 @@ fun WifiDetailScreen(
                     border = BorderStroke(1.dp, VaultBorder)
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
-                        Text("Router Admin Configuration", color = accentColor, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text(stringResource(R.string.router_admin_config), color = accentColor, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         Divider(color = VaultBorder, modifier = Modifier.padding(vertical = 12.dp))
 
                         if (details.routerIp.isNotBlank()) {
                             DetailItem(
-                                label = "Router IP Address",
+                                label = stringResource(R.string.router_ip_address),
                                 value = details.routerIp,
                                 onCopy = {
                                     clipboardManager.setText(AnnotatedString(details.routerIp))
-                                    copyMessage = "Router IP Copied"
+                                    copyMessage = context.getString(R.string.router_ip_copied)
                                 }
                             )
                         }
@@ -1089,11 +1093,11 @@ fun WifiDetailScreen(
                         if (details.routerUsername.isNotBlank()) {
                             if (details.routerIp.isNotBlank()) Spacer(Modifier.height(14.dp))
                             DetailItem(
-                                label = "Admin Username",
+                                label = stringResource(R.string.admin_username),
                                 value = details.routerUsername,
                                 onCopy = {
                                     clipboardManager.setText(AnnotatedString(details.routerUsername))
-                                    copyMessage = "Admin Username Copied"
+                                    copyMessage = context.getString(R.string.admin_username_copied)
                                 }
                             )
                         }
@@ -1102,14 +1106,14 @@ fun WifiDetailScreen(
                             val ipAndUser = details.routerIp.isNotBlank() || details.routerUsername.isNotBlank()
                             if (ipAndUser) Spacer(Modifier.height(14.dp))
                             DetailItem(
-                                label = "Admin Password",
+                                label = stringResource(R.string.admin_password),
                                 value = details.routerPassword,
                                 isPassword = true,
                                 showPassword = showRouterPassword,
                                 onToggleVisibility = { showRouterPassword = !showRouterPassword },
                                 onCopy = {
                                     clipboardManager.setText(AnnotatedString(details.routerPassword))
-                                    copyMessage = "Admin Password Copied"
+                                    copyMessage = context.getString(R.string.admin_password_copied)
                                 }
                             )
                         }
@@ -1125,7 +1129,7 @@ fun WifiDetailScreen(
                     border = BorderStroke(1.dp, VaultBorder)
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
-                        Text("General Notes", color = accentColor, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text(stringResource(R.string.general_notes), color = accentColor, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         Divider(color = VaultBorder, modifier = Modifier.padding(vertical = 12.dp))
                         Text(details.generalNotes, color = VaultTextPrimary, fontSize = 14.sp, lineHeight = 20.sp)
                     }
@@ -1162,7 +1166,7 @@ fun WifiDetailScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            "Share Connection",
+                            stringResource(R.string.share_connection),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = VaultTextPrimary
@@ -1188,7 +1192,7 @@ fun WifiDetailScreen(
                                 contentDescription = "Wi-Fi QR Code",
                                 modifier = Modifier.fillMaxSize()
                             )
-                        } ?: Text("QR Error", color = VaultBlack)
+                        } ?: Text(stringResource(R.string.qr_error), color = VaultBlack)
                     }
 
                     Spacer(Modifier.height(16.dp))
@@ -1203,7 +1207,7 @@ fun WifiDetailScreen(
                     Spacer(Modifier.height(4.dp))
 
                     Text(
-                        text = "Scan with your phone's camera to connect to this Wi-Fi network instantly.",
+                        text = stringResource(R.string.qr_scan_connect_hint),
                         fontSize = 12.sp,
                         color = VaultTextSecondary,
                         textAlign = TextAlign.Center,
@@ -1222,13 +1226,13 @@ fun WifiDetailScreen(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Column {
-                                Text("Password", fontSize = 10.sp, color = VaultTextSecondary)
+                                Text(stringResource(R.string.password), fontSize = 10.sp, color = VaultTextSecondary)
                                 Text(passString, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = VaultTextPrimary)
                             }
                             IconButton(
                                 onClick = {
                                     clipboardManager.setText(AnnotatedString(passString))
-                                    copyMessage = "Password Copied"
+                                    copyMessage = context.getString(R.string.password_copied)
                                 },
                                 modifier = Modifier.size(36.dp)
                             ) {

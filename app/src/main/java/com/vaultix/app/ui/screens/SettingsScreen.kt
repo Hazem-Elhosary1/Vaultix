@@ -15,6 +15,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -143,7 +145,7 @@ fun SettingsScreen(
                 title = { Text(stringResource(R.string.settings), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, stringResource(R.string.back), tint = MaterialTheme.colorScheme.onBackground)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back), tint = MaterialTheme.colorScheme.onBackground)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
@@ -178,21 +180,21 @@ fun SettingsScreen(
                     showChangePinDialog = true
                 }
                 SettingsDivider()
-                SettingsClickItem(Icons.Default.Security, "Setup Fake Vault", "Create a decoy vault with a secondary password", VaultError) {
+                SettingsClickItem(Icons.Default.Security, stringResource(R.string.setup_fake_vault_title), stringResource(R.string.fake_vault_subtitle_custom), VaultError) {
                     showFakeVaultDialog = true
                 }
                 SettingsDivider()
-                SettingsClickItem(Icons.Default.Article, "Emergency Recovery Sheet", "View or print your recovery key for emergency access", VaultOrange) {
+                SettingsClickItem(Icons.Default.Article, stringResource(R.string.emergency_recovery_sheet), stringResource(R.string.recovery_sheet_subtitle), VaultOrange) {
                     showRecoverySheetDialog = true
                 }
             }
 
             // Autofill Section
-            SettingsSection(title = "Auto-fill Service") {
+            SettingsSection(title = stringResource(R.string.autofill)) {
                 SettingsClickItem(
                     icon = Icons.Default.FlashOn,
-                    title = "Enable Auto-fill",
-                    subtitle = "Fill passwords in other apps & browsers automatically",
+                    title = stringResource(R.string.enable_autofill),
+                    subtitle = stringResource(R.string.autofill_subtitle),
                     iconTint = VaultOrange
                 ) {
                     try {
@@ -205,7 +207,7 @@ fun SettingsScreen(
                         try {
                             context.startActivity(Intent(android.provider.Settings.ACTION_REQUEST_SET_AUTOFILL_SERVICE))
                         } catch (_: Exception) {
-                            Toast.makeText(context, "Please enable Vaultix in System Settings > Languages & Input > Autofill", Toast.LENGTH_LONG).show()
+                            Toast.makeText(context, context.getString(R.string.enable_autofill_toast), Toast.LENGTH_LONG).show()
                         }
                     }
                 }
@@ -217,7 +219,14 @@ fun SettingsScreen(
                     Text(stringResource(R.string.auto_lock_inactivity), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
                     Spacer(Modifier.height(8.dp))
                     Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        listOf(Pair("30s", 30), Pair("1m", 60), Pair("5m", 300), Pair("15m", 900), Pair("Never", -1)).forEach { (label, seconds) ->
+                        val autoLockOptions = listOf(
+                            Pair(stringResource(R.string.duration_30s), 30),
+                            Pair(stringResource(R.string.duration_1m), 60),
+                            Pair(stringResource(R.string.duration_5m), 300),
+                            Pair(stringResource(R.string.duration_15m), 900),
+                            Pair(stringResource(R.string.never), -1)
+                        )
+                        autoLockOptions.forEach { (label, seconds) ->
                             FilterChip(
                                 selected = selectedAutoLock == seconds,
                                 onClick = {
@@ -241,7 +250,13 @@ fun SettingsScreen(
                     Text(stringResource(R.string.grace_period_subtitle), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(Modifier.height(8.dp))
                     Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        listOf(Pair("Immediate", 0), Pair("15s", 15), Pair("30s", 30), Pair("1m", 60)).forEach { (label, seconds) ->
+                        val gracePeriodOptions = listOf(
+                            Pair(stringResource(R.string.immediate), 0),
+                            Pair(stringResource(R.string.duration_15s), 15),
+                            Pair(stringResource(R.string.duration_30s), 30),
+                            Pair(stringResource(R.string.duration_1m), 60)
+                        )
+                        gracePeriodOptions.forEach { (label, seconds) ->
                             FilterChip(
                                 selected = selectedGracePeriod == seconds,
                                 onClick = {
@@ -259,23 +274,20 @@ fun SettingsScreen(
                 }
             }
 
-            // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-            // â•â•  Data Protection & Backup  â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-            // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-            SettingsSection(title = "Data Protection") {
+            SettingsSection(title = stringResource(R.string.data_protection)) {
 
-                // â”€â”€ 1. Auto Backup Status â”€â”€
+                // ── 1. Auto Backup Status ──
                 SettingsToggleItem(
                     icon = Icons.Default.Shield,
-                    title = "Auto Backup",
+                    title = stringResource(R.string.auto_backup),
                     subtitle = if (backupState.isBackupEnabled) {
                         when (backupState.backupFrequency) {
-                            "DAILY" -> "Protected â€¢ Backing up daily"
-                            "WEEKLY" -> "Protected â€¢ Backing up weekly"
-                            "MONTHLY" -> "Protected â€¢ Backing up monthly"
-                            else -> "Protected â€¢ Backing up daily"
+                            "DAILY" -> stringResource(R.string.backup_status_daily)
+                            "WEEKLY" -> stringResource(R.string.backup_status_weekly)
+                            "MONTHLY" -> stringResource(R.string.backup_status_monthly)
+                            else -> stringResource(R.string.backup_status_daily)
                         }
-                    } else "âš ï¸ Disabled â€” your data is at risk!",
+                    } else stringResource(R.string.backup_status_disabled),
                     checked = backupState.isBackupEnabled,
                     onToggle = { enabled -> backupViewModel.setBackupEnabled(enabled) }
                 )
@@ -295,7 +307,7 @@ fun SettingsScreen(
                                 Icon(Icons.Default.Warning, null, tint = VaultError, modifier = Modifier.size(20.dp))
                                 Spacer(Modifier.width(8.dp))
                                 Text(
-                                    "If you lose your phone or uninstall the app, ALL your passwords, cards, notes, and files will be lost permanently with no way to recover them.",
+                                    stringResource(R.string.backup_disabled_warning),
                                     fontSize = 12.sp,
                                     color = VaultError,
                                     lineHeight = 16.sp
@@ -310,13 +322,13 @@ fun SettingsScreen(
                 // â”€â”€ 2. Frequency picker (only when enabled) â”€â”€
                 if (backupState.isBackupEnabled) {
                     Column(Modifier.padding(16.dp)) {
-                        Text("Backup Frequency", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
+                        Text(stringResource(R.string.backup_frequency), fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
                         Spacer(Modifier.height(8.dp))
                         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             listOf(
-                                Triple("Daily", "DAILY", "Best protection"),
-                                Triple("Weekly", "WEEKLY", "Balanced"),
-                                Triple("Monthly", "MONTHLY", "Saves storage")
+                                Triple(stringResource(R.string.frequency_daily), "DAILY", stringResource(R.string.frequency_daily_desc)),
+                                Triple(stringResource(R.string.frequency_weekly), "WEEKLY", stringResource(R.string.frequency_weekly_desc)),
+                                Triple(stringResource(R.string.frequency_monthly), "MONTHLY", stringResource(R.string.frequency_monthly_desc))
                             ).forEach { (label, value, _) ->
                                 FilterChip(
                                     selected = backupState.backupFrequency == value,
@@ -343,14 +355,14 @@ fun SettingsScreen(
                         java.text.SimpleDateFormat("dd MMM yyyy, hh:mm a", java.util.Locale.getDefault())
                             .format(java.util.Date(backupState.lastBackupTime))
                     }
-                    SettingsInfoItem("Last Backup", lastDate)
+                    SettingsInfoItem(stringResource(R.string.last_backup), lastDate)
                     SettingsDivider()
                 }
 
                 SettingsClickItem(
                     icon = Icons.Default.Backup,
-                    title = "Backup Now",
-                    subtitle = if (backupState.isExporting) "Creating backup..." else "Create an instant encrypted backup",
+                    title = stringResource(R.string.backup_now),
+                    subtitle = if (backupState.isExporting) stringResource(R.string.creating_backup) else stringResource(R.string.backup_now_subtitle),
                     iconTint = CategoryPasswords
                 ) {
                     backupViewModel.triggerHistoryBackup()
@@ -361,8 +373,8 @@ fun SettingsScreen(
                 // ── 4. Backup History ──
                 SettingsClickItem(
                     icon = Icons.Default.History,
-                    title = "Backup History",
-                    subtitle = "${backupState.localBackups.size} backups stored on device",
+                    title = stringResource(R.string.backup_history_title),
+                    subtitle = stringResource(R.string.backups_stored_format, backupState.localBackups.size),
                     iconTint = VaultOrange
                 ) {
                     backupViewModel.refreshLocalBackups()
@@ -373,11 +385,11 @@ fun SettingsScreen(
             // ╔══════════════════════════════════════════════
             // ║  Transfer Data  ═════════════════════════════
             // ╚══════════════════════════════════════════════
-            SettingsSection(title = "Transfer Data") {
+            SettingsSection(title = stringResource(R.string.transfer_data)) {
                 SettingsClickItem(
                     icon = Icons.Default.Upload,
-                    title = "Export Data",
-                    subtitle = "Export your vault as encrypted file, QR codes, or PDF",
+                    title = stringResource(R.string.export_data),
+                    subtitle = stringResource(R.string.export_data_desc),
                     iconTint = MaterialTheme.colorScheme.primary
                 ) {
                     onNavigateToExport()
@@ -385,8 +397,8 @@ fun SettingsScreen(
                 SettingsDivider()
                 SettingsClickItem(
                     icon = Icons.Default.Download,
-                    title = "Import Data",
-                    subtitle = "Restore from file, QR codes, or backup history",
+                    title = stringResource(R.string.import_data),
+                    subtitle = stringResource(R.string.import_data_desc),
                     iconTint = VaultInfo
                 ) {
                     onNavigateToImport()
@@ -504,15 +516,15 @@ fun SettingsScreen(
 
             // App Info
             SettingsSection(title = stringResource(R.string.about)) {
-                SettingsInfoItem("Version", "1.0.0")
+                SettingsInfoItem(stringResource(R.string.version), "1.0.0")
                 SettingsDivider()
-                SettingsInfoItem("Encryption", "AES-256-GCM")
+                SettingsInfoItem(stringResource(R.string.info_encryption), "AES-256-GCM")
                 SettingsDivider()
-                SettingsInfoItem("Key Storage", "Android Keystore")
+                SettingsInfoItem(stringResource(R.string.info_key_storage), "Android Keystore")
                 SettingsDivider()
-                SettingsInfoItem("Architecture", "Zero-Knowledge")
+                SettingsInfoItem(stringResource(R.string.info_architecture), "Zero-Knowledge")
                 SettingsDivider()
-                SettingsInfoItem("Internet Access", "None (100% Offline)")
+                SettingsInfoItem(stringResource(R.string.info_internet_access), stringResource(R.string.info_no_internet_desc))
             }
 
             // Panic Mode Section
@@ -560,10 +572,10 @@ fun SettingsScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Warning, null, tint = VaultError)
                     Spacer(Modifier.width(8.dp))
-                    Text("\u26A0\uFE0F Panic Mode", color = VaultError, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.panic_mode_confirm_title), color = VaultError, fontWeight = FontWeight.Bold)
                 }
             },
-            text = { Text("This will PERMANENTLY delete all passwords, cards, notes, files, and IDs.\n\nThere is NO recovery. Are you absolutely sure?", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+            text = { Text(stringResource(R.string.panic_mode_confirm_text), color = MaterialTheme.colorScheme.onSurfaceVariant) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -602,8 +614,8 @@ fun SettingsScreen(
             onDismissRequest = { showProLockDialog = false },
             containerColor = VaultSurface,
             icon = { Icon(Icons.Default.WorkspacePremium, null, tint = VaultOrange, modifier = Modifier.size(48.dp)) },
-            title = { Text("Pro Feature Required", color = VaultTextPrimary) },
-            text = { Text("This advanced feature requires a Pro subscription. Upgrade to unlock the full potential of Vaultix!", color = VaultTextSecondary) },
+            title = { Text(stringResource(R.string.pro_required_title), color = VaultTextPrimary) },
+            text = { Text(stringResource(R.string.pro_required_text), color = VaultTextSecondary) },
             confirmButton = {
                 Button(
                     onClick = { 
@@ -611,11 +623,11 @@ fun SettingsScreen(
                         onNavigateToPremium()
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = VaultOrange)
-                ) { Text("Upgrade Now", color = Color.White) }
+                ) { Text(stringResource(R.string.upgrade_now), color = Color.White) }
             },
             dismissButton = {
                 TextButton(onClick = { showProLockDialog = false }) {
-                    Text("Maybe Later", color = VaultTextSecondary)
+                    Text(stringResource(R.string.maybe_later), color = VaultTextSecondary)
                 }
             }
         )
@@ -635,13 +647,13 @@ fun SettingsScreen(
             title = { Text(stringResource(R.string.change_master_password), color = MaterialTheme.colorScheme.primary) },
             text = {
                 Column {
-                    Text("This will generate a new database key and re-encrypt your entire vault securely.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.change_password_desc), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(Modifier.height(16.dp))
                     
                     OutlinedTextField(
                         value = currentPwd,
                         onValueChange = { currentPwd = it; errorMsg = null },
-                        label = { Text("Current Password") },
+                        label = { Text(stringResource(R.string.current_password)) },
                         visualTransformation = if (showPwd) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
@@ -651,7 +663,7 @@ fun SettingsScreen(
                     OutlinedTextField(
                         value = newPwd,
                         onValueChange = { newPwd = it; errorMsg = null },
-                        label = { Text("New Password") },
+                        label = { Text(stringResource(R.string.new_password_label)) },
                         visualTransformation = if (showPwd) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
@@ -661,7 +673,7 @@ fun SettingsScreen(
                     OutlinedTextField(
                         value = confirmPwd,
                         onValueChange = { confirmPwd = it; errorMsg = null },
-                        label = { Text("Confirm New Password") },
+                        label = { Text(stringResource(R.string.confirm_new_password_label)) },
                         visualTransformation = if (showPwd) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
                         trailingIcon = {
                             IconButton(onClick = { showPwd = !showPwd }, enabled = !isSaving) {
@@ -683,11 +695,11 @@ fun SettingsScreen(
                 Button(
                     onClick = {
                         if (newPwd != confirmPwd) {
-                            errorMsg = "Passwords do not match"
+                            errorMsg = context.getString(R.string.passwords_not_match)
                             return@Button
                         }
                         if (newPwd.length < 8) {
-                            errorMsg = "Password must be at least 8 characters"
+                            errorMsg = context.getString(R.string.password_too_short)
                             return@Button
                         }
                         
@@ -698,7 +710,7 @@ fun SettingsScreen(
                             onSuccess = {
                                 isSaving = false
                                 showChangePasswordDialog = false
-                                android.widget.Toast.makeText(context, "Password changed and Vault re-encrypted! 🔐", android.widget.Toast.LENGTH_LONG).show()
+                                Toast.makeText(context, context.getString(R.string.password_changed_success), Toast.LENGTH_LONG).show()
                             },
                             onFailure = { error ->
                                 isSaving = false
@@ -745,7 +757,7 @@ fun SettingsScreen(
             title = { Text(stringResource(R.string.change_pin), color = MaterialTheme.colorScheme.primary) },
             text = {
                 Column {
-                    Text("This will update the PIN used for quick unlock.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.change_pin_desc), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(Modifier.height(16.dp))
 
                     OutlinedTextField(
@@ -754,7 +766,7 @@ fun SettingsScreen(
                             currentPin = normalizePinInput(it)
                             errorMsg = null
                         },
-                        label = { Text("Current PIN") },
+                        label = { Text(stringResource(R.string.current_pin)) },
                         visualTransformation = if (showPin) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.NumberPassword),
                         singleLine = true,
@@ -768,7 +780,7 @@ fun SettingsScreen(
                             newPin = normalizePinInput(it)
                             errorMsg = null
                         },
-                        label = { Text("New PIN") },
+                        label = { Text(stringResource(R.string.new_pin)) },
                         visualTransformation = if (showPin) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.NumberPassword),
                         singleLine = true,
@@ -782,7 +794,7 @@ fun SettingsScreen(
                             confirmPin = normalizePinInput(it)
                             errorMsg = null
                         },
-                        label = { Text("Confirm New PIN") },
+                        label = { Text(stringResource(R.string.confirm_new_pin)) },
                         visualTransformation = if (showPin) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
                         trailingIcon = {
                             IconButton(onClick = { showPin = !showPin }, enabled = !isSaving) {
@@ -806,13 +818,13 @@ fun SettingsScreen(
                     onClick = {
                         when {
                             currentPin.isBlank() || newPin.isBlank() || confirmPin.isBlank() -> {
-                                errorMsg = "All PIN fields are required"
+                                errorMsg = context.getString(R.string.all_pin_fields_required)
                             }
                             newPin != confirmPin -> {
-                                errorMsg = "PINs do not match"
+                                errorMsg = context.getString(R.string.setup_pin_match_error)
                             }
                             newPin.length < 4 || newPin.length > 6 -> {
-                                errorMsg = "PIN must be 4-6 digits"
+                                errorMsg = context.getString(R.string.pin_invalid_length)
                             }
                             else -> {
                                 isSaving = true
@@ -822,7 +834,7 @@ fun SettingsScreen(
                                     onSuccess = {
                                         isSaving = false
                                         showChangePinDialog = false
-                                        Toast.makeText(context, "PIN changed successfully!", Toast.LENGTH_LONG).show()
+                                        Toast.makeText(context, context.getString(R.string.pin_changed_success), Toast.LENGTH_LONG).show()
                                     },
                                     onFailure = { error ->
                                         isSaving = false
@@ -863,16 +875,16 @@ fun SettingsScreen(
         AlertDialog(
             onDismissRequest = { if (!isSaving) showFakeVaultDialog = false },
             containerColor = MaterialTheme.colorScheme.surface,
-            title = { Text("Setup Fake Vault", color = MaterialTheme.colorScheme.error) },
+            title = { Text(stringResource(R.string.setup_fake_vault_title), color = MaterialTheme.colorScheme.error) },
             text = {
                 Column {
-                    Text("Enter a decoy password. Logging in with this password will open an isolated, dummy vault to protect your real data from forced access.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.setup_fake_vault_desc), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(Modifier.height(16.dp))
                     
                     OutlinedTextField(
                         value = fakePwd,
                         onValueChange = { fakePwd = it; errorMsg = null },
-                        label = { Text("Fake Password") },
+                        label = { Text(stringResource(R.string.fake_password_label)) },
                         visualTransformation = if (showPwd) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
@@ -882,7 +894,7 @@ fun SettingsScreen(
                     OutlinedTextField(
                         value = confirmFakePwd,
                         onValueChange = { confirmFakePwd = it; errorMsg = null },
-                        label = { Text("Confirm Fake Password") },
+                        label = { Text(stringResource(R.string.confirm_fake_password_label)) },
                         visualTransformation = if (showPwd) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
@@ -899,11 +911,11 @@ fun SettingsScreen(
                 Button(
                     onClick = {
                         if (fakePwd != confirmFakePwd) {
-                            errorMsg = "Passwords do not match"
+                            errorMsg = context.getString(R.string.passwords_not_match)
                             return@Button
                         }
                         if (fakePwd.length < 4) {
-                            errorMsg = "Password too short"
+                            errorMsg = context.getString(R.string.password_too_short)
                             return@Button
                         }
                         isSaving = true
@@ -912,7 +924,7 @@ fun SettingsScreen(
                             onSuccess = {
                                 isSaving = false
                                 showFakeVaultDialog = false
-                                Toast.makeText(context, "Fake Vault configured! Try logging in with the decoy password.", Toast.LENGTH_LONG).show()
+                                Toast.makeText(context, context.getString(R.string.fake_vault_success), Toast.LENGTH_LONG).show()
                             }
                         )
                     },
@@ -926,7 +938,7 @@ fun SettingsScreen(
                             strokeWidth = 2.dp
                         )
                     } else {
-                        Text("Setup")
+                        Text(stringResource(R.string.setup_action))
                     }
                 }
             },
@@ -943,19 +955,19 @@ fun SettingsScreen(
         AlertDialog(
             onDismissRequest = { showBackupPasswordDialog = false },
             containerColor = MaterialTheme.colorScheme.surface,
-            title = { Text(if (backupActionIsExport) "Set Backup Password" else "Enter Backup Password", color = MaterialTheme.colorScheme.primary) },
+            title = { Text(if (backupActionIsExport) stringResource(R.string.backup_export_title) else stringResource(R.string.backup_import_title), color = MaterialTheme.colorScheme.primary) },
             text = {
                 Column {
                     Text(
-                        if (backupActionIsExport) "This password will be required to restore your data on any device. Don't lose it!" 
-                        else "Enter the password you used when creating this backup.",
+                        if (backupActionIsExport) stringResource(R.string.backup_export_desc)
+                        else stringResource(R.string.backup_import_desc),
                         fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(Modifier.height(16.dp))
                     OutlinedTextField(
                         value = backupPassword,
                         onValueChange = { backupPassword = it },
-                        label = { Text("Backup Password") },
+                        label = { Text(stringResource(R.string.backup_password_label)) },
                         visualTransformation = if (showPassword) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
                         trailingIcon = {
                             IconButton(onClick = { showPassword = !showPassword }) {
@@ -991,11 +1003,11 @@ fun SettingsScreen(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
-                    Text(if (backupActionIsExport) "Export" else "Import", color = MaterialTheme.colorScheme.onPrimary)
+                    Text(if (backupActionIsExport) stringResource(R.string.backup_export_button) else stringResource(R.string.backup_import_button), color = MaterialTheme.colorScheme.onPrimary)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showBackupPasswordDialog = false; backupPassword = "" }) { Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                TextButton(onClick = { showBackupPasswordDialog = false; backupPassword = "" }) { Text(stringResource(R.string.cancel), color = MaterialTheme.colorScheme.onSurfaceVariant) }
             }
         )
     }
@@ -1004,27 +1016,27 @@ fun SettingsScreen(
         AlertDialog(
             onDismissRequest = { showBackupTypeDialog = false },
             containerColor = MaterialTheme.colorScheme.surface,
-            title = { Text("Back up what?", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold) },
+            title = { Text(stringResource(R.string.backup_scope_title), color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("Tap cards to include multiple sections in one backup.", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
-                    BackupScopeChoice("Full vault", "Passwords, cards, notes, files, and IDs", BackupScope.FULL, scopeCounts[BackupScope.FULL] ?: 0, selectedBackupScopes) { scope ->
+                    Text(stringResource(R.string.backup_scope_desc), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+                    BackupScopeChoice(stringResource(R.string.backup_scope_full), stringResource(R.string.backup_scope_full_desc), BackupScope.FULL, scopeCounts[BackupScope.FULL] ?: 0, selectedBackupScopes) { scope ->
                         selectedBackupScopes.clear()
                         selectedBackupScopes.add(scope)
                     }
-                    BackupScopeChoice("Passwords", "Only saved logins", BackupScope.PASSWORDS, scopeCounts[BackupScope.PASSWORDS] ?: 0, selectedBackupScopes) { scope ->
+                    BackupScopeChoice(stringResource(R.string.passwords), stringResource(R.string.backup_scope_passwords_desc), BackupScope.PASSWORDS, scopeCounts[BackupScope.PASSWORDS] ?: 0, selectedBackupScopes) { scope ->
                         toggleBackupScope(selectedBackupScopes, scope)
                     }
-                    BackupScopeChoice("Cards", "Only payment cards", BackupScope.CARDS, scopeCounts[BackupScope.CARDS] ?: 0, selectedBackupScopes) { scope ->
+                    BackupScopeChoice(stringResource(R.string.cards), stringResource(R.string.backup_scope_cards_desc), BackupScope.CARDS, scopeCounts[BackupScope.CARDS] ?: 0, selectedBackupScopes) { scope ->
                         toggleBackupScope(selectedBackupScopes, scope)
                     }
-                    BackupScopeChoice("Notes", "Only secure notes", BackupScope.NOTES, scopeCounts[BackupScope.NOTES] ?: 0, selectedBackupScopes) { scope ->
+                    BackupScopeChoice(stringResource(R.string.notes), stringResource(R.string.backup_scope_notes_desc), BackupScope.NOTES, scopeCounts[BackupScope.NOTES] ?: 0, selectedBackupScopes) { scope ->
                         toggleBackupScope(selectedBackupScopes, scope)
                     }
-                    BackupScopeChoice("Files", "Only vault files", BackupScope.FILES, scopeCounts[BackupScope.FILES] ?: 0, selectedBackupScopes) { scope ->
+                    BackupScopeChoice(stringResource(R.string.files), stringResource(R.string.backup_scope_files_desc), BackupScope.FILES, scopeCounts[BackupScope.FILES] ?: 0, selectedBackupScopes) { scope ->
                         toggleBackupScope(selectedBackupScopes, scope)
                     }
-                    BackupScopeChoice("IDs", "Only identity documents", BackupScope.IDENTITIES, scopeCounts[BackupScope.IDENTITIES] ?: 0, selectedBackupScopes) { scope ->
+                    BackupScopeChoice(stringResource(R.string.identities), stringResource(R.string.backup_scope_ids_desc), BackupScope.IDENTITIES, scopeCounts[BackupScope.IDENTITIES] ?: 0, selectedBackupScopes) { scope ->
                         toggleBackupScope(selectedBackupScopes, scope)
                     }
                 }
@@ -1034,11 +1046,11 @@ fun SettingsScreen(
                     showBackupTypeDialog = false
                     exportLauncher.launch("vaultix_backup_${if (selectedBackupScopes.contains(BackupScope.FULL)) "full" else "custom"}_${System.currentTimeMillis()}.vbk")
                 }) {
-                    Text("Continue")
+                    Text(stringResource(R.string.continue_text))
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showBackupTypeDialog = false }) { Text("Cancel") }
+                TextButton(onClick = { showBackupTypeDialog = false }) { Text(stringResource(R.string.cancel)) }
             }
         )
     }
@@ -1047,11 +1059,11 @@ fun SettingsScreen(
         AlertDialog(
             onDismissRequest = { showBackupHistoryDialog = false },
             containerColor = VaultSurface,
-            title = { Text("Backup History", fontWeight = FontWeight.Bold, color = VaultTextPrimary) },
+            title = { Text(stringResource(R.string.backup_history_title), fontWeight = FontWeight.Bold, color = VaultTextPrimary) },
             text = {
                 Column(modifier = Modifier.heightIn(max = 400.dp).verticalScroll(rememberScrollState())) {
                     if (backupState.localBackups.isEmpty()) {
-                        Text("No local backups found.", color = VaultTextSecondary, fontSize = 13.sp)
+                        Text(stringResource(R.string.no_local_backups), color = VaultTextSecondary, fontSize = 13.sp)
                     } else {
                         backupState.localBackups.forEach { file ->
                             Card(
@@ -1081,7 +1093,7 @@ fun SettingsScreen(
                 }
             },
             confirmButton = {
-                TextButton(onClick = { showBackupHistoryDialog = false }) { Text("Close", color = VaultOrange) }
+                TextButton(onClick = { showBackupHistoryDialog = false }) { Text(stringResource(R.string.close), color = VaultOrange) }
             }
         )
     }
@@ -1090,9 +1102,9 @@ fun SettingsScreen(
         AlertDialog(
             onDismissRequest = { showHistoryRestoreConfirmDialog = false },
             containerColor = VaultSurface,
-            title = { Text("Restore Backup", color = VaultOrange) },
+            title = { Text(stringResource(R.string.restore_backup_title), color = VaultOrange) },
             text = {
-                Text("This will restore the selected daily encrypted backup and replace the current vault data.", fontSize = 12.sp, color = VaultTextSecondary)
+                Text(stringResource(R.string.restore_backup_desc), fontSize = 12.sp, color = VaultTextSecondary)
             },
             confirmButton = {
                 Button(
@@ -1103,11 +1115,11 @@ fun SettingsScreen(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = VaultOrange)
                 ) {
-                    Text("Restore", color = VaultBlack)
+                    Text(stringResource(R.string.restore_button), color = VaultBlack)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showHistoryRestoreConfirmDialog = false }) { Text("Cancel") }
+                TextButton(onClick = { showHistoryRestoreConfirmDialog = false }) { Text(stringResource(R.string.cancel)) }
             }
         )
     }
@@ -1124,12 +1136,12 @@ fun SettingsScreen(
         AlertDialog(
             onDismissRequest = { showRecoverySheetDialog = false },
             containerColor = VaultSurface,
-            title = { Text("Emergency Recovery Sheet", color = VaultOrange, fontWeight = FontWeight.Bold) },
+            title = { Text(stringResource(R.string.emergency_recovery_sheet), color = VaultOrange, fontWeight = FontWeight.Bold) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     Text(
-                        if (recoveryKey == null) "You haven't set up a recovery key yet. This is your safety net if you forget your master password."
-                        else "Your recovery key is the ONLY way to regain access if you forget your master password.",
+                        if (recoveryKey == null) stringResource(R.string.recovery_sheet_not_set)
+                        else stringResource(R.string.recovery_sheet_set),
                         fontSize = 13.sp, color = VaultTextSecondary
                     )
                     
@@ -1142,11 +1154,11 @@ fun SettingsScreen(
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             if (recoveryKey == null) {
-                                Text("NOT CONFIGURED", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = VaultError)
+                                Text(stringResource(R.string.not_configured), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = VaultError)
                             } else if (isKeyVisible) {
                                 Text(recoveryKey!!, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = VaultOrange, letterSpacing = 1.sp)
                             } else {
-                                Text("â€¢â€¢â€¢â€¢-â€¢â€¢â€¢â€¢-â€¢â€¢â€¢â€¢-â€¢â€¢â€¢â€¢-â€¢â€¢â€¢â€¢-â€¢â€¢â€¢â€¢", fontSize = 18.sp, color = VaultTextSecondary)
+                                Text("••••-••••-••••-••••-••••-••••", fontSize = 18.sp, color = VaultTextSecondary)
                             }
                         }
                     }
@@ -1155,16 +1167,16 @@ fun SettingsScreen(
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                             TextButton(onClick = { 
                                 clipboardManager.setText(androidx.compose.ui.text.AnnotatedString(recoveryKey!!))
-                                Toast.makeText(context, "Copied to clipboard!", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, context.getString(R.string.copied_toast), Toast.LENGTH_SHORT).show()
                             }) {
                                 Icon(Icons.Default.ContentCopy, null, Modifier.size(16.dp))
                                 Spacer(Modifier.width(8.dp))
-                                Text("Copy Key")
+                                Text(stringResource(R.string.copy_key))
                             }
                         }
                         
-                        Text("Important Instructions:", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                        Text("1. Write this key down physically.\n2. Store it in a separate location from your phone.\n3. Do NOT save it as a photo or digital file.", fontSize = 12.sp, color = VaultTextSecondary)
+                        Text(stringResource(R.string.important_instructions_title), fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text(stringResource(R.string.important_instructions_desc), fontSize = 12.sp, color = VaultTextSecondary)
                     } else {
                         Button(
                             onClick = { 
@@ -1180,7 +1192,7 @@ fun SettingsScreen(
                         ) {
                             Icon(Icons.Default.Autorenew, null, tint = VaultBlack)
                             Spacer(Modifier.width(8.dp))
-                            Text("Generate Recovery Key", color = VaultBlack)
+                            Text(stringResource(R.string.generate_recovery_key), color = VaultBlack)
                         }
                     }
                 }
@@ -1188,12 +1200,12 @@ fun SettingsScreen(
             confirmButton = {
                 if (recoveryKey != null) {
                     Button(onClick = { isKeyVisible = !isKeyVisible }) {
-                        Text(if (isKeyVisible) "Hide Key" else "Reveal Key")
+                        Text(if (isKeyVisible) stringResource(R.string.hide_key) else stringResource(R.string.reveal_key))
                     }
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showRecoverySheetDialog = false }) { Text("Close") }
+                TextButton(onClick = { showRecoverySheetDialog = false }) { Text(stringResource(R.string.close)) }
             }
         )
     }
@@ -1237,7 +1249,7 @@ fun SettingsClickItem(icon: ImageVector, title: String, subtitle: String, iconTi
             Text(title, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium)
             Text(subtitle, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.4f))
+        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.4f))
     }
 }
 

@@ -8,6 +8,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -44,7 +46,7 @@ fun SecurityAuditScreen(
                 title = { Text("Security Audit", fontWeight = FontWeight.Bold, color = VaultTextPrimary) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, "Back", tint = VaultTextPrimary)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = VaultTextPrimary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = VaultBlack)
@@ -304,7 +306,7 @@ fun AuditItem(title: String, count: Int, icon: ImageVector, color: Color, descri
                         )
                     }
                     Spacer(Modifier.width(8.dp))
-                    Icon(Icons.Default.ChevronRight, null, tint = VaultTextSecondary, modifier = Modifier.size(16.dp))
+                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = VaultTextSecondary, modifier = Modifier.size(16.dp))
                 }
             } else {
                 Icon(Icons.Default.CheckCircle, null, tint = VaultSuccess)

@@ -13,6 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,6 +26,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.res.stringResource
+import com.vaultix.app.R
 import com.vaultix.app.ui.theme.*
 import com.vaultix.app.ui.viewmodel.AuthViewModel
 import com.vaultix.app.ui.viewmodel.CardViewModel
@@ -78,21 +81,21 @@ private fun IdentityDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () 
         containerColor = VaultBlack,
         topBar = {
             TopAppBar(
-                title = { Text(identity?.documentName ?: "Identity", fontWeight = FontWeight.Bold, color = VaultTextPrimary) },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, "Back", tint = VaultTextPrimary) } },
+                title = { Text(identity?.documentName ?: stringResource(R.string.identity_label), fontWeight = FontWeight.Bold, color = VaultTextPrimary) },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back), tint = VaultTextPrimary) } },
                 actions = {
                     identity?.let { id ->
                         IconButton(onClick = { viewModel.toggleFavorite(id) }) {
                             Icon(
                                 if (id.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                                "Favorite",
+                                stringResource(R.string.favorites),
                                 tint = if (id.isFavorite) VaultError else VaultOrange
                             )
                         }
                     }
-                    IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, "Edit", tint = VaultOrange) }
+                    IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, stringResource(R.string.edit), tint = VaultOrange) }
                     IconButton(onClick = { identity?.let { viewModel.deleteIdentity(it); onBack() } }) {
-                        Icon(Icons.Default.Delete, "Delete", tint = VaultError)
+                        Icon(Icons.Default.Delete, stringResource(R.string.delete), tint = VaultError)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = VaultBlack)
@@ -121,7 +124,7 @@ private fun IdentityDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () 
                                     bitmap?.let {
                                         Image(
                                             bitmap = it,
-                                            contentDescription = "Identity photo",
+                                            contentDescription = stringResource(R.string.identity_photo_desc),
                                             modifier = Modifier
                                                 .fillParentMaxWidth()
                                                 .height(200.dp)
@@ -145,34 +148,34 @@ private fun IdentityDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () 
                     }
                 }
 
-                DetailField("FULL NAME", id.fullName) {
+                DetailField(stringResource(R.string.field_full_name), id.fullName) {
                     copyToClipboard(context, "Name", id.fullName)
-                    scope.launch { copyMessage = "Name copied!"; delay(2000); copyMessage = null }
+                    scope.launch { copyMessage = context.getString(R.string.name_copied_toast); delay(2000); copyMessage = null }
                 }
 
-                DetailField("ID NUMBER", id.documentNumber) {
+                DetailField(stringResource(R.string.field_id_number), id.documentNumber) {
                     copyToClipboard(context, "ID", id.documentNumber)
-                    scope.launch { copyMessage = "ID Number copied!"; delay(2000); copyMessage = null }
+                    scope.launch { copyMessage = context.getString(R.string.id_number_copied_toast); delay(2000); copyMessage = null }
                 }
 
                 if (id.dateOfBirth.isNotEmpty()) {
-                    DetailField("DATE OF BIRTH", id.dateOfBirth) {
+                    DetailField(stringResource(R.string.field_date_of_birth), id.dateOfBirth) {
                         copyToClipboard(context, "Date of Birth", id.dateOfBirth)
-                        scope.launch { copyMessage = "Date of Birth copied!"; delay(2000); copyMessage = null }
+                        scope.launch { copyMessage = context.getString(R.string.dob_copied_toast); delay(2000); copyMessage = null }
                     }
                 }
 
                 if (id.nationality.isNotEmpty()) {
-                    DetailField("NATIONALITY", id.nationality) {
+                    DetailField(stringResource(R.string.field_nationality), id.nationality) {
                         copyToClipboard(context, "Nationality", id.nationality)
-                        scope.launch { copyMessage = "Nationality copied!"; delay(2000); copyMessage = null }
+                        scope.launch { copyMessage = context.getString(R.string.nationality_copied_toast); delay(2000); copyMessage = null }
                     }
                 }
 
                 if (id.issuedBy.isNotEmpty()) {
-                    DetailField("ISSUED BY", id.issuedBy) {
+                    DetailField(stringResource(R.string.field_issued_by), id.issuedBy) {
                         copyToClipboard(context, "Issued By", id.issuedBy)
-                        scope.launch { copyMessage = "Issued By copied!"; delay(2000); copyMessage = null }
+                        scope.launch { copyMessage = context.getString(R.string.issued_by_copied_toast); delay(2000); copyMessage = null }
                     }
                 }
 
@@ -183,21 +186,21 @@ private fun IdentityDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () 
                     ) {
                         if (id.issuedDate.isNotEmpty()) {
                             Box(modifier = Modifier.weight(1f)) {
-                                DetailField("ISSUED DATE", id.issuedDate, onCopy = null)
+                                DetailField(stringResource(R.string.field_issued_date), id.issuedDate, onCopy = null)
                             }
                         }
                         if (id.expiryDate.isNotEmpty()) {
                             Box(modifier = Modifier.weight(1f)) {
-                                DetailField("EXPIRY DATE", id.expiryDate, onCopy = null)
+                                DetailField(stringResource(R.string.field_expiry_date), id.expiryDate, onCopy = null)
                             }
                         }
                     }
                 }
 
                 if (id.notes.isNotEmpty()) {
-                    DetailField("NOTES", id.notes) {
+                    DetailField(stringResource(R.string.field_notes), id.notes) {
                         copyToClipboard(context, "Notes", id.notes)
-                        scope.launch { copyMessage = "Notes copied!"; delay(2000); copyMessage = null }
+                        scope.launch { copyMessage = context.getString(R.string.notes_copied_toast); delay(2000); copyMessage = null }
                     }
                 }
 
@@ -212,7 +215,7 @@ private fun IdentityDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () 
                 }
             }
         } ?: Box(Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
-            Text("Item not found", color = VaultTextSecondary)
+            Text(stringResource(R.string.item_not_found), color = VaultTextSecondary)
         }
     }
 }
@@ -249,22 +252,22 @@ private fun PasswordDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () 
         containerColor = VaultBlack,
         topBar = {
             TopAppBar(
-                title = { Text(password?.title ?: "Password", fontWeight = FontWeight.Bold, color = VaultTextPrimary) },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, "Back", tint = VaultTextPrimary) } },
+                title = { Text(password?.title ?: stringResource(R.string.password), fontWeight = FontWeight.Bold, color = VaultTextPrimary) },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back), tint = VaultTextPrimary) } },
                 actions = {
                     password?.let { pwd ->
                         IconButton(onClick = { viewModel.toggleFavorite(pwd) }) {
                             Icon(
                                 if (pwd.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                                "Favorite",
+                                stringResource(R.string.favorites),
                                 tint = if (pwd.isFavorite) VaultError else VaultOrange
                             )
                         }
                     }
                     password?.let { pwd ->
-                        IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, "Edit", tint = VaultOrange) }
+                        IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, stringResource(R.string.edit), tint = VaultOrange) }
                         IconButton(onClick = { viewModel.deletePassword(pwd.id); onBack() }) {
-                            Icon(Icons.Default.Delete, "Delete", tint = VaultError)
+                            Icon(Icons.Default.Delete, stringResource(R.string.delete), tint = VaultError)
                         }
                     }
                 },
@@ -288,21 +291,21 @@ private fun PasswordDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () 
                             Text(pwd.username, fontSize = 14.sp, color = VaultTextSecondary)
                             Spacer(Modifier.height(4.dp))
                             val pfmt = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
-                            Text("Created: ${pfmt.format(Date(pwd.createdAt))}", fontSize = 11.sp, color = VaultTextSecondary.copy(alpha = 0.8f))
-                            Text("Last updated: ${pfmt.format(Date(pwd.updatedAt))}", fontSize = 11.sp, color = VaultTextSecondary.copy(alpha = 0.8f))
+                            Text(stringResource(R.string.created_at, pfmt.format(Date(pwd.createdAt))), fontSize = 11.sp, color = VaultTextSecondary.copy(alpha = 0.8f))
+                            Text(stringResource(R.string.updated_at, pfmt.format(Date(pwd.updatedAt))), fontSize = 11.sp, color = VaultTextSecondary.copy(alpha = 0.8f))
                         }
                     }
                 }
 
-                DetailField("USERNAME", pwd.username) {
+                DetailField(stringResource(R.string.field_username), pwd.username) {
                     copyToClipboard(context, "Username", pwd.username)
-                    scope.launch { copyMessage = "Username copied!"; delay(2000); copyMessage = null }
+                    scope.launch { copyMessage = context.getString(R.string.username_copied_toast); delay(2000); copyMessage = null }
                 }
 
                 Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp), colors = CardDefaults.cardColors(containerColor = VaultSurface)) {
                     Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) {
-                            Text("PASSWORD", fontSize = 11.sp, color = VaultTextSecondary, letterSpacing = 1.sp)
+                            Text(stringResource(R.string.password), fontSize = 11.sp, color = VaultTextSecondary, letterSpacing = 1.sp)
                             Spacer(Modifier.height(4.dp))
                             Text(if (showPassword) pwd.password.concatToString() else "••••••••", fontSize = 15.sp, color = VaultTextPrimary)
                         }
@@ -327,7 +330,7 @@ private fun PasswordDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () 
                         }
                         IconButton(onClick = {
                             copyToClipboard(context, "Password", pwd.password)
-                            scope.launch { copyMessage = "Password copied!"; delay(2000); copyMessage = null }
+                            scope.launch { copyMessage = context.getString(R.string.password_copied_toast); delay(2000); copyMessage = null }
                         }) {
                             Icon(Icons.Default.ContentCopy, null, tint = VaultOrange)
                         }
@@ -343,7 +346,7 @@ private fun PasswordDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () 
                         ) {
                             Icon(if (showHistory) Icons.Default.ExpandLess else Icons.Default.ExpandMore, null, tint = VaultOrange)
                             Spacer(Modifier.width(4.dp))
-                            Text("Password History (${pwd.passwordHistory.size})", color = VaultOrange, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.password_history_title, pwd.passwordHistory.size), color = VaultOrange, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                         }
                         
                         if (showHistory) {
@@ -356,12 +359,12 @@ private fun PasswordDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () 
                                     ) {
                                         Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
                                             Column(Modifier.weight(1f)) {
-                                                Text("OLD PASSWORD ${index + 1}", fontSize = 9.sp, color = VaultTextDisabled, letterSpacing = 1.sp)
+                                                Text(stringResource(R.string.old_password_label, index + 1), fontSize = 9.sp, color = VaultTextDisabled, letterSpacing = 1.sp)
                                                 Text("••••••••", fontSize = 14.sp, color = VaultTextSecondary)
                                             }
                                             IconButton(onClick = {
                                                 copyToClipboard(context, "Old Password", oldPwd)
-                                                scope.launch { copyMessage = "Old password copied!"; delay(2000); copyMessage = null }
+                                                scope.launch { copyMessage = context.getString(R.string.old_password_copied_toast); delay(2000); copyMessage = null }
                                             }) {
                                                 Icon(Icons.Default.ContentCopy, null, tint = VaultTextSecondary, modifier = Modifier.size(18.dp))
                                             }
@@ -374,16 +377,16 @@ private fun PasswordDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () 
                 }
 
                 if (pwd.website.isNotEmpty()) {
-                    DetailField("WEBSITE", pwd.website) {
+                    DetailField(stringResource(R.string.field_website), pwd.website) {
                         copyToClipboard(context, "Website", pwd.website)
-                        scope.launch { copyMessage = "Link copied!"; delay(2000); copyMessage = null }
+                        scope.launch { copyMessage = context.getString(R.string.link_copied_toast); delay(2000); copyMessage = null }
                     }
                 }
 
                 if (pwd.appPackageName.isNotEmpty()) {
-                    DetailField("APP PACKAGE", pwd.appPackageName) {
+                    DetailField(stringResource(R.string.field_app_package), pwd.appPackageName) {
                         copyToClipboard(context, "App Package", pwd.appPackageName)
-                        scope.launch { copyMessage = "Package name copied!"; delay(2000); copyMessage = null }
+                        scope.launch { copyMessage = context.getString(R.string.package_copied_toast); delay(2000); copyMessage = null }
                     }
                 }
 
@@ -398,7 +401,7 @@ private fun PasswordDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () 
                 }
             }
         } ?: Box(Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
-            Text("Item not found", color = VaultTextSecondary)
+            Text(stringResource(R.string.item_not_found), color = VaultTextSecondary)
         }
     }
 }
@@ -416,20 +419,20 @@ private fun CardDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () -> U
         containerColor = VaultBlack,
         topBar = {
             TopAppBar(
-                title = { Text(card?.cardName ?: "Card", fontWeight = FontWeight.Bold, color = VaultTextPrimary) },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, "Back", tint = VaultTextPrimary) } },
+                title = { Text(card?.cardName ?: stringResource(R.string.card_label), fontWeight = FontWeight.Bold, color = VaultTextPrimary) },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back), tint = VaultTextPrimary) } },
                 actions = {
                     card?.let { c ->
                         IconButton(onClick = { viewModel.toggleFavorite(c) }) {
                             Icon(
                                 if (c.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                                "Favorite",
+                                stringResource(R.string.favorites),
                                 tint = if (c.isFavorite) VaultError else VaultOrange
                             )
                         }
-                        IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, "Edit", tint = VaultOrange) }
+                        IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, stringResource(R.string.edit), tint = VaultOrange) }
                         IconButton(onClick = { viewModel.deleteCard(c.id); onBack() }) {
-                            Icon(Icons.Default.Delete, "Delete", tint = VaultError)
+                            Icon(Icons.Default.Delete, stringResource(R.string.delete), tint = VaultError)
                         }
                     }
                 },
@@ -444,7 +447,14 @@ private fun CardDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () -> U
                         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceBetween) {
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                 Text(c.cardName, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = VaultTextPrimary)
-                                Text(c.cardType, fontSize = 16.sp, color = VaultOrange, fontWeight = FontWeight.SemiBold)
+                                val displayCardType = when (c.cardType) {
+                                    "Visa" -> stringResource(R.string.card_type_visa)
+                                    "Mastercard" -> stringResource(R.string.card_type_mastercard)
+                                    "Amex" -> stringResource(R.string.card_type_amex)
+                                    "Other" -> stringResource(R.string.card_type_other)
+                                    else -> c.cardType
+                                }
+                                Text(displayCardType, fontSize = 16.sp, color = VaultOrange, fontWeight = FontWeight.SemiBold)
                             }
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 val scope = rememberCoroutineScope()
@@ -463,7 +473,7 @@ private fun CardDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () -> U
                                                 onLongPress = {
                                                     copyToClipboard(context, "Card Number", c.cardNumber)
                                                     scope.launch {
-                                                        copyMessage = "Card number copied!"
+                                                        copyMessage = context.getString(R.string.card_number_copied_toast)
                                                         delay(2000)
                                                         copyMessage = null
                                                     }
@@ -496,10 +506,10 @@ private fun CardDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () -> U
                                 }
                             }
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                Column { Text("HOLDER", fontSize = 9.sp, color = VaultTextSecondary, letterSpacing = 1.sp); Text(c.holderName, fontSize = 13.sp, color = VaultTextPrimary) }
-                                Column(horizontalAlignment = Alignment.End) { Text("EXPIRES", fontSize = 9.sp, color = VaultTextSecondary, letterSpacing = 1.sp); Text("${c.expiryMonth}/${c.expiryYear}", fontSize = 13.sp, color = VaultTextPrimary) }
+                                Column { Text(stringResource(R.string.field_holder), fontSize = 9.sp, color = VaultTextSecondary, letterSpacing = 1.sp); Text(c.holderName, fontSize = 13.sp, color = VaultTextPrimary) }
+                                Column(horizontalAlignment = Alignment.End) { Text(stringResource(R.string.field_expires), fontSize = 9.sp, color = VaultTextSecondary, letterSpacing = 1.sp); Text("${c.expiryMonth}/${c.expiryYear}", fontSize = 13.sp, color = VaultTextPrimary) }
                                 Column(horizontalAlignment = Alignment.End) {
-                                    Text("CVV", fontSize = 9.sp, color = VaultTextSecondary, letterSpacing = 1.sp)
+                                    Text(stringResource(R.string.cvv), fontSize = 9.sp, color = VaultTextSecondary, letterSpacing = 1.sp)
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Text(if (showCvv) c.cvv else "•••", fontSize = 13.sp, color = VaultTextPrimary)
                                         Spacer(Modifier.width(4.dp))
@@ -533,13 +543,13 @@ private fun CardDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () -> U
                         Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.Warning, null, tint = VaultError)
                             Spacer(Modifier.width(8.dp))
-                            Text("This card has expired", color = VaultError, fontSize = 14.sp)
+                            Text(stringResource(R.string.card_expired), color = VaultError, fontSize = 14.sp)
                         }
                     }
                 }
             }
         } ?: Box(Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
-            Text("Item not found", color = VaultTextSecondary)
+            Text(stringResource(R.string.item_not_found), color = VaultTextSecondary)
         }
     }
 }
@@ -568,28 +578,28 @@ private fun NoteDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () -> U
         topBar = {
             TopAppBar(
                 title = { },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, "Back", tint = VaultTextPrimary) } },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back), tint = VaultTextPrimary) } },
                 actions = {
                     note?.let { n ->
                         // Copy content
                         IconButton(onClick = {
                             copyToClipboard(context, "Note Content", n.content)
                         }) {
-                            Icon(Icons.Default.ContentCopy, "Copy", tint = VaultTextSecondary)
+                            Icon(Icons.Default.ContentCopy, stringResource(R.string.copy), tint = VaultTextSecondary)
                         }
                         // Favorite toggle
                         IconButton(onClick = { viewModel.toggleFavorite(n) }) {
                             Icon(
                                 if (n.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                                "Favorite",
+                                stringResource(R.string.favorites),
                                 tint = if (n.isFavorite) VaultError else VaultTextSecondary
                             )
                         }
                         // Edit
-                        IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, "Edit", tint = VaultOrange) }
+                        IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, stringResource(R.string.edit), tint = VaultOrange) }
                         // Delete
                         IconButton(onClick = { showDeleteConfirm = true }) {
-                            Icon(Icons.Default.Delete, "Delete", tint = VaultError)
+                            Icon(Icons.Default.Delete, stringResource(R.string.delete), tint = VaultError)
                         }
                     }
                 },
@@ -600,7 +610,8 @@ private fun NoteDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () -> U
         note?.let { n ->
             val wordCount = remember(n.content) { n.content.trim().split("\\s+".toRegex()).filter { it.isNotBlank() }.size }
             val charCount = remember(n.content) { n.content.length }
-            val dateFmt = remember { SimpleDateFormat("MMM dd, yyyy 'at' h:mm a", Locale.getDefault()) }
+            val pattern = stringResource(R.string.note_date_format)
+            val dateFmt = remember(pattern) { SimpleDateFormat(pattern, Locale.getDefault()) }
 
             Column(
                 Modifier
@@ -640,13 +651,13 @@ private fun NoteDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () -> U
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(Icons.Default.Star, null, tint = VaultOrange, modifier = Modifier.size(13.dp))
                                 Spacer(Modifier.width(3.dp))
-                                Text("Favorite", fontSize = 11.sp, color = VaultOrange, fontWeight = FontWeight.Medium)
+                                Text(stringResource(R.string.favorites), fontSize = 11.sp, color = VaultOrange, fontWeight = FontWeight.Medium)
                             }
                             Box(Modifier.size(3.dp).background(VaultTextDisabled, androidx.compose.foundation.shape.CircleShape))
                         }
                         // Word count
                         Text(
-                            "$wordCount words · $charCount chars",
+                            stringResource(R.string.word_char_count, wordCount, charCount),
                             fontSize = 11.sp,
                             color = VaultTextSecondary.copy(alpha = 0.6f)
                         )
@@ -660,13 +671,13 @@ private fun NoteDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () -> U
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Text(
-                            "Created ${dateFmt.format(Date(n.createdAt))}",
+                            stringResource(R.string.created_at, dateFmt.format(Date(n.createdAt))),
                             fontSize = 11.sp,
                             color = VaultTextSecondary.copy(alpha = 0.5f)
                         )
                     }
                     Text(
-                        "Updated ${dateFmt.format(Date(n.updatedAt))}",
+                        stringResource(R.string.updated_at, dateFmt.format(Date(n.updatedAt))),
                         fontSize = 11.sp,
                         color = VaultTextSecondary.copy(alpha = 0.5f)
                     )
@@ -692,7 +703,7 @@ private fun NoteDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () -> U
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Theme", fontSize = 11.sp, color = VaultTextSecondary, fontWeight = FontWeight.Medium)
+                        Text(stringResource(R.string.field_theme), fontSize = 11.sp, color = VaultTextSecondary, fontWeight = FontWeight.Medium)
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             quickColors.forEach { colorHex ->
                                 val chipColor = remember(colorHex) {
@@ -728,7 +739,7 @@ private fun NoteDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () -> U
                 }
             }
         } ?: Box(Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
-            Text("Item not found", color = VaultTextSecondary)
+            Text(stringResource(R.string.item_not_found), color = VaultTextSecondary)
         }
     }
 
@@ -736,20 +747,20 @@ private fun NoteDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () -> U
     if (showDeleteConfirm && note != null) {
         AlertDialog(
             onDismissRequest = { showDeleteConfirm = false },
-            title = { Text("Delete Note", fontWeight = FontWeight.Bold) },
-            text = { Text("Are you sure you want to delete \"${note.title}\"? This action cannot be undone.") },
+            title = { Text(stringResource(R.string.delete_note_title), fontWeight = FontWeight.Bold) },
+            text = { Text(stringResource(R.string.delete_note_confirm, note.title)) },
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.deleteNote(note.id)
                     showDeleteConfirm = false
                     onBack()
                 }) {
-                    Text("Delete", color = VaultError)
+                    Text(stringResource(R.string.delete), color = VaultError)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteConfirm = false }) {
-                    Text("Cancel", color = VaultTextSecondary)
+                    Text(stringResource(R.string.cancel), color = VaultTextSecondary)
                 }
             },
             containerColor = VaultSurface
@@ -945,14 +956,14 @@ private fun GenericDetailScreen(onBack: () -> Unit) {
         containerColor = VaultBlack,
         topBar = {
             TopAppBar(
-                title = { Text("Detail", color = VaultTextPrimary) },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, "Back", tint = VaultTextPrimary) } },
+                title = { Text(stringResource(R.string.item_details), color = VaultTextPrimary) },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back), tint = VaultTextPrimary) } },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = VaultBlack)
             )
         }
     ) { paddingValues ->
         Box(Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
-            Text("Item not found", color = VaultTextSecondary)
+            Text(stringResource(R.string.item_not_found), color = VaultTextSecondary)
         }
     }
 }
@@ -981,6 +992,6 @@ private fun copyToClipboard(context: Context, label: String, value: Any) {
             } catch (_: Exception) {}
         }, 30_000L)
         
-        android.widget.Toast.makeText(context, "$label copied! Auto-clear in 30s 🔒", android.widget.Toast.LENGTH_SHORT).show()
+        android.widget.Toast.makeText(context, context.getString(R.string.copied_auto_clear_toast, label), android.widget.Toast.LENGTH_SHORT).show()
     }
 }

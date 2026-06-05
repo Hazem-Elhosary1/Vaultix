@@ -303,4 +303,381 @@
     <string name="overall_score">Overall Score</string>
     <string name="encrypted_files_count">%1$d encrypted file(s)</string>
     <string name="encrypted">Encrypted</string>
+
+    <!-- WifiScreen -->
+    <string name="no_wifi_networks">No Wi-Fi Networks</string>
+    <string name="wifi_empty_desc">Securely store your Wi-Fi details and generate offline connection QR codes.</string>
+    <string name="delete_wifi_title">Delete Wi-Fi Network?</string>
+    <string name="delete_wifi_confirm">Are you sure you want to remove the credentials for \'%1$s\'?</string>
+    <string name="add_wifi">Add Wi-Fi</string>
+    <string name="edit_wifi">Edit Wi-Fi</string>
+    <string name="ssid_required">SSID is required</string>
+    <string name="password_required_encrypted">Password is required for encrypted network</string>
+    <string name="connection_details">Connection Details</string>
+    <string name="network_name_hint">Network Name (e.g. Home Wi-Fi)</string>
+    <string name="ssid_label">SSID * (Network Name)</string>
+    <string name="security_type">Security Type</string>
+    <string name="password_label">Password *</string>
+    <string name="router_admin_credentials">Router Admin Credentials</string>
+    <string name="router_ip_hint">Router IP / Address (e.g. 192.168.1.1)</string>
+    <string name="admin_username">Admin Username</string>
+    <string name="admin_password">Admin Password</string>
+    <string name="general_notes">General Notes</string>
+    <string name="notes_hint">Notes (e.g. router location, network limits)</string>
+    <string name="select_local_network">Select Local Network</string>
+    <string name="no_scan_results">No active scan results. Ensure Wi-Fi and Location are active, then scan again.</string>
+    <string name="delete_wifi_confirm_undone">Are you sure you want to delete \'%1$s\'? This action cannot be undone.</string>
+    <string name="wifi_security_format">Security: %1$s</string>
+    <string name="ssid_network_name">SSID (Network Name)</string>
+    <string name="ssid_copied">SSID Copied</string>
+    <string name="password_copied">Password Copied</string>
+    <string name="share_via_qr">Share via QR Code</string>
+    <string name="router_admin_config">Router Admin Configuration</string>
+    <string name="router_ip_address">Router IP Address</string>
+    <string name="router_ip_copied">Router IP Copied</string>
+    <string name="admin_username_copied">Admin Username Copied</string>
+    <string name="admin_password_copied">Admin Password Copied</string>
+    <string name="share_connection">Share Connection</string>
+    <string name="qr_error">QR Error</string>
+    <string name="qr_scan_connect_hint">Scan with your phone\'s camera to connect to this Wi-Fi network instantly.</string>
+
+    <!-- SettingsScreen Extra -->
+    <string name="enable_autofill_toast">Please enable Vaultix in System Settings &gt; Languages &amp; Input &gt; Autofill</string>
+    <string name="backup_frequency">Backup Frequency</string>
+    <string name="panic_mode_confirm_title">⚠️ Panic Mode</string>
+    <string name="panic_mode_confirm_text">This will PERMANENTLY delete all passwords, cards, notes, files, and IDs.\n\nThere is NO recovery. Are you absolutely sure?</string>
+    <string name="pro_required_title">Pro Feature Required</string>
+    <string name="pro_required_text">This advanced feature requires a Pro subscription. Upgrade to unlock the full potential of Vaultix!</string>
+    <string name="upgrade_now">Upgrade Now</string>
+    <string name="maybe_later">Maybe Later</string>
+    <string name="change_password_desc">This will generate a new database key and re-encrypt your entire vault securely.</string>
+    <string name="current_password">Current Password</string>
+    <string name="new_password_label">New Password</string>
+    <string name="confirm_new_password_label">Confirm New Password</string>
+    <string name="password_changed_success">Password changed and Vault re-encrypted! 🔐</string>
+    <string name="change_pin_desc">This will update the PIN used for quick unlock.</string>
+    <string name="current_pin">Current PIN</string>
+    <string name="new_pin">New PIN</string>
+    <string name="confirm_new_pin">Confirm New PIN</string>
+    <string name="pin_changed_success">PIN changed successfully!</string>
+    <string name="setup_fake_vault_title">Setup Fake Vault</string>
+    <string name="setup_fake_vault_desc">Enter a decoy password. Logging in with this password will open an isolated, dummy vault to protect your real data from forced access.</string>
+    <string name="fake_password_label">Fake Password</string>
+    <string name="confirm_fake_password_label">Confirm Fake Password</string>
+    <string name="fake_vault_success">Fake Vault configured! Try logging in with the decoy password.</string>
+    <string name="copied_toast">Copied to clipboard!</string>
+    <string name="backup_export_title">Set Backup Password</string>
+    <string name="backup_import_title">Enter Backup Password</string>
+    <string name="backup_export_desc">This password will be required to restore your data on any device. Don\'t lose it!</string>
+    <string name="backup_import_desc">Enter the password you used when creating this backup.</string>
+    <string name="backup_password_label">Backup Password</string>
+    <string name="backup_export_button">Export</string>
+    <string name="backup_import_button">Import</string>
+    <string name="backup_scope_title">Back up what?</string>
+    <string name="backup_scope_desc">Tap cards to include multiple sections in one backup.</string>
+    <string name="backup_scope_full">Full vault</string>
+    <string name="backup_scope_full_desc">Passwords, cards, notes, files, and IDs</string>
+    <string name="backup_scope_passwords_desc">Only saved logins</string>
+    <string name="backup_scope_cards_desc">Only payment cards</string>
+    <string name="backup_scope_notes_desc">Only secure notes</string>
+    <string name="backup_scope_files_desc">Only vault files</string>
+    <string name="backup_scope_ids_desc">Only identity documents</string>
+    <string name="backup_history_title">Backup History</string>
+    <string name="no_local_backups">No local backups found.</string>
+    <string name="restore_backup_title">Restore Backup</string>
+    <string name="restore_backup_desc">This will restore the selected daily encrypted backup and replace the current vault data.</string>
+    <string name="restore_button">Restore</string>
+    <string name="emergency_recovery_sheet">Emergency Recovery Sheet</string>
+    <string name="recovery_sheet_not_set">You haven\'t set up a recovery key yet. This is your safety net if you forget your master password.</string>
+    <string name="recovery_sheet_set">Your recovery key is the ONLY way to regain access if you forget your master password.</string>
+    <string name="not_configured">NOT CONFIGURED</string>
+    <string name="copy_key">Copy Key</string>
+    <string name="important_instructions_title">Important Instructions:</string>
+    <string name="important_instructions_desc">1. Write this key down physically.\n2. Store it in a separate location from your phone.\n3. Do NOT save it as a photo or digital file.</string>
+    <string name="generate_recovery_key">Generate Recovery Key</string>
+    <string name="hide_key">Hide Key</string>
+    <string name="reveal_key">Reveal Key</string>
+    <string name="setup_action">Setup</string>
+
+    <!-- AddEditItemScreen Extra -->
+    <string name="coming_soon">Coming Soon</string>
+    <string name="warning_password_reused">Warning: You are already using this password for another account!</string>
+    <string name="nfc_not_supported">This device does not support NFC.</string>
+    <string name="listening_nfc">Listening for NFC...</string>
+    <string name="stop_scan">Stop Scan</string>
+    <string name="note_title_placeholder">Note Title</string>
+    <string name="note_content_placeholder">Start writing your secure note...</string>
+    <string name="use_this_password">Use This Password</string>
+    <string name="length_format">Length: %1$d</string>
+    <string name="nfc_label">NFC</string>
+    <string name="scan_label">Scan</string>
+    <string name="card_type_label">Card Type</string>
+
+    <!-- ItemDetailScreen Extra -->
+    <string name="password_history_title">Password History (%1$d)</string>
+    <string name="old_password_label">OLD PASSWORD %1$d</string>
+    <string name="card_expired">This card has expired</string>
+    <string name="delete_note_title">Delete Note</string>
+    <string name="delete_note_confirm">Are you sure you want to delete \"%1$s\"? This action cannot be undone.</string>
+
+    <!-- Backup Frequency Options -->
+    <string name="frequency_daily">Daily</string>
+    <string name="frequency_weekly">Weekly</string>
+    <string name="frequency_monthly">Monthly</string>
+    <string name="frequency_daily_desc">Best protection</string>
+    <string name="frequency_weekly_desc">Balanced</string>
+    <string name="frequency_monthly_desc">Saves storage</string>
+
+    <!-- More ItemDetailScreen Extra -->
+    <string name="identity_label">Identity</string>
+    <string name="card_label">Card</string>
+    <string name="name_copied_toast">Name copied!</string>
+    <string name="id_number_copied_toast">ID Number copied!</string>
+    <string name="dob_copied_toast">Date of Birth copied!</string>
+    <string name="nationality_copied_toast">Nationality copied!</string>
+    <string name="issued_by_copied_toast">Issued By copied!</string>
+    <string name="notes_copied_toast">Notes copied!</string>
+    <string name="username_copied_toast">Username copied!</string>
+    <string name="password_copied_toast">Password copied!</string>
+    <string name="old_password_copied_toast">Old password copied!</string>
+    <string name="link_copied_toast">Link copied!</string>
+    <string name="package_copied_toast">Package name copied!</string>
+    <string name="card_number_copied_toast">Card number copied!</string>
+    <string name="field_full_name">FULL NAME</string>
+    <string name="field_id_number">ID NUMBER</string>
+    <string name="field_date_of_birth">DATE OF BIRTH</string>
+    <string name="field_nationality">NATIONALITY</string>
+    <string name="field_issued_by">ISSUED BY</string>
+    <string name="field_issued_date">ISSUED DATE</string>
+    <string name="field_expiry_date">EXPIRY DATE</string>
+    <string name="field_notes">NOTES</string>
+    <string name="field_username">USERNAME</string>
+    <string name="field_website">WEBSITE</string>
+    <string name="field_app_package">APP PACKAGE</string>
+    <string name="field_holder">HOLDER</string>
+    <string name="field_expires">EXPIRES</string>
+    <string name="field_theme">Theme</string>
+    <string name="item_not_found">Item not found</string>
+    <string name="word_char_count">%1$d words · %2$d chars</string>
+    <string name="note_date_format">MMM dd, yyyy \'at\' h:mm a</string>
+    <string name="identity_photo_desc">Identity photo</string>
+
+    <!-- Premium plans -->
+    <string name="select_plan">Select a Plan</string>
+    <string name="plan_monthly">Monthly Plan</string>
+    <string name="plan_yearly">Yearly Plan</string>
+    <string name="plan_lifetime">Lifetime Plan</string>
+    <string name="period_monthly">per month</string>
+    <string name="period_yearly">per year</string>
+    <string name="period_lifetime">one time</string>
+    <string name="best_value">Best Value!</string>
+    <string name="generate_new_password">Generate New Password</string>
+
+    <!-- GlobalSearchScreen Extra -->
+    <string name="search_min_chars">Type at least 2 characters…</string>
+    <string name="search_no_results">No results found for \'%1$s\'</string>
+
+    <!-- CardScanScreen Extra -->
+    <string name="scan_credit_card">Scan Credit Card</string>
+    <string name="verify_card_details">Verify Card Details</string>
+    <string name="pro_required_card_scan_text">Card Scanning is a Pro feature. Upgrade to Pro for offline OCR scanning and more!</string>
+    <string name="scanning_dots">Scanning…</string>
+    <string name="camera_permission_required">Camera permission required</string>
+    <string name="grant_permission">Grant Permission</string>
+    <string name="card_name_hint">Card Name (e.g. My Visa)</string>
+    <string name="card_scanned_success">Card scanned successfully! Review and save.</string>
+    <string name="scan_again">Scan Again</string>
+    <string name="save_card">Save Card</string>
+    <string name="card_saved_success">Card saved securely!</string>
+    <string name="scanned_via_ocr">Scanned via OCR</string>
+    <string name="ocr_number_format">Number: %1$s</string>
+    <string name="ocr_detecting_number">Number: detecting…</string>
+    <string name="ocr_name_format">Name: %1$s</string>
+    <string name="ocr_detecting_name">Name: detecting…</string>
+    <string name="ocr_expiry_format">Expiry: %1$s/%2$s</string>
+    <string name="ocr_detecting_expiry">Expiry: detecting…</string>
+    <string name="ocr_detected_reliable">Detected reliably. Releasing to edit screen…</string>
+    <string name="ocr_hold_steady">Hold the card steady so the number and name stabilize.</string>
+
+    <!-- Backup Export & Import Screen Extra -->
+    <string name="password_min_length_backup">Password must be at least 6 characters</string>
+    <string name="select_categories">Or select specific categories:</string>
+    <string name="choose_export_format">Choose Export Format</string>
+    <string name="select_export_format_desc">Select how you\'d like to export your data.</string>
+    <string name="export_complete">Export Complete!</string>
+    <string name="back_to_settings">Back to Settings</string>
+    <string name="exporting">Exporting…</string>
+    <string name="secure_your_backup">Secure Your Backup</string>
+    <string name="secure_your_backup_desc">Enter a password to encrypt your backup. You\'ll need this password to restore.</string>
+    <string name="export_format_label">Format: %1$s</string>
+    <string name="export_action">Export</string>
+    <string name="import_complete">Import Complete!</string>
+    <string name="importing">Importing…</string>
+    <string name="choose_import_source">Choose Import Source</string>
+    <string name="select_import_source_desc">Select how you\'d like to restore your data.</string>
+    <string name="decrypted_success">Decrypted successfully!</string>
+    <string name="import_overwrite_confirm">Importing data will overwrite existing items. Are you sure?</string>
+    <string name="import_action">Import</string>
+
+    <!-- WifiScreen Extra -->
+    <string name="wifi_scan_gps_permission">Please enable GPS and precise location permission to scan for networks.</string>
+    <string name="wifi_scan_precise_location_required">Precise location permission is required to scan for Wi-Fi networks.</string>
+    <string name="wifi_scan_ensure_gps_permission">Please ensure GPS and precise location permission are active to scan for networks.</string>
+    <string name="scan_nearby">Scan Nearby</string>
+    <string name="copied_auto_clear_toast">%1$s copied! Auto-clear in 30s 🔒</string>
+
+    <!-- SettingsScreen Extra -->
+    <string name="fake_vault_subtitle_custom">Create a decoy vault with a secondary password</string>
+    <string name="recovery_sheet_subtitle">View or print your recovery key for emergency access</string>
+    <string name="enable_autofill">Enable Auto-fill</string>
+    <string name="never">Never</string>
+    <string name="immediate">Immediate</string>
+    <string name="auto_backup">Auto Backup</string>
+    <string name="backup_status_daily">Protected • Backing up daily</string>
+    <string name="backup_status_weekly">Protected • Backing up weekly</string>
+    <string name="backup_status_monthly">Protected • Backing up monthly</string>
+    <string name="backup_status_disabled">⚠️ Disabled — your data is at risk!</string>
+    <string name="backup_disabled_warning">If you lose your phone or uninstall the app, ALL your passwords, cards, notes, and files will be lost permanently with no way to recover them.</string>
+    <string name="last_backup">Last Backup</string>
+    <string name="backup_now">Backup Now</string>
+    <string name="creating_backup">Creating backup...</string>
+    <string name="backup_now_subtitle">Create an instant encrypted backup</string>
+    <string name="backups_stored_format">%1$d backups stored on device</string>
+    <string name="export_data">Export Data</string>
+    <string name="export_data_desc">Export your vault as encrypted file, QR codes, or PDF</string>
+    <string name="import_data">Import Data</string>
+    <string name="import_data_desc">Restore from file, QR codes, or backup history</string>
+    <string name="info_encryption">Encryption</string>
+    <string name="info_key_storage">Key Storage</string>
+    <string name="info_architecture">Architecture</string>
+    <string name="info_zero_knowledge">Zero-Knowledge</string>
+    <string name="info_internet_access">Internet Access</string>
+    <string name="info_no_internet_desc">None (100% Offline)</string>
+    <string name="all_pin_fields_required">All PIN fields are required</string>
+    <string name="pin_invalid_length">PIN must be 4-6 digits</string>
+    <string name="password_too_short">Password too short</string>
+
+    <!-- AddEditItemScreen / NFC / Generator Extra -->
+    <string name="app_package_hint">App Package (e.g. com.facebook.katana)</string>
+    <string name="gen_uppercase">Uppercase (A-Z)</string>
+    <string name="gen_lowercase">Lowercase (a-z)</string>
+    <string name="gen_numbers">Numbers (0-9)</string>
+    <string name="gen_symbols">Symbols (!@#...)</string>
+    <string name="nfc_tap_hint">Tap an NFC card or tag to prefill supported fields.</string>
+    <string name="nfc_scanning">Scanning for NFC card...</string>
+    <string name="nfc_bank_card_no_emv">Bank card detected, but this card did not expose readable EMV data. Nothing was autofilled.</string>
+    <string name="nfc_tag_no_payload">NFC tag detected, but no supported card payload was found. Nothing was autofilled.</string>
+    <string name="nfc_manual_entry_hint">Manual entry is available now. Use NFC or Scan anytime from the buttons above.</string>
+    <string name="nfc_imported_bank_card">Imported from bank card NFC</string>
+    <string name="nfc_imported_nfc">Imported from NFC</string>
+    <string name="nfc_imported_text">Imported from NFC text</string>
+    <string name="nfc_success_bank_card">Bank card data imported successfully.</string>
+    <string name="nfc_success_ndef">NDEF payload imported successfully.</string>
+
+    <!-- Backup Export / Import Screen Extra -->
+    <string name="select_data_to_export">Select Data to Export</string>
+    <string name="choose_export_data_desc">Choose what you\'d like to include in your backup.</string>
+    <string name="total_items_format">%1$d total items</string>
+    <string name="items_count_format">%1$d items</string>
+    <string name="format_vbk_title">Encrypted .VBK File</string>
+    <string name="format_vbk_desc">Save a portable encrypted backup file for transfer to another device</string>
+    <string name="format_qr_images_title">QR Code Images</string>
+    <string name="format_qr_images_desc">Generate and save QR codes to your gallery for offline backup</string>
+    <string name="format_qr_pdf_title">QR Code PDF</string>
+    <string name="format_qr_pdf_desc">Print or save QR codes as a PDF document</string>
+    <string name="toggle_password_visibility">Toggle password visibility</string>
+    <string name="export_success_vbk_format">Successfully exported %1$d items as .VBK file</string>
+    <string name="export_success_qr_images_format">Successfully saved %1$d QR code images to gallery</string>
+    <string name="export_success_qr_pdf">QR code PDF sent to print service</string>
+    <string name="reading_pdf_qr_image">Reading PDF / QR Image...</string>
+    <string name="import_vbk_title">Import .VBK File</string>
+    <string name="import_vbk_desc">Pick an encrypted backup file from your device</string>
+    <string name="import_pdf_qr_title">Import from PDF or QR Images</string>
+    <string name="import_pdf_qr_desc">Select a saved backup PDF or QR image from storage</string>
+    <string name="scan_qr_title">Scan QR Codes</string>
+    <string name="scan_qr_desc">Use your camera to scan QR code backups</string>
+    <string name="restore_local_backup_subtitle">Restore from an automatic local backup</string>
+    <string name="restore_complete">Restore Complete!</string>
+    <string name="restore_failed">Restore Failed</string>
+    <string name="restoring">Restoring...</string>
+    <string name="import_source_qr_format">QR Code Scan (%1$d/%2$d chunks)</string>
+    <string name="import_source_history">Local Backup History</string>
+    <string name="decrypt_restore_title">Decrypt &amp; Restore</string>
+    <string name="decrypt_restore_desc">Enter your backup password to decrypt and restore your data.</string>
+    <string name="import_source_label">Source: %1$s</string>
+    <string name="restore_failed_format">Restore failed: %1$s</string>
+    <string name="no_qr_found_in_file">No valid backup QR codes found in the selected file.</string>
+    <string name="failed_read_file_format">Failed to read file: %1$s</string>
+
+    <!-- IdentityEditScreen Extra -->
+    <string name="add_identity_title">Add Identity Document</string>
+    <string name="edit_identity_title">Edit Identity Document</string>
+    <string name="add_photos_desc">Add up to 3 photos (Front, Back, etc.)</string>
+    <string name="select_type">Select Type</string>
+    <string name="document_type_label">Document Type</string>
+    <string name="doc_type_passport">Passport</string>
+    <string name="doc_type_driver_license">Driver License</string>
+    <string name="doc_type_national_id">National ID</string>
+    <string name="doc_type_residence_permit">Residence Permit</string>
+    <string name="doc_type_other">Other</string>
+    <string name="document_name_label">Document Name</string>
+    <string name="document_name_placeholder">e.g. My Passport</string>
+    <string name="document_number_label">Document Number</string>
+    <string name="full_name_label">Full Name</string>
+    <string name="dob_label">Date of Birth</string>
+    <string name="date_format_placeholder">DD/MM/YYYY</string>
+    <string name="nationality_label_field">Nationality</string>
+    <string name="issued_by_label">Issued By</string>
+    <string name="issued_date_label">Issued Date</string>
+    <string name="expiry_date_label">Expiry Date</string>
+    <string name="notes_optional_label">Notes (optional)</string>
+    <string name="identity_saved_success">Identity saved securely!</string>
+    <string name="save_identity_button">Save Identity</string>
+    <string name="add_photo_sheet_title">Add Photo</string>
+    <string name="upload_gallery_title">Upload from Gallery</string>
+    <string name="upload_gallery_desc">Select an existing image from your device</string>
+    <string name="scan_document_title">Scan Document</string>
+    <string name="scan_document_desc">Scan ID card or document using camera</string>
+    <string name="scanner_error_format">Scanner error: %1$s</string>
+
+    <!-- Backup Export & Import Strings -->
+    <string name="export_format_vbk_title">Encrypted .VBK File</string>
+    <string name="export_format_vbk_desc">Save a portable encrypted backup file for transfer to another device</string>
+    <string name="export_format_qr_title">QR Code Images</string>
+    <string name="export_format_qr_desc">Generate and save QR codes to your gallery for offline backup</string>
+    <string name="export_format_pdf_title">QR Code PDF</string>
+    <string name="export_format_pdf_desc">Print or save QR codes as a PDF document</string>
+    <string name="export_success_format">Successfully exported %1$d items as .VBK file</string>
+    <string name="import_format_vbk_title">Import .VBK File</string>
+    <string name="import_format_vbk_desc">Pick an encrypted backup file from your device</string>
+    <string name="import_format_pdf_image_title">Import from PDF or QR Images</string>
+    <string name="import_format_pdf_image_desc">Select a saved backup PDF or QR image from storage</string>
+    <string name="scan_qr_codes">Scan QR Codes</string>
+    <string name="scan_qr_codes_desc">Use your camera to scan QR code backups</string>
+    <string name="restore_local_backup_desc">Restore from an automatic local backup</string>
+    <string name="kb_format">%1$d KB</string>
+    <string name="decrypt_restore">Decrypt &amp; Restore</string>
+    <string name="source_label">Source: %1$s</string>
+    <string name="import_source_qr_chunks">QR Code Scan (%1$d/%2$d chunks)</string>
+    <string name="import_source_file">Encrypted .VBK File</string>
+    <string name="no_valid_qr_found">No valid backup QR codes found in the selected file.</string>
+    <string name="failed_read_file_error">Failed to read file: %1$s</string>
+    <string name="restore_failed_error">Restore failed: %1$s</string>
+
+    <!-- Identity Edit Strings -->
+    <string name="add_photos_hint">Add up to 3 photos (Front, Back, etc.)</string>
+    
+    <!-- New placeholders and duration labels -->
+    <string name="expiry_month_placeholder">MM</string>
+    <string name="expiry_year_placeholder">YY</string>
+    <string name="card_type_visa">Visa</string>
+    <string name="card_type_mastercard">Mastercard</string>
+    <string name="card_type_amex">Amex</string>
+    <string name="card_type_other">Other</string>
+    <string name="wifi_security_open">Open</string>
+    <string name="duration_15s">15s</string>
+    <string name="duration_30s">30s</string>
+    <string name="duration_1m">1m</string>
+    <string name="duration_5m">5m</string>
+    <string name="duration_15m">15m</string>
 </resources>

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">فولتكس</string>
+    <string name="app_name">Vaultix</string>
     
     <!-- Navigation / General -->
     <string name="settings">الإعدادات</string>
@@ -104,7 +104,7 @@
     <string name="failed_attempts_count">%1$d محاولة فاشلة</string>
     <string name="incorrect_password">كلمة المرور غير صحيحة</string>
     <string name="incorrect_pin">رمز PIN غير صحيح</string>
-    <string name="unlock_vaultix">فتح فولتكس</string>
+    <string name="unlock_vaultix">فتح Vaultix</string>
     <string name="biometric_prompt_subtitle">استخدم البصمة للوصول إلى خزنتك</string>
     <string name="use_pin_button">استخدم رمز PIN</string>
     
@@ -130,7 +130,7 @@
     <string name="confirm_pin">تأكيد رمز PIN</string>
     <string name="setup_complete">تم الإعداد بنجاح!</string>
     <string name="setup_secure_vault">تأمين خزنتك</string>
-    <string name="setup_welcome">مرحباً بك في فولتكس</string>
+    <string name="setup_welcome">مرحباً بك في Vaultix</string>
     <string name="setup_password_hint">اختر كلمة مرور قوية يمكنك تذكرها</string>
     <string name="setup_pin_hint">أدخل رمز PIN مكون من 6 أرقام للوصول السريع</string>
     <string name="enable_biometric">تفعيل البصمة</string>
@@ -233,7 +233,7 @@
     <string name="add">إضافة</string>
     <string name="delete_password">حذف العنصر</string>
     <string name="delete_confirm">هل أنت متأكد من حذف \'%1$s\'؟</string>
-    <string name="autofill_service_label">خدمة الملء التلقائي فولتكس</string>
+    <string name="autofill_service_label">خدمة الملء التلقائي Vaultix</string>
 
     <!-- Security & Expiry Notifications -->
     <string name="password_expiring_soon_title">🔑 كلمة المرور تقترب من الانتهاء</string>
@@ -243,11 +243,11 @@
     <string name="id_expiring_soon_title">🪪 الهوية تقترب من الانتهاء</string>
     <string name="id_expiring_soon_msg">\'%1$s\' تنتهي صلاحيتها خلال %2$d أيام</string>
     <string name="weak_passwords_title">🔒 تنبيه أمان: كلمات مرور ضعيفة</string>
-    <string name="weak_passwords_msg">لديك %1$d كلمة مرور ضعيفة قد تهدد حساباتك. افتح فولتكس لتحديثها وحماية بياناتك!</string>
+    <string name="weak_passwords_msg">لديك %1$d كلمة مرور ضعيفة قد تهدد حساباتك. افتح Vaultix لتحديثها وحماية بياناتك!</string>
     <string name="weak_wifi_title">⚠️ تنبيه أمان: شبكات واي فاي غير آمنة</string>
     <string name="weak_wifi_msg">تم رصد %1$d شبكة واي فاي غير آمنة أو بتشفير ضعيف. افتح التطبيق لمراجعتها وتأمين اتصالك.</string>
     <string name="vault_secure_title">🛡️ حصنك الرقمي في أمان</string>
-    <string name="vault_secure_msg">رائع! جميع بياناتك وكلمات المرور في فولتكس آمنة ومحمية بالكامل. تابع الحفاظ على سلامتك الرقمية!</string>
+    <string name="vault_secure_msg">رائع! جميع بياناتك وكلمات المرور في Vaultix آمنة ومحمية بالكامل. تابع الحفاظ على سلامتك الرقمية!</string>
 
     <!-- App Shortcuts -->
     <string name="shortcut_add_password_short">إضافة كلمة مرور</string>
@@ -303,4 +303,381 @@
     <string name="overall_score">النتيجة الإجمالية</string>
     <string name="encrypted_files_count">%1$d ملف مشفر</string>
     <string name="encrypted">مشفر</string>
+
+    <!-- WifiScreen -->
+    <string name="no_wifi_networks">لا توجد شبكات واي فاي</string>
+    <string name="wifi_empty_desc">قم بتخزين تفاصيل شبكة الواي فاي بأمان وتوليد رموز QR للاتصال بدون اتصال بالإنترنت.</string>
+    <string name="delete_wifi_title">حذف شبكة الواي فاي؟</string>
+    <string name="delete_wifi_confirm">هل أنت متأكد من حذف بيانات اعتماد \'%1$s\'؟</string>
+    <string name="add_wifi">إضافة واي فاي</string>
+    <string name="edit_wifi">تعديل واي فاي</string>
+    <string name="ssid_required">اسم الشبكة (SSID) مطلوب</string>
+    <string name="password_required_encrypted">كلمة المرور مطلوبة للشبكة المشفرة</string>
+    <string name="connection_details">تفاصيل الاتصال</string>
+    <string name="network_name_hint">اسم الشبكة (مثال: واي فاي المنزل)</string>
+    <string name="ssid_label">اسم الشبكة (SSID) *</string>
+    <string name="security_type">نوع الحماية</string>
+    <string name="password_label">كلمة المرور *</string>
+    <string name="router_admin_credentials">بيانات أدمن الراوتر</string>
+    <string name="router_ip_hint">عنوان IP للراوتر (مثال: 192.168.1.1)</string>
+    <string name="admin_username">اسم مستخدم الأدمن</string>
+    <string name="admin_password">كلمة مرور الأدمن</string>
+    <string name="general_notes">ملاحظات عامة</string>
+    <string name="notes_hint">ملاحظات (مثال: موقع الراوتر، حدود الشبكة)</string>
+    <string name="select_local_network">اختر الشبكة المحلية</string>
+    <string name="no_scan_results">لا توجد نتائج بحث نشطة. تأكد من تفعيل الواي فاي والموقع، ثم ابحث مجدداً.</string>
+    <string name="delete_wifi_confirm_undone">هل أنت متأكد من حذف \'%1$s\'؟ لا يمكن التراجع عن هذا الإجراء.</string>
+    <string name="wifi_security_format">الحماية: %1$s</string>
+    <string name="ssid_network_name">اسم الشبكة (SSID)</string>
+    <string name="ssid_copied">تم نسخ اسم الشبكة</string>
+    <string name="password_copied">تم نسخ كلمة المرور</string>
+    <string name="share_via_qr">مشاركة عبر رمز QR</string>
+    <string name="router_admin_config">إعدادات أدمن الراوتر</string>
+    <string name="router_ip_address">عنوان IP للراوتر</string>
+    <string name="router_ip_copied">تم نسخ IP الراوتر</string>
+    <string name="admin_username_copied">تم نسخ اسم مستخدم الأدمن</string>
+    <string name="admin_password_copied">تم نسخ كلمة مرور الأدمن</string>
+    <string name="share_connection">مشاركة الاتصال</string>
+    <string name="qr_error">خطأ في رمز QR</string>
+    <string name="qr_scan_connect_hint">امسح الكود بكاميرا الهاتف للاتصال بهذه الشبكة فوراً.</string>
+
+    <!-- SettingsScreen Extra -->
+    <string name="enable_autofill_toast">يرجى تفعيل خدمة Vaultix في إعدادات النظام &gt; اللغات والإدخال &gt; الملء التلقائي</string>
+    <string name="backup_frequency">تكرار النسخ الاحتياطي</string>
+    <string name="panic_mode_confirm_title">⚠️ وضع الطوارئ</string>
+    <string name="panic_mode_confirm_text">سيؤدي هذا إلى حذف جميع كلمات المرور والبطاقات والملاحظات والملفات والهويات بشكل نهائي.\n\nلا يمكن استعادتها أبداً. هل أنت متأكد تماماً؟</string>
+    <string name="pro_required_title">مطلوب نسخة برو</string>
+    <string name="pro_required_text">هذه الميزة المتقدمة تتطلب اشتراك برو. قم بالترقية لفتح كامل إمكانيات Vaultix!</string>
+    <string name="upgrade_now">الترقية الآن</string>
+    <string name="maybe_later">ربما لاحقاً</string>
+    <string name="change_password_desc">سيؤدي هذا لتوليد مفتاح قاعدة بيانات جديد وإعادة تشفير كامل خزنتك بأمان.</string>
+    <string name="current_password">كلمة المرور الحالية</string>
+    <string name="new_password_label">كلمة المرور الجديدة</string>
+    <string name="confirm_new_password_label">تأكيد كلمة المرور الجديدة</string>
+    <string name="password_changed_success">تم تغيير كلمة المرور وإعادة تشفير الخزنة بنجاح! 🔐</string>
+    <string name="change_pin_desc">سيؤدي هذا لتحديث رمز PIN المستخدم للقفل السريع.</string>
+    <string name="current_pin">رمز PIN الحالي</string>
+    <string name="new_pin">رمز PIN الجديد</string>
+    <string name="confirm_new_pin">تأكيد رمز PIN الجديد</string>
+    <string name="pin_changed_success">تم تغيير رمز PIN بنجاح!</string>
+    <string name="setup_fake_vault_title">إعداد الخزنة الوهمية</string>
+    <string name="setup_fake_vault_desc">أدخل كلمة مرور وهمية. تسجيل الدخول بهذه الكلمة سيفتح خزنة وهمية معزولة لحماية بياناتك الحقيقية من الدخول القسري.</string>
+    <string name="fake_password_label">كلمة المرور الوهمية</string>
+    <string name="confirm_fake_password_label">تأكيد كلمة المرور الوهمية</string>
+    <string name="fake_vault_success">تم إعداد الخزنة الوهمية! جرب تسجيل الدخول بكلمة المرور الوهمية.</string>
+    <string name="copied_toast">تم النسخ للحافظة!</string>
+    <string name="backup_export_title">تعيين كلمة مرور النسخة الاحتياطية</string>
+    <string name="backup_import_title">أدخل كلمة مرور النسخة الاحتياطية</string>
+    <string name="backup_export_desc">ستكون كلمة المرور هذه مطلوبة لاستعادة بياناتك على أي جهاز. لا تفقدها!</string>
+    <string name="backup_import_desc">أدخل كلمة المرور التي استخدمتها عند إنشاء هذه النسخة الاحتياطية.</string>
+    <string name="backup_password_label">كلمة مرور النسخة الاحتياطية</string>
+    <string name="backup_export_button">تصدير</string>
+    <string name="backup_import_button">استيراد</string>
+    <string name="backup_scope_title">ماذا تريد أن تنسخ احتياطياً؟</string>
+    <string name="backup_scope_desc">اضغط على البطاقات لتضمين أقسام متعددة في نسخة احتياطية واحدة.</string>
+    <string name="backup_scope_full">الخزنة كاملة</string>
+    <string name="backup_scope_full_desc">كلمات المرور، البطاقات، الملاحظات، الملفات، والهويات</string>
+    <string name="backup_scope_passwords_desc">تسجيلات الدخول المحفوظة فقط</string>
+    <string name="backup_scope_cards_desc">بطاقات الدفع فقط</string>
+    <string name="backup_scope_notes_desc">الملاحظات الآمنة فقط</string>
+    <string name="backup_scope_files_desc">ملفات الخزنة فقط</string>
+    <string name="backup_scope_ids_desc">وثائق الهوية فقط</string>
+    <string name="backup_history_title">سجل النسخ الاحتياطي</string>
+    <string name="no_local_backups">لم يتم العثور على نسخ احتياطية محلية.</string>
+    <string name="restore_backup_title">استعادة النسخة الاحتياطية</string>
+    <string name="restore_backup_desc">سيؤدي هذا إلى استعادة النسخة الاحتياطية المشفرة المحددة واستبدال بيانات الخزنة الحالية.</string>
+    <string name="restore_button">استعادة</string>
+    <string name="emergency_recovery_sheet">ورقة الاسترداد في حالات الطوارئ</string>
+    <string name="recovery_sheet_not_set">لم تقم بإعداد مفتاح استرداد بعد. هذا هو شبكة الأمان الخاصة بك إذا نسيت كلمة المرور الرئيسية.</string>
+    <string name="recovery_sheet_set">مفتاح الاسترداد هو الطريقة الوحيدة لاستعادة الوصول إذا نسيت كلمة المرور الرئيسية.</string>
+    <string name="not_configured">غير مهيأ</string>
+    <string name="copy_key">نسخ المفتاح</string>
+    <string name="important_instructions_title">تعليمات هامة:</string>
+    <string name="important_instructions_desc">1. اكتب هذا المفتاح يدوياً على ورقة.\n2. احفظه في مكان منفصل عن هاتفك.\n3. لا تحفظه كصورة أو ملف رقمي.</string>
+    <string name="generate_recovery_key">إنشاء مفتاح استرداد</string>
+    <string name="hide_key">إخفاء المفتاح</string>
+    <string name="reveal_key">إظهار المفتاح</string>
+    <string name="setup_action">إعداد</string>
+
+    <!-- AddEditItemScreen Extra -->
+    <string name="coming_soon">قريباً</string>
+    <string name="warning_password_reused">تحذير: أنت تستخدم كلمة المرور هذه بالفعل لحساب آخر!</string>
+    <string name="nfc_not_supported">هذا الجهاز لا يدعم تقنية NFC.</string>
+    <string name="listening_nfc">جاري الاستماع لـ NFC...</string>
+    <string name="stop_scan">إيقاف المسح</string>
+    <string name="note_title_placeholder">عنوان الملاحظة</string>
+    <string name="note_content_placeholder">ابدأ كتابة ملاحظتك الآمنة...</string>
+    <string name="use_this_password">استخدم كلمة المرور هذه</string>
+    <string name="length_format">الطول: %1$d</string>
+    <string name="nfc_label">NFC</string>
+    <string name="scan_label">مسح</string>
+    <string name="card_type_label">نوع البطاقة</string>
+
+    <!-- ItemDetailScreen Extra -->
+    <string name="password_history_title">سجل كلمات المرور (%1$d)</string>
+    <string name="old_password_label">كلمة مرور قديمة %1$d</string>
+    <string name="card_expired">انتهت صلاحية هذه البطاقة</string>
+    <string name="delete_note_title">حذف الملاحظة</string>
+    <string name="delete_note_confirm">هل أنت متأكد من حذف الملاحظة \"%1$s\"؟ لا يمكن التراجع عن هذا الإجراء.</string>
+
+    <!-- Backup Frequency Options -->
+    <string name="frequency_daily">يومياً</string>
+    <string name="frequency_weekly">أسبوعياً</string>
+    <string name="frequency_monthly">شهرياً</string>
+    <string name="frequency_daily_desc">أفضل حماية</string>
+    <string name="frequency_weekly_desc">متوازن</string>
+    <string name="frequency_monthly_desc">يوفر المساحة</string>
+
+    <!-- More ItemDetailScreen Extra -->
+    <string name="identity_label">الهوية</string>
+    <string name="card_label">البطاقة</string>
+    <string name="name_copied_toast">تم نسخ الاسم!</string>
+    <string name="id_number_copied_toast">تم نسخ رقم الهوية!</string>
+    <string name="dob_copied_toast">تم نسخ تاريخ الميلاد!</string>
+    <string name="nationality_copied_toast">تم نسخ الجنسية!</string>
+    <string name="issued_by_copied_toast">تم نسخ جهة الإصدار!</string>
+    <string name="notes_copied_toast">تم نسخ الملاحظات!</string>
+    <string name="username_copied_toast">تم نسخ اسم المستخدم!</string>
+    <string name="password_copied_toast">تم نسخ كلمة المرور!</string>
+    <string name="old_password_copied_toast">تم نسخ كلمة المرور القديمة!</string>
+    <string name="link_copied_toast">تم نسخ الرابط!</string>
+    <string name="package_copied_toast">تم نسخ اسم الحزمة!</string>
+    <string name="card_number_copied_toast">تم نسخ رقم البطاقة!</string>
+    <string name="field_full_name">الاسم الكامل</string>
+    <string name="field_id_number">رقم الهوية</string>
+    <string name="field_date_of_birth">تاريخ الميلاد</string>
+    <string name="field_nationality">الجنسية</string>
+    <string name="field_issued_by">جهة الإصدار</string>
+    <string name="field_issued_date">تاريخ الإصدار</string>
+    <string name="field_expiry_date">تاريخ الانتهاء</string>
+    <string name="field_notes">الملاحظات</string>
+    <string name="field_username">اسم المستخدم</string>
+    <string name="field_website">الموقع الإلكتروني</string>
+    <string name="field_app_package">حزمة التطبيق</string>
+    <string name="field_holder">صاحب البطاقة</string>
+    <string name="field_expires">تاريخ الانتهاء</string>
+    <string name="field_theme">السمة</string>
+    <string name="item_not_found">العنصر غير موجود</string>
+    <string name="word_char_count">%1$d كلمة · %2$d حرف</string>
+    <string name="note_date_format">MMM dd, yyyy في h:mm a</string>
+    <string name="identity_photo_desc">صورة الهوية</string>
+
+    <!-- Premium plans -->
+    <string name="select_plan">اختر خطة</string>
+    <string name="plan_monthly">الخطة الشهرية</string>
+    <string name="plan_yearly">الخطة السنوية</string>
+    <string name="plan_lifetime">خطة مدى الحياة</string>
+    <string name="period_monthly">شهرياً</string>
+    <string name="period_yearly">سنوياً</string>
+    <string name="period_lifetime">دفعة واحدة</string>
+    <string name="best_value">أفضل قيمة!</string>
+    <string name="generate_new_password">إنشاء كلمة مرور جديدة</string>
+
+    <!-- GlobalSearchScreen Extra -->
+    <string name="search_min_chars">اكتب حرفين على الأقل…</string>
+    <string name="search_no_results">لم يتم العثور على نتائج لـ \'%1$s\'</string>
+
+    <!-- CardScanScreen Extra -->
+    <string name="scan_credit_card">مسح بطاقة الائتمان</string>
+    <string name="verify_card_details">التحقق من تفاصيل البطاقة</string>
+    <string name="pro_required_card_scan_text">مسح البطاقات هي ميزة برو. قم بالترقية إلى برو للمسح الضوئي (OCR) دون اتصال بالإنترنت والمزيد!</string>
+    <string name="scanning_dots">جاري المسح الضوئي…</string>
+    <string name="camera_permission_required">مطلوب إذن الكاميرا</string>
+    <string name="grant_permission">منح الإذن</string>
+    <string name="card_name_hint">اسم البطاقة (مثال: بطاقتي الفيزا)</string>
+    <string name="card_scanned_success">تم مسح البطاقة بنجاح! راجع البيانات واحفظها.</string>
+    <string name="scan_again">إعادة المسح</string>
+    <string name="save_card">حفظ البطاقة</string>
+    <string name="card_saved_success">تم حفظ البطاقة بأمان!</string>
+    <string name="scanned_via_ocr">تم المسح عبر OCR</string>
+    <string name="ocr_number_format">الرقم: %1$s</string>
+    <string name="ocr_detecting_number">الرقم: جاري الكشف…</string>
+    <string name="ocr_name_format">الاسم: %1$s</string>
+    <string name="ocr_detecting_name">الاسم: جاري الكشف…</string>
+    <string name="ocr_expiry_format">تاريخ الانتهاء: %1$s/%2$s</string>
+    <string name="ocr_detecting_expiry">تاريخ الانتهاء: جاري الكشف…</string>
+    <string name="ocr_detected_reliable">تم الكشف بموثوقية. جاري الانتقال لشاشة التعديل…</string>
+    <string name="ocr_hold_steady">ثبّت البطاقة حتى يستقر الرقم والاسم.</string>
+
+    <!-- Backup Export & Import Screen Extra -->
+    <string name="password_min_length_backup">يجب أن تتكون كلمة المرور من 6 أحرف على الأقل</string>
+    <string name="select_categories">أو اختر فئات محددة:</string>
+    <string name="choose_export_format">اختر صيغة التصدير</string>
+    <string name="select_export_format_desc">اختر كيف ترغب في تصدير بياناتك.</string>
+    <string name="export_complete">اكتمل التصدير!</string>
+    <string name="back_to_settings">العودة إلى الإعدادات</string>
+    <string name="exporting">جاري التصدير…</string>
+    <string name="secure_your_backup">تأمين نسختك الاحتياطية</string>
+    <string name="secure_your_backup_desc">أدخل كلمة مرور لتشفير نسختك الاحتياطية. ستحتاج إلى كلمة المرور هذه للاستعادة.</string>
+    <string name="export_format_label">الصيغة: %1$s</string>
+    <string name="export_action">تصدير</string>
+    <string name="import_complete">اكتمل الاستيراد!</string>
+    <string name="importing">جاري الاستيراد…</string>
+    <string name="choose_import_source">اختر مصدر الاستيراد</string>
+    <string name="select_import_source_desc">اختر كيف ترغب في استعادة بياناتك.</string>
+    <string name="decrypted_success">تم فك التشفير بنجاح!</string>
+    <string name="import_overwrite_confirm">سيؤدي استيراد البيانات إلى الكتابة فوق العناصر الحالية. هل أنت متأكد؟</string>
+    <string name="import_action">استيراد</string>
+
+    <!-- WifiScreen Extra -->
+    <string name="wifi_scan_gps_permission">يرجى تفعيل الـ GPS وصلاحية الموقع الدقيق (Fine Location) للبحث عن الشبكات.</string>
+    <string name="wifi_scan_precise_location_required">صلاحية الموقع الدقيق (Precise Location) مطلوبة لتمكين مسح شبكات الواي فاي.</string>
+    <string name="wifi_scan_ensure_gps_permission">يرجى التأكد من تفعيل الـ GPS وصلاحية الموقع الدقيق (Fine Location) للبحث عن الشبكات.</string>
+    <string name="scan_nearby">مسح الشبكات القريبة</string>
+    <string name="copied_auto_clear_toast">تم نسخ %1$s! سيتم مسح الحافظة تلقائياً خلال 30 ثانية 🔒</string>
+
+    <!-- SettingsScreen Extra -->
+    <string name="fake_vault_subtitle_custom">إعداد خزنة وهمية بكلمة مرور ثانوية</string>
+    <string name="recovery_sheet_subtitle">عرض أو طباعة مفتاح الاسترداد للوصول في حالات الطوارئ</string>
+    <string name="enable_autofill">تفعيل الملء التلقائي</string>
+    <string name="never">أبداً</string>
+    <string name="immediate">فوراً</string>
+    <string name="auto_backup">النسخ الاحتياطي التلقائي</string>
+    <string name="backup_status_daily">محمي • نسخ احتياطي يومي</string>
+    <string name="backup_status_weekly">محمي • نسخ احتياطي أسبوعي</string>
+    <string name="backup_status_monthly">محمي • نسخ احتياطي شهري</string>
+    <string name="backup_status_disabled">⚠️ معطل — بياناتك في خطر!</string>
+    <string name="backup_disabled_warning">إذا فقدت هاتفك أو قمت بإلغاء تثبيت التطبيق، فستفقد جميع كلمات المرور والبطاقات والملاحظات والملفات بشكل نهائي دون أي طريقة لاستعادتها.</string>
+    <string name="last_backup">آخر نسخ احتياطي</string>
+    <string name="backup_now">النسخ الاحتياطي الآن</string>
+    <string name="creating_backup">جاري إنشاء نسخة احتياطية…</string>
+    <string name="backup_now_subtitle">إنشاء نسخة احتياطية مشفرة فورية</string>
+    <string name="backups_stored_format">%1$d نسخة احتياطية مخزنة على الجهاز</string>
+    <string name="export_data">تصدير البيانات</string>
+    <string name="export_data_desc">تصدير خزنتك كملف مشفر، رموز QR، أو ملف PDF</string>
+    <string name="import_data">استيراد البيانات</string>
+    <string name="import_data_desc">استعادة البيانات من ملف، رموز QR، أو سجل النسخ الاحتياطي</string>
+    <string name="info_encryption">التشفير</string>
+    <string name="info_key_storage">تخزين المفاتيح</string>
+    <string name="info_architecture">بنية التطبيق</string>
+    <string name="info_zero_knowledge">صفر معرفة</string>
+    <string name="info_internet_access">الاتصال بالإنترنت</string>
+    <string name="info_no_internet_desc">لا يوجد (أوفلاين 100%)</string>
+    <string name="all_pin_fields_required">جميع حقول رمز PIN مطلوبة</string>
+    <string name="pin_invalid_length">يجب أن يتكون رمز PIN من 4 إلى 6 أرقام</string>
+    <string name="password_too_short">كلمة المرور قصيرة جداً</string>
+
+    <!-- AddEditItemScreen / NFC / Generator Extra -->
+    <string name="app_package_hint">حزمة التطبيق (مثال: com.facebook.katana)</string>
+    <string name="gen_uppercase">حروف كبيرة (A-Z)</string>
+    <string name="gen_lowercase">حروف صغيرة (a-z)</string>
+    <string name="gen_numbers">أرقام (0-9)</string>
+    <string name="gen_symbols">رموز (!@#...)</string>
+    <string name="nfc_tap_hint">المس بطاقة NFC أو علامة لملء الحقول المدعومة تلقائياً.</string>
+    <string name="nfc_scanning">جاري مسح بطاقة NFC…</string>
+    <string name="nfc_bank_card_no_emv">تم اكتشاف بطاقة بنكية، ولكن هذه البطاقة لم تكشف عن بيانات EMV المقروءة. لم يتم ملء أي شيء.</string>
+    <string name="nfc_tag_no_payload">تم اكتشاف علامة NFC، ولكن لم يتم العثور على حمولة بطاقة مدعومة. لم يتم ملء أي شيء.</string>
+    <string name="nfc_manual_entry_hint">الإدخال اليدوي متاح الآن. استخدم NFC أو المسح في أي وقت من الأزرار أعلاه.</string>
+    <string name="nfc_imported_bank_card">تم الاستيراد من بطاقة NFC البنكية</string>
+    <string name="nfc_imported_nfc">تم الاستيراد من NFC</string>
+    <string name="nfc_imported_text">تم الاستيراد من نص NFC</string>
+    <string name="nfc_success_bank_card">تم استيراد بيانات البطاقة البنكية بنجاح.</string>
+    <string name="nfc_success_ndef">تم استيراد بيانات NDEF بنجاح.</string>
+
+    <!-- Backup Export / Import Screen Extra -->
+    <string name="select_data_to_export">اختر البيانات المراد تصديرها</string>
+    <string name="choose_export_data_desc">اختر البيانات التي ترغب في تضمينها في النسخة الاحتياطية.</string>
+    <string name="total_items_format">%1$d عنصر إجمالي</string>
+    <string name="items_count_format">%1$d عنصر</string>
+    <string name="format_vbk_title">ملف .VBK مشفر</string>
+    <string name="format_vbk_desc">حفظ ملف نسخة احتياطية مشفرة قابلة للنقل لنقلها إلى جهاز آخر</string>
+    <string name="format_qr_images_title">صور رمز QR</string>
+    <string name="format_qr_images_desc">توليد وحفظ رموز QR في معرض الصور الخاص بك للنسخ الاحتياطي غير المتصل بالإنترنت</string>
+    <string name="format_qr_pdf_title">ملف QR PDF</string>
+    <string name="format_qr_pdf_desc">طباعة أو حفظ رموز QR كملف PDF</string>
+    <string name="toggle_password_visibility">تبديل رؤية كلمة المرور</string>
+    <string name="export_success_vbk_format">تم تصدير %1$d عنصر بنجاح كملف .VBK</string>
+    <string name="export_success_qr_images_format">تم حفظ %1$d رمز QR بنجاح في معرض الصور</string>
+    <string name="export_success_qr_pdf">تم إرسال رموز QR كملف PDF إلى خدمة الطباعة</string>
+    <string name="reading_pdf_qr_image">جاري قراءة ملف PDF / صورة رمز QR…</string>
+    <string name="import_vbk_title">استيراد ملف .VBK</string>
+    <string name="import_vbk_desc">اختر ملف نسخة احتياطية مشفرة من جهازك</string>
+    <string name="import_pdf_qr_title">استيراد من ملف PDF أو صور QR</string>
+    <string name="import_pdf_qr_desc">اختر ملف PDF للنسخة الاحتياطية أو صورة QR محفوظة من التخزين</string>
+    <string name="scan_qr_title">مسح رموز QR</string>
+    <string name="scan_qr_desc">استخدم الكاميرا لمسح رموز QR للنسخ الاحتياطي</string>
+    <string name="restore_local_backup_subtitle">استعادة من نسخة احتياطية محلية تلقائية</string>
+    <string name="restore_complete">اكتملت الاستعادة!</string>
+    <string name="restore_failed">فشلت الاستعادة</string>
+    <string name="restoring">جاري الاستعادة…</string>
+    <string name="import_source_qr_format">مسح رمز QR (%1$d/%2$d أجزاء)</string>
+    <string name="import_source_history">سجل النسخ الاحتياطي المحلي</string>
+    <string name="decrypt_restore_title">فك التشفير والاستعادة</string>
+    <string name="decrypt_restore_desc">أدخل كلمة مرور النسخة الاحتياطية لفك تشفير بياناتك واستعادتها.</string>
+    <string name="import_source_label">المصدر: %1$s</string>
+    <string name="restore_failed_format">فشلت الاستعادة: %1$s</string>
+    <string name="no_qr_found_in_file">لم يتم العثور على رموز QR صالحة للنسخ الاحتياطي في الملف المحدد.</string>
+    <string name="failed_read_file_format">فشل قراءة الملف: %1$s</string>
+
+    <!-- IdentityEditScreen Extra -->
+    <string name="add_identity_title">إضافة وثيقة هوية</string>
+    <string name="edit_identity_title">تعديل وثيقة هوية</string>
+    <string name="add_photos_desc">أضف ما يصل إلى 3 صور (الوجه، الظهر، إلخ)</string>
+    <string name="select_type">اختر النوع</string>
+    <string name="document_type_label">نوع الوثيقة</string>
+    <string name="doc_type_passport">جواز سفر</string>
+    <string name="doc_type_driver_license">رخصة قيادة</string>
+    <string name="doc_type_national_id">بطاقة هوية وطنية</string>
+    <string name="doc_type_residence_permit">تصريح إقامة</string>
+    <string name="doc_type_other">أخرى</string>
+    <string name="document_name_label">اسم الوثيقة</string>
+    <string name="document_name_placeholder">مثال: جواز سفري</string>
+    <string name="document_number_label">رقم الوثيقة</string>
+    <string name="full_name_label">الاسم الكامل</string>
+    <string name="dob_label">تاريخ الميلاد</string>
+    <string name="date_format_placeholder">يوم/شهر/سنة</string>
+    <string name="nationality_label_field">الجنسية</string>
+    <string name="issued_by_label">جهة الإصدار</string>
+    <string name="issued_date_label">تاريخ الإصدار</string>
+    <string name="expiry_date_label">تاريخ الانتهاء</string>
+    <string name="notes_optional_label">ملاحظات (اختياري)</string>
+    <string name="identity_saved_success">تم حفظ الهوية بأمان!</string>
+    <string name="save_identity_button">حفظ الهوية</string>
+    <string name="add_photo_sheet_title">إضافة صورة</string>
+    <string name="upload_gallery_title">تحميل من المعرض</string>
+    <string name="upload_gallery_desc">اختر صورة موجودة من جهازك</string>
+    <string name="scan_document_title">مسح وثيقة</string>
+    <string name="scan_document_desc">مسح بطاقة الهوية أو الوثيقة باستخدام الكاميرا</string>
+    <string name="scanner_error_format">خطأ في الماسح الضوئي: %1$s</string>
+
+    <!-- Backup Export & Import Strings -->
+    <string name="export_format_vbk_title">ملف .VBK مشفر</string>
+    <string name="export_format_vbk_desc">حفظ ملف نسخة احتياطية مشفرة لملء ونقل البيانات لجهاز آخر</string>
+    <string name="export_format_qr_title">صور رمز QR</string>
+    <string name="export_format_qr_desc">توليد وحفظ رموز QR في المعرض للنسخ الاحتياطي دون اتصال بالإنترنت</string>
+    <string name="export_format_pdf_title">رموز QR بصيغة PDF</string>
+    <string name="export_format_pdf_desc">طباعة أو حفظ رموز QR كمستند PDF</string>
+    <string name="export_success_format">تم تصدير %1$d عنصر بنجاح كملف .VBK</string>
+    <string name="import_format_vbk_title">استيراد ملف .VBK</string>
+    <string name="import_format_vbk_desc">اختر ملف نسخة احتياطية مشفر من جهازك</string>
+    <string name="import_format_pdf_image_title">استيراد من PDF أو صور QR</string>
+    <string name="import_format_pdf_image_desc">اختر ملف PDF للنسخة الاحتياطية أو صورة QR من وحدة التخزين</string>
+    <string name="scan_qr_codes">مسح رموز QR</string>
+    <string name="scan_qr_codes_desc">استخدم الكاميرا لمسح رموز QR للنسخة الاحتياطية</string>
+    <string name="restore_local_backup_desc">استعادة من نسخة احتياطية محلية تلقائية</string>
+    <string name="kb_format">%1$d كيلوبايت</string>
+    <string name="decrypt_restore">فك التشفير والاستعادة</string>
+    <string name="source_label">المصدر: %1$s</string>
+    <string name="import_source_qr_chunks">مسح رمز QR (%1$d/%2$d أجزاء)</string>
+    <string name="import_source_file">ملف .VBK مشفر</string>
+    <string name="no_valid_qr_found">لم يتم العثور على رموز QR صالحة للنسخ الاحتياطي في الملف المحدد.</string>
+    <string name="failed_read_file_error">فشل قراءة الملف: %1$s</string>
+    <string name="restore_failed_error">فشلت الاستعادة: %1$s</string>
+
+    <!-- Identity Edit Strings -->
+    <string name="add_photos_hint">أضف ما يصل إلى 3 صور (الوجه، الظهر، إلخ.)</string>
+    
+    <!-- New placeholders and duration labels -->
+    <string name="expiry_month_placeholder">MM</string>
+    <string name="expiry_year_placeholder">YY</string>
+    <string name="card_type_visa">Visa</string>
+    <string name="card_type_mastercard">Mastercard</string>
+    <string name="card_type_amex">Amex</string>
+    <string name="card_type_other">أخرى</string>
+    <string name="wifi_security_open">مفتوحة</string>
+    <string name="duration_15s">15 ثانية</string>
+    <string name="duration_30s">30 ثانية</string>
+    <string name="duration_1m">دقيقة واحدة</string>
+    <string name="duration_5m">5 دقائق</string>
+    <string name="duration_15m">15 دقيقة</string>
 </resources>

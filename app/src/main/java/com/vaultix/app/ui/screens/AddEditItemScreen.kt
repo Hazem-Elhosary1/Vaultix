@@ -18,8 +18,11 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.res.stringResource
+import com.vaultix.app.R
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -76,12 +79,12 @@ fun AddEditItemScreen(
             containerColor = VaultBlack,
             topBar = {
                 TopAppBar(
-                    title = { Text("Coming Soon", color = VaultTextPrimary) },
-                    navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, null, tint = VaultTextPrimary) } },
+                    title = { Text(stringResource(R.string.coming_soon), color = VaultTextPrimary) },
+                    navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = VaultTextPrimary) } },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = VaultBlack)
                 )
             }
-        ) { Box(Modifier.fillMaxSize().padding(it), contentAlignment = Alignment.Center) { Text("Coming soon", color = VaultTextSecondary) } }
+        ) { Box(Modifier.fillMaxSize().padding(it), contentAlignment = Alignment.Center) { Text(stringResource(R.string.coming_soon), color = VaultTextSecondary) } }
     }
 }
 
@@ -124,8 +127,8 @@ private fun AddEditPasswordScreen(itemId: String?, onSaved: () -> Unit, onBack: 
         containerColor = VaultBlack,
         topBar = {
             TopAppBar(
-                title = { Text(if (itemId == null) "Add Password" else "Edit Password", fontWeight = FontWeight.Bold, color = VaultTextPrimary) },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, null, tint = VaultTextPrimary) } },
+                title = { Text(stringResource(if (itemId == null) R.string.add_new else R.string.edit_item), fontWeight = FontWeight.Bold, color = VaultTextPrimary) },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = VaultTextPrimary) } },
                 actions = {
                     TextButton(onClick = {
                         if (title.isNotBlank() && password.isNotBlank()) {
@@ -140,7 +143,7 @@ private fun AddEditPasswordScreen(itemId: String?, onSaved: () -> Unit, onBack: 
                             if (itemId == null) viewModel.insertPassword(item) else viewModel.updatePassword(item)
                             onSaved()
                         }
-                    }) { Text("Save", color = VaultOrange, fontWeight = FontWeight.SemiBold) }
+                    }) { Text(stringResource(R.string.save), color = VaultOrange, fontWeight = FontWeight.SemiBold) }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = VaultBlack)
             )
@@ -150,14 +153,14 @@ private fun AddEditPasswordScreen(itemId: String?, onSaved: () -> Unit, onBack: 
             modifier = Modifier.fillMaxSize().padding(paddingValues).padding(16.dp).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            VaultTextField("Title *", title, { title = it }, Icons.Default.Label)
-            VaultTextField("Username / Email", username, { username = it }, Icons.Default.Person, keyboardType = KeyboardType.Email)
+            VaultTextField(stringResource(R.string.title) + " *", title, { title = it }, Icons.Default.Label)
+            VaultTextField(stringResource(R.string.username), username, { username = it }, Icons.Default.Person, keyboardType = KeyboardType.Email)
 
             Column {
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
-                    label = { Text("Password *") },
+                    label = { Text(stringResource(R.string.password) + " *") },
                     leadingIcon = { Icon(Icons.Default.Lock, null, tint = VaultTextSecondary) },
                     trailingIcon = {
                         Row {
@@ -185,15 +188,15 @@ private fun AddEditPasswordScreen(itemId: String?, onSaved: () -> Unit, onBack: 
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.Warning, null, tint = VaultOrange, modifier = Modifier.size(14.dp))
                             Spacer(Modifier.width(6.dp))
-                            Text("Warning: You are already using this password for another account!", color = VaultOrange, fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                            Text(stringResource(R.string.warning_password_reused), color = VaultOrange, fontSize = 11.sp, fontWeight = FontWeight.Medium)
                         }
                     }
                 }
             }
 
-            VaultTextField("Website / URL", website, { website = it }, Icons.Default.Language, keyboardType = KeyboardType.Uri)
-            VaultTextField("App Package (e.g. com.facebook.katana)", appPackageName, { appPackageName = it }, Icons.Default.Android)
-            VaultTextField("Notes", notes, { notes = it }, Icons.Default.Note, singleLine = false, minLines = 3)
+            VaultTextField(stringResource(R.string.website), website, { website = it }, Icons.Default.Language, keyboardType = KeyboardType.Uri)
+            VaultTextField(stringResource(R.string.app_package_hint), appPackageName, { appPackageName = it }, Icons.Default.Android)
+            VaultTextField(stringResource(R.string.notes_label), notes, { notes = it }, Icons.Default.Note, singleLine = false, minLines = 3)
 
             // Show timestamps when editing an existing item
             existingItem?.let { itItem ->
@@ -201,12 +204,12 @@ private fun AddEditPasswordScreen(itemId: String?, onSaved: () -> Unit, onBack: 
                 Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(10.dp), colors = CardDefaults.cardColors(containerColor = VaultSurface)) {
                     Column(Modifier.padding(12.dp)) {
                         val fmt = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
-                        Text("Created: ${fmt.format(Date(itItem.createdAt))}", fontSize = 12.sp, color = VaultTextSecondary)
+                        Text(stringResource(R.string.created_at, fmt.format(Date(itItem.createdAt))), fontSize = 12.sp, color = VaultTextSecondary)
                         Spacer(Modifier.height(4.dp))
-                        Text("Last updated: ${fmt.format(Date(itItem.updatedAt))}", fontSize = 12.sp, color = VaultTextSecondary)
+                        Text(stringResource(R.string.updated_at, fmt.format(Date(itItem.updatedAt))), fontSize = 12.sp, color = VaultTextSecondary)
                         itItem.expiresAt?.let { exp ->
                             Spacer(Modifier.height(4.dp))
-                            Text("Expires: ${fmt.format(Date(exp))}", fontSize = 12.sp, color = VaultTextSecondary)
+                            Text(stringResource(R.string.sort_expiry) + ": " + fmt.format(Date(exp)), fontSize = 12.sp, color = VaultTextSecondary)
                         }
                     }
                 }
@@ -235,29 +238,29 @@ private fun PasswordGeneratorDialog(onDismiss: () -> Unit, onUse: (String) -> Un
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = VaultSurface,
-        title = { Text("Password Generator", fontWeight = FontWeight.Bold, color = VaultTextPrimary) },
+        title = { Text(stringResource(R.string.password_generator), fontWeight = FontWeight.Bold, color = VaultTextPrimary) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Card(colors = CardDefaults.cardColors(containerColor = VaultCard), shape = RoundedCornerShape(8.dp)) {
                     Text(generated, Modifier.padding(12.dp), fontSize = 14.sp, color = VaultOrange, fontWeight = FontWeight.Medium)
                 }
-                Text("Length: ${length.toInt()}", fontSize = 13.sp, color = VaultTextSecondary)
+                Text(stringResource(R.string.length_format, length.toInt()), fontSize = 13.sp, color = VaultTextSecondary)
                 Slider(value = length, onValueChange = {
                     length = it
                     generated = viewModel.generatePassword(it.toInt(), useUppercase, useLowercase, useNumbers, useSymbols)
                 }, valueRange = 8f..64f, colors = SliderDefaults.colors(thumbColor = VaultOrange, activeTrackColor = VaultOrange))
-                GenToggleRow("Uppercase (A-Z)", useUppercase) { useUppercase = it; generated = viewModel.generatePassword(length.toInt(), useUppercase, useLowercase, useNumbers, useSymbols) }
-                GenToggleRow("Lowercase (a-z)", useLowercase) { useLowercase = it; generated = viewModel.generatePassword(length.toInt(), useUppercase, useLowercase, useNumbers, useSymbols) }
-                GenToggleRow("Numbers (0-9)", useNumbers) { useNumbers = it; generated = viewModel.generatePassword(length.toInt(), useUppercase, useLowercase, useNumbers, useSymbols) }
-                GenToggleRow("Symbols (!@#...)", useSymbols) { useSymbols = it; generated = viewModel.generatePassword(length.toInt(), useUppercase, useLowercase, useNumbers, useSymbols) }
+                GenToggleRow(stringResource(R.string.gen_uppercase), useUppercase) { useUppercase = it; generated = viewModel.generatePassword(length.toInt(), useUppercase, useLowercase, useNumbers, useSymbols) }
+                GenToggleRow(stringResource(R.string.gen_lowercase), useLowercase) { useLowercase = it; generated = viewModel.generatePassword(length.toInt(), useUppercase, useLowercase, useNumbers, useSymbols) }
+                GenToggleRow(stringResource(R.string.gen_numbers), useNumbers) { useNumbers = it; generated = viewModel.generatePassword(length.toInt(), useUppercase, useLowercase, useNumbers, useSymbols) }
+                GenToggleRow(stringResource(R.string.gen_symbols), useSymbols) { useSymbols = it; generated = viewModel.generatePassword(length.toInt(), useUppercase, useLowercase, useNumbers, useSymbols) }
             }
         },
         confirmButton = {
             Button(onClick = { onUse(generated) }, colors = ButtonDefaults.buttonColors(containerColor = VaultOrange)) {
-                Text("Use This Password", color = VaultBlack)
+                Text(stringResource(R.string.use_this_password), color = VaultBlack)
             }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel", color = VaultTextSecondary) } }
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel), color = VaultTextSecondary) } }
     )
 }
 
@@ -288,11 +291,11 @@ private fun AddEditCardScreen(itemId: String?, startNfcScanning: Boolean, onNavi
     var cvv by remember { mutableStateOf(existingItem?.cvv ?: "") }
     var cardType by remember { mutableStateOf(existingItem?.cardType ?: "Visa") }
     var isNfcScanning by remember { mutableStateOf(startNfcScanning && itemId == null) }
-    var nfcStatus by remember { mutableStateOf("Tap an NFC card or tag to prefill supported fields.") }
+    var nfcStatus by remember { mutableStateOf(context.getString(R.string.nfc_tap_hint)) }
 
     LaunchedEffect(startNfcScanning, itemId) {
         if (startNfcScanning && itemId == null) {
-            nfcStatus = "Scanning for NFC card..."
+            nfcStatus = context.getString(R.string.nfc_scanning)
             isNfcScanning = true
         }
     }
@@ -308,7 +311,7 @@ private fun AddEditCardScreen(itemId: String?, startNfcScanning: Boolean, onNavi
                 NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK
 
             val callback = NfcAdapter.ReaderCallback { tag ->
-                val parseResult = parseNfcCardDraft(tag)
+                val parseResult = parseNfcCardDraft(tag, context)
                 activity.runOnUiThread {
                     Log.d("VaultixNFC", buildNfcDebugInfo(tag, parseResult))
 
@@ -327,9 +330,9 @@ private fun AddEditCardScreen(itemId: String?, startNfcScanning: Boolean, onNavi
                         nfcStatus = draft.notes
                     } else {
                         nfcStatus = if (tag.techList.contains(IsoDep::class.java.name)) {
-                            parseResult.message.ifBlank { "Bank card detected, but this card did not expose readable EMV data. Nothing was autofilled." }
+                            parseResult.message.ifBlank { context.getString(R.string.nfc_bank_card_no_emv) }
                         } else {
-                            parseResult.message.ifBlank { "NFC tag detected, but no supported card payload was found. Nothing was autofilled." }
+                            parseResult.message.ifBlank { context.getString(R.string.nfc_tag_no_payload) }
                         }
                     }
                     isNfcScanning = false
@@ -360,8 +363,8 @@ private fun AddEditCardScreen(itemId: String?, startNfcScanning: Boolean, onNavi
         containerColor = VaultBlack,
         topBar = {
             TopAppBar(
-                title = { Text(if (itemId == null) "Add Card" else "Edit Card", fontWeight = FontWeight.Bold, color = VaultTextPrimary) },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, null, tint = VaultTextPrimary) } },
+                title = { Text(stringResource(if (itemId == null) R.string.add_new else R.string.edit_item), fontWeight = FontWeight.Bold, color = VaultTextPrimary) },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = VaultTextPrimary) } },
                 actions = {
                     TextButton(onClick = {
                         if (cardName.isNotBlank() && cardNumber.isNotBlank()) {
@@ -376,7 +379,7 @@ private fun AddEditCardScreen(itemId: String?, startNfcScanning: Boolean, onNavi
                             if (itemId == null) viewModel.insertCard(item) else viewModel.updateCard(item)
                             onSaved()
                         }
-                    }) { Text("Save", color = VaultOrange, fontWeight = FontWeight.SemiBold) }
+                    }) { Text(stringResource(R.string.save), color = VaultOrange, fontWeight = FontWeight.SemiBold) }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = VaultBlack)
             )
@@ -386,13 +389,13 @@ private fun AddEditCardScreen(itemId: String?, startNfcScanning: Boolean, onNavi
             modifier = Modifier.fillMaxSize().padding(paddingValues).padding(16.dp).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            VaultTextField("Card Name *", cardName, { cardName = it }, Icons.Default.CreditCard)
-            VaultTextField("Card Holder Name *", holderName, { holderName = it }, Icons.Default.Person)
+            VaultTextField(stringResource(R.string.card_name) + " *", cardName, { cardName = it }, Icons.Default.CreditCard)
+            VaultTextField(stringResource(R.string.cardholder_name) + " *", holderName, { holderName = it }, Icons.Default.Person)
 
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
                 OutlinedButton(
                     onClick = {
-                        nfcStatus = "Scanning for NFC card..."
+                        nfcStatus = context.getString(R.string.nfc_scanning)
                         isNfcScanning = true
                     },
                     modifier = Modifier.weight(1f),
@@ -401,7 +404,7 @@ private fun AddEditCardScreen(itemId: String?, startNfcScanning: Boolean, onNavi
                 ) {
                     Icon(Icons.Default.Nfc, null)
                     Spacer(Modifier.width(8.dp))
-                    Text("NFC")
+                    Text(stringResource(R.string.nfc_label))
                 }
 
                 OutlinedButton(
@@ -412,20 +415,26 @@ private fun AddEditCardScreen(itemId: String?, startNfcScanning: Boolean, onNavi
                 ) {
                     Icon(Icons.Default.CameraAlt, null)
                     Spacer(Modifier.width(8.dp))
-                    Text("Scan")
+                    Text(stringResource(R.string.scan_label))
                 }
             }
 
-            VaultTextField("Card Number *", cardNumber, { if (it.length <= 16 && it.all { c -> c.isDigit() }) cardNumber = it }, Icons.Default.Numbers, keyboardType = KeyboardType.Number)
+            VaultTextField(stringResource(R.string.card_number) + " *", cardNumber, { if (it.length <= 16 && it.all { c -> c.isDigit() }) cardNumber = it }, Icons.Default.Numbers, keyboardType = KeyboardType.Number)
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                VaultTextField("MM", expiryMonth, { if (it.length <= 2) expiryMonth = it }, modifier = Modifier.weight(1f), keyboardType = KeyboardType.Number)
-                VaultTextField("YY", expiryYear, { if (it.length <= 2) expiryYear = it }, modifier = Modifier.weight(1f), keyboardType = KeyboardType.Number)
-                VaultTextField("CVV", cvv, { if (it.length <= 4) cvv = it }, modifier = Modifier.weight(1f), keyboardType = KeyboardType.Number, visualTransformation = PasswordVisualTransformation())
+                VaultTextField(stringResource(R.string.expiry_month_placeholder), expiryMonth, { if (it.length <= 2) expiryMonth = it }, modifier = Modifier.weight(1f), keyboardType = KeyboardType.Number)
+                VaultTextField(stringResource(R.string.expiry_year_placeholder), expiryYear, { if (it.length <= 2) expiryYear = it }, modifier = Modifier.weight(1f), keyboardType = KeyboardType.Number)
+                VaultTextField(stringResource(R.string.cvv), cvv, { if (it.length <= 4) cvv = it }, modifier = Modifier.weight(1f), keyboardType = KeyboardType.Number, visualTransformation = PasswordVisualTransformation())
             }
-            Text("Card Type", fontSize = 12.sp, color = VaultTextSecondary)
+            Text(stringResource(R.string.card_type_label), fontSize = 12.sp, color = VaultTextSecondary)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf("Visa", "Mastercard", "Amex", "Other").forEach { type ->
-                    FilterChip(selected = cardType == type, onClick = { cardType = type }, label = { Text(type, fontSize = 12.sp) },
+                    val typeLabel = when (type) {
+                        "Visa" -> stringResource(R.string.card_type_visa)
+                        "Mastercard" -> stringResource(R.string.card_type_mastercard)
+                        "Amex" -> stringResource(R.string.card_type_amex)
+                        else -> stringResource(R.string.card_type_other)
+                    }
+                    FilterChip(selected = cardType == type, onClick = { cardType = type }, label = { Text(typeLabel, fontSize = 12.sp) },
                         colors = FilterChipDefaults.filterChipColors(selectedContainerColor = VaultOrange.copy(0.2f), selectedLabelColor = VaultOrange))
                 }
             }
@@ -437,10 +446,10 @@ private fun AddEditCardScreen(itemId: String?, startNfcScanning: Boolean, onNavi
             )
 
             if (nfcAdapter == null) {
-                Text("This device does not support NFC.", color = VaultError, fontSize = 12.sp)
+                Text(stringResource(R.string.nfc_not_supported), color = VaultError, fontSize = 12.sp)
             } else if (!isNfcScanning) {
                 Text(
-                    "Manual entry is available now. Use NFC or Scan anytime from the buttons above.",
+                    stringResource(R.string.nfc_manual_entry_hint),
                     color = VaultTextSecondary,
                     fontSize = 12.sp
                 )
@@ -448,14 +457,14 @@ private fun AddEditCardScreen(itemId: String?, startNfcScanning: Boolean, onNavi
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     CircularProgressIndicator(modifier = Modifier.size(18.dp), color = VaultOrange, strokeWidth = 2.dp)
                     Spacer(Modifier.width(10.dp))
-                    Text("Listening for NFC...", color = VaultTextPrimary)
+                    Text(stringResource(R.string.listening_nfc), color = VaultTextPrimary)
                 }
                 OutlinedButton(
                     onClick = { isNfcScanning = false },
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = VaultOrange),
                     border = androidx.compose.foundation.BorderStroke(1.dp, VaultOrange)
                 ) {
-                    Text("Stop Scan")
+                    Text(stringResource(R.string.stop_scan))
                 }
             }
         }
@@ -507,8 +516,8 @@ private fun AddEditNoteScreen(itemId: String?, onSaved: () -> Unit, onBack: () -
         containerColor = VaultBlack,
         topBar = {
             TopAppBar(
-                title = { Text(if (itemId == null) "New Note" else "Edit Note", fontWeight = FontWeight.Bold, color = VaultTextPrimary) },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, null, tint = VaultTextPrimary) } },
+                title = { Text(stringResource(if (itemId == null) R.string.add_new else R.string.edit_item), fontWeight = FontWeight.Bold, color = VaultTextPrimary) },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = VaultTextPrimary) } },
                 actions = {
                     TextButton(onClick = {
                         if (title.isNotBlank()) {
@@ -522,7 +531,7 @@ private fun AddEditNoteScreen(itemId: String?, onSaved: () -> Unit, onBack: () -
                             if (itemId == null) viewModel.insertNote(item) else viewModel.updateNote(item)
                             onSaved()
                         }
-                    }) { Text("Save", color = VaultOrange, fontWeight = FontWeight.SemiBold) }
+                    }) { Text(stringResource(R.string.save), color = VaultOrange, fontWeight = FontWeight.SemiBold) }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = VaultBlack)
             )
@@ -543,7 +552,7 @@ private fun AddEditNoteScreen(itemId: String?, onSaved: () -> Unit, onBack: () -
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Theme:", fontSize = 12.sp, color = VaultTextSecondary, fontWeight = FontWeight.Medium)
+                Text(stringResource(R.string.field_theme) + ":", fontSize = 12.sp, color = VaultTextSecondary, fontWeight = FontWeight.Medium)
                 noteColors.forEach { colorHex ->
                     val color = Color(android.graphics.Color.parseColor(colorHex))
                     val isSelected = selectedColor == colorHex
@@ -591,7 +600,7 @@ private fun AddEditNoteScreen(itemId: String?, onSaved: () -> Unit, onBack: () -
                     ),
                     cursorBrush = androidx.compose.ui.graphics.SolidColor(VaultOrange),
                     decorationBox = { innerTextField ->
-                        if (title.isEmpty()) Text("Note Title", color = VaultTextDisabled, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                        if (title.isEmpty()) Text(stringResource(R.string.note_title_placeholder), color = VaultTextDisabled, fontSize = 24.sp, fontWeight = FontWeight.Bold)
                         innerTextField()
                     }
                 )
@@ -613,7 +622,7 @@ private fun AddEditNoteScreen(itemId: String?, onSaved: () -> Unit, onBack: () -
                     cursorBrush = androidx.compose.ui.graphics.SolidColor(VaultOrange),
                     visualTransformation = MarkdownVisualTransformation(),
                     decorationBox = { innerTextField ->
-                        if (contentValue.text.isEmpty()) Text("Start writing your secure note...", color = VaultTextDisabled, fontSize = 17.sp)
+                        if (contentValue.text.isEmpty()) Text(stringResource(R.string.note_content_placeholder), color = VaultTextDisabled, fontSize = 17.sp)
                         innerTextField()
                     }
                 )
@@ -850,14 +859,14 @@ private fun buildNfcDebugInfo(tag: Tag, result: NfcParseResult): String {
     return lines.joinToString("\n")
 }
 
-private fun parseNfcCardDraft(tag: Tag): NfcParseResult {
+private fun parseNfcCardDraft(tag: Tag, context: Context): NfcParseResult {
     val trace = mutableListOf<String>()
 
-    parseBankCardNfcDraft(tag, trace)?.let {
+    parseBankCardNfcDraft(tag, trace, context)?.let {
         return NfcParseResult(
             draft = it,
             trace = trace,
-            message = "Bank card data imported successfully."
+            message = context.getString(R.string.nfc_success_bank_card)
         )
     }
 
@@ -868,7 +877,7 @@ private fun parseNfcCardDraft(tag: Tag): NfcParseResult {
             val message = ndef.ndefMessage
             ndef.close()
             val payloadText = message?.records.orEmpty().joinToString(" ") { decodeNdefRecord(it) }
-            parseNfcPayload(payloadText)
+            parseNfcPayload(payloadText, context)
         }.getOrElse { exception ->
             trace += "ndefError=${exception.javaClass.simpleName}: ${exception.message.orEmpty()}"
             null
@@ -878,7 +887,7 @@ private fun parseNfcCardDraft(tag: Tag): NfcParseResult {
             return NfcParseResult(
                 draft = draft,
                 trace = trace,
-                message = "NDEF payload imported successfully."
+                message = context.getString(R.string.nfc_success_ndef)
             )
         }
 
@@ -889,18 +898,18 @@ private fun parseNfcCardDraft(tag: Tag): NfcParseResult {
         return NfcParseResult(
             draft = null,
             trace = trace,
-            message = "EMV bank card detected, but the app could not extract PAN, expiry, or holder data from the card responses."
+            message = context.getString(R.string.nfc_bank_card_no_emv)
         )
     }
 
     return NfcParseResult(
         draft = null,
         trace = trace,
-        message = "NFC tag detected, but no supported card payload was found."
+        message = context.getString(R.string.nfc_tag_no_payload)
     )
 }
 
-private fun parseBankCardNfcDraft(tag: Tag, trace: MutableList<String>): NfcCardDraft? {
+private fun parseBankCardNfcDraft(tag: Tag, trace: MutableList<String>, context: Context): NfcCardDraft? {
     val isoDep = IsoDep.get(tag) ?: return null
 
     return try {
@@ -912,7 +921,7 @@ private fun parseBankCardNfcDraft(tag: Tag, trace: MutableList<String>): NfcCard
             trace += "emvApplications=none"
         }
         for (application in applications.ifEmpty { defaultEmvApplications() }) {
-            val draft = readEmvApplication(isoDep, application, trace)
+            val draft = readEmvApplication(isoDep, application, trace, context)
             if (draft != null) {
                 return draft
             }
@@ -969,7 +978,7 @@ private fun defaultEmvApplications(): List<EmvApplication> = listOf(
     EmvApplication(hexToByteArray("A0000001523010"), "Discover")
 )
 
-private fun readEmvApplication(isoDep: IsoDep, application: EmvApplication, trace: MutableList<String>): NfcCardDraft? {
+private fun readEmvApplication(isoDep: IsoDep, application: EmvApplication, trace: MutableList<String>, context: Context): NfcCardDraft? {
     val selectResponse = transmitApdu(isoDep, buildSelectByNameApdu(application.aid)) ?: run {
         trace += "aid=${application.aid.toHexString()} selectFailed"
         return null
@@ -979,7 +988,8 @@ private fun readEmvApplication(isoDep: IsoDep, application: EmvApplication, trac
 
     val firstPass = extractEmvCardDraft(
         payloadSources = listOf(selectData),
-        cardNameFallback = application.label
+        cardNameFallback = application.label,
+        context = context
     )
     if (firstPass?.cardNumber?.isNotBlank() == true) {
         trace += "aid=${application.aid.toHexString()} panFoundInSelect"
@@ -1016,7 +1026,8 @@ private fun readEmvApplication(isoDep: IsoDep, application: EmvApplication, trac
 
     val draft = extractEmvCardDraft(
         payloadSources = listOf(selectData, gpoData) + recordPayloads,
-        cardNameFallback = application.label
+        cardNameFallback = application.label,
+        context = context
     )
 
     if (draft == null) {
@@ -1034,7 +1045,7 @@ private data class EmvExtractedCard(
     val cardName: String? = null
 )
 
-private fun extractEmvCardDraft(payloadSources: List<ByteArray>, cardNameFallback: String?): NfcCardDraft? {
+private fun extractEmvCardDraft(payloadSources: List<ByteArray>, cardNameFallback: String?, context: Context): NfcCardDraft? {
     val cardNumber = payloadSources.asSequence().mapNotNull { extractCardNumberFromEmvData(it) }.firstOrNull()
     val expiry = payloadSources.asSequence().mapNotNull { extractExpiryFromEmvData(it) }.firstOrNull()
     val holderName = payloadSources.asSequence().mapNotNull { extractHolderNameFromEmvData(it) }.firstOrNull()
@@ -1051,7 +1062,7 @@ private fun extractEmvCardDraft(payloadSources: List<ByteArray>, cardNameFallbac
         expiryMonth = expiry?.month.orEmpty(),
         expiryYear = expiry?.year.orEmpty(),
         cvv = "",
-        notes = "Imported from bank card NFC"
+        notes = context.getString(R.string.nfc_imported_bank_card)
     )
 }
 
@@ -1354,7 +1365,7 @@ private fun hexToByteArray(hex: String): ByteArray {
     }
 }
 
-private fun parseNfcPayload(payloadText: String): NfcCardDraft? {
+private fun parseNfcPayload(payloadText: String, context: Context): NfcCardDraft? {
     val normalized = payloadText.trim()
     if (normalized.isBlank()) return null
 
@@ -1375,7 +1386,7 @@ private fun parseNfcPayload(payloadText: String): NfcCardDraft? {
                 expiryMonth = expiryMonth,
                 expiryYear = expiryYear.takeLast(2),
                 cvv = cvv,
-                notes = json.optString("notes").ifBlank { "Imported from NFC" }
+                notes = json.optString("notes").ifBlank { context.getString(R.string.nfc_imported_nfc) }
             )
         }.getOrNull()
     }
@@ -1389,7 +1400,7 @@ private fun parseNfcPayload(payloadText: String): NfcCardDraft? {
             expiryMonth = info.expiryMonth,
             expiryYear = info.expiryYear,
             cvv = "",
-            notes = "Imported from NFC text"
+            notes = context.getString(R.string.nfc_imported_text)
         )
     }
 

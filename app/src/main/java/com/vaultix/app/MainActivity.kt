@@ -123,8 +123,11 @@ class MainActivity : FragmentActivity() {
             
             // Apply language dynamically
             LaunchedEffect(configState.language) {
-                val appLocale: LocaleListCompat = LocaleListCompat.forLanguageTags(configState.language)
-                AppCompatDelegate.setApplicationLocales(appLocale)
+                val currentLocales = AppCompatDelegate.getApplicationLocales()
+                if (currentLocales.isEmpty || currentLocales.get(0)?.language != configState.language) {
+                    val appLocale: LocaleListCompat = LocaleListCompat.forLanguageTags(configState.language)
+                    AppCompatDelegate.setApplicationLocales(appLocale)
+                }
                 
                 // Force configuration update for immediate Compose reaction
                 val locale = Locale(configState.language)

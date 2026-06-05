@@ -16,6 +16,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -218,7 +220,7 @@ fun FileVaultScreen(
                                 onBack()
                             }
                         }) {
-                            Icon(if (currentFolderId != null) Icons.Default.ArrowUpward else Icons.Default.ArrowBack, "Back", tint = VaultTextPrimary)
+                            Icon(if (currentFolderId != null) Icons.Default.ArrowUpward else Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = VaultTextPrimary)
                         }
                     },
                     actions = {
@@ -315,7 +317,7 @@ fun FileVaultScreen(
                         )
                         if (!isLast) {
                             Icon(
-                                imageVector = Icons.Default.ChevronRight,
+                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                                 contentDescription = null,
                                 tint = VaultTextDisabled,
                                 modifier = Modifier.padding(horizontal = 6.dp).size(14.dp)

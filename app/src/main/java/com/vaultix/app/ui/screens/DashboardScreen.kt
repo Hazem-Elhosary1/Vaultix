@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -618,7 +619,7 @@ private fun RecentActivityCard(
                 Text(item.title, fontSize = 15.sp, fontWeight = FontWeight.Medium, color = VaultTextPrimary)
                 Text(item.subtitle, fontSize = 13.sp, color = VaultTextSecondary, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
             }
-            Icon(Icons.Default.ChevronRight, null, tint = VaultTextDisabled)
+            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = VaultTextDisabled)
         }
     }
 }
@@ -840,7 +841,7 @@ fun TimelineItem(password: com.vaultix.app.data.model.Password, isLast: Boolean,
             )
         }
         
-        Icon(Icons.Default.ChevronRight, null, tint = VaultTextDisabled, modifier = Modifier.size(20.dp))
+        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = VaultTextDisabled, modifier = Modifier.size(20.dp))
     }
 }
 

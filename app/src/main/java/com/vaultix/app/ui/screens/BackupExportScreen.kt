@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,6 +29,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.res.stringResource
+import com.vaultix.app.R
 import com.vaultix.app.ui.theme.*
 import com.vaultix.app.ui.viewmodel.BackupViewModel
 import com.vaultix.app.ui.viewmodel.ExportFormat
@@ -91,7 +94,7 @@ fun BackupExportScreen(
                     selectedScopes.sumOf { s -> scopeCounts[s] ?: 0 }
                 }
                 exportDone = true
-                exportResultMessage = "Successfully exported $totalItems items as .VBK file"
+                exportResultMessage = context.getString(R.string.export_success_format, totalItems)
                 isExporting = false
             }
         }
@@ -107,10 +110,10 @@ fun BackupExportScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Export Data", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.export_data), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -169,11 +172,11 @@ fun BackupExportScreen(
                         onBack = { currentStep = 1 },
                         onExport = {
                             if (password.length < 6) {
-                                Toast.makeText(context, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, context.getString(R.string.password_min_length_backup), Toast.LENGTH_SHORT).show()
                                 return@ExportStep3_PasswordAndExport
                             }
                             if (password != confirmPassword) {
-                                Toast.makeText(context, "Passwords don't match", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, context.getString(R.string.passwords_not_match), Toast.LENGTH_SHORT).show()
                                 return@ExportStep3_PasswordAndExport
                             }
                             isExporting = true
@@ -208,7 +211,7 @@ fun BackupExportScreen(
                                         qrUtil.saveQRCodesToGallery(images.map { it.second })
                                         backupViewModel.updateExportProgress(1f)
                                         exportDone = true
-                                        exportResultMessage = "Successfully saved ${images.size} QR code images to gallery"
+                                        exportResultMessage = context.getString(R.string.export_success_qr_images_format, images.size)
                                         isExporting = false
                                     }
                                 }
@@ -235,7 +238,7 @@ fun BackupExportScreen(
                                         qrUtil.printQRCodes(qrBackupViewModel.qrCodes.value)
                                         backupViewModel.updateExportProgress(1f)
                                         exportDone = true
-                                        exportResultMessage = "QR code PDF sent to print service"
+                                        exportResultMessage = context.getString(R.string.export_success_qr_pdf)
                                         isExporting = false
                                     }
                                 }
@@ -306,29 +309,29 @@ private fun ExportStep1_SelectData(
 ) {
     val totalCount = scopeCounts.values.sum()
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("Select Data to Export", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
-        Text("Choose what you'd like to include in your backup.", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(stringResource(R.string.backup_scope_title), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
+        Text(stringResource(R.string.backup_scope_desc), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(8.dp))
 
         // Full vault option
         ScopeCard(
             icon = Icons.Default.Inventory2,
-            title = "Full Vault",
-            subtitle = "$totalCount total items",
+            title = stringResource(R.string.backup_scope_full),
+            subtitle = stringResource(R.string.total_items_format, totalCount),
             isSelected = isFullVault,
             onClick = { onFullVaultChanged(true) }
         )
 
         HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = MaterialTheme.colorScheme.outlineVariant)
 
-        Text("Or select specific categories:", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(stringResource(R.string.select_categories), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
         val categories = listOf(
-            Triple(BackupScope.PASSWORDS, Icons.Default.Lock, "Passwords"),
-            Triple(BackupScope.CARDS, Icons.Default.CreditCard, "Cards"),
-            Triple(BackupScope.NOTES, Icons.Default.StickyNote2, "Notes"),
-            Triple(BackupScope.FILES, Icons.Default.InsertDriveFile, "Files"),
-            Triple(BackupScope.IDENTITIES, Icons.Default.Badge, "Identities")
+            Triple(BackupScope.PASSWORDS, Icons.Default.Lock, stringResource(R.string.passwords)),
+            Triple(BackupScope.CARDS, Icons.Default.CreditCard, stringResource(R.string.cards)),
+            Triple(BackupScope.NOTES, Icons.Default.StickyNote2, stringResource(R.string.notes)),
+            Triple(BackupScope.FILES, Icons.Default.InsertDriveFile, stringResource(R.string.files)),
+            Triple(BackupScope.IDENTITIES, Icons.Default.Badge, stringResource(R.string.identities))
         )
         categories.forEach { (scopeItem, icon, label) ->
             val count = scopeCounts[scopeItem] ?: 0
@@ -336,7 +339,7 @@ private fun ExportStep1_SelectData(
             ScopeCard(
                 icon = icon,
                 title = label,
-                subtitle = "$count items",
+                subtitle = stringResource(R.string.items_count_format, count),
                 isSelected = isSelected,
                 onClick = {
                     if (isFullVault) {
@@ -363,7 +366,7 @@ private fun ExportStep1_SelectData(
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
             enabled = isFullVault || selectedScopes.isNotEmpty()
         ) {
-            Text("Next", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+            Text(stringResource(R.string.next), fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
             Spacer(Modifier.width(8.dp))
             Icon(Icons.Default.ArrowForward, null)
         }
@@ -425,28 +428,28 @@ private fun ExportStep2_ChooseFormat(
     onNext: () -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("Choose Export Format", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
-        Text("Select how you'd like to export your data.", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(stringResource(R.string.choose_export_format), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
+        Text(stringResource(R.string.select_export_format_desc), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(8.dp))
 
         FormatCard(
             icon = Icons.Default.Description,
-            title = "Encrypted .VBK File",
-            subtitle = "Save a portable encrypted backup file for transfer to another device",
+            title = stringResource(R.string.export_format_vbk_title),
+            subtitle = stringResource(R.string.export_format_vbk_desc),
             isSelected = selectedFormat == ExportFormat.VBK_FILE,
             onClick = { onFormatSelected(ExportFormat.VBK_FILE) }
         )
         FormatCard(
             icon = Icons.Default.QrCode,
-            title = "QR Code Images",
-            subtitle = "Generate and save QR codes to your gallery for offline backup",
+            title = stringResource(R.string.export_format_qr_title),
+            subtitle = stringResource(R.string.export_format_qr_desc),
             isSelected = selectedFormat == ExportFormat.QR_IMAGES,
             onClick = { onFormatSelected(ExportFormat.QR_IMAGES) }
         )
         FormatCard(
             icon = Icons.Default.PictureAsPdf,
-            title = "QR Code PDF",
-            subtitle = "Print or save QR codes as a PDF document",
+            title = stringResource(R.string.export_format_pdf_title),
+            subtitle = stringResource(R.string.export_format_pdf_desc),
             isSelected = selectedFormat == ExportFormat.QR_PDF,
             onClick = { onFormatSelected(ExportFormat.QR_PDF) }
         )
@@ -463,9 +466,9 @@ private fun ExportStep2_ChooseFormat(
                 shape = RoundedCornerShape(14.dp),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
             ) {
-                Icon(Icons.Default.ArrowBack, null)
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
                 Spacer(Modifier.width(8.dp))
-                Text("Back")
+                Text(stringResource(R.string.back))
             }
             Button(
                 onClick = onNext,
@@ -473,7 +476,7 @@ private fun ExportStep2_ChooseFormat(
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
-                Text("Next", fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.next), fontWeight = FontWeight.SemiBold)
                 Spacer(Modifier.width(8.dp))
                 Icon(Icons.Default.ArrowForward, null)
             }
@@ -577,7 +580,7 @@ private fun ExportStep3_PasswordAndExport(
                         Icon(Icons.Default.CheckCircle, null, tint = VaultSuccess, modifier = Modifier.size(40.dp))
                     }
                     Spacer(Modifier.height(16.dp))
-                    Text("Export Complete!", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                    Text(stringResource(R.string.export_complete), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                     Spacer(Modifier.height(8.dp))
                     Text(
                         exportResultMessage,
@@ -594,7 +597,7 @@ private fun ExportStep3_PasswordAndExport(
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = primary)
             ) {
-                Text("Back to Settings", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                Text(stringResource(R.string.back_to_settings), fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
             }
         } else if (isExporting) {
             // Exporting progress
@@ -603,7 +606,7 @@ private fun ExportStep3_PasswordAndExport(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Exporting...", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground)
+                Text(stringResource(R.string.exporting), fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground)
                 Spacer(Modifier.height(24.dp))
                 LinearProgressIndicator(
                     progress = { animatedProgress },
@@ -621,15 +624,15 @@ private fun ExportStep3_PasswordAndExport(
             }
         } else {
             // Password entry
-            Text("Secure Your Backup", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
-            Text("Enter a password to encrypt your backup. You'll need this password to restore.", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(stringResource(R.string.secure_your_backup), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
+            Text(stringResource(R.string.secure_your_backup_desc), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
             Spacer(Modifier.height(8.dp))
 
             val formatLabel = when (selectedFormat) {
-                ExportFormat.VBK_FILE -> "Encrypted .VBK File"
-                ExportFormat.QR_IMAGES -> "QR Code Images"
-                ExportFormat.QR_PDF -> "QR Code PDF"
+                ExportFormat.VBK_FILE -> stringResource(R.string.export_format_vbk_title)
+                ExportFormat.QR_IMAGES -> stringResource(R.string.export_format_qr_title)
+                ExportFormat.QR_PDF -> stringResource(R.string.export_format_pdf_title)
             }
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -640,7 +643,7 @@ private fun ExportStep3_PasswordAndExport(
                 Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Info, null, tint = primary, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("Format: $formatLabel", fontSize = 13.sp, color = primary, fontWeight = FontWeight.Medium)
+                    Text(stringResource(R.string.export_format_label, formatLabel), fontSize = 13.sp, color = primary, fontWeight = FontWeight.Medium)
                 }
             }
 
@@ -649,7 +652,7 @@ private fun ExportStep3_PasswordAndExport(
             OutlinedTextField(
                 value = password,
                 onValueChange = onPasswordChanged,
-                label = { Text("Backup Password") },
+                label = { Text(stringResource(R.string.backup_password_label)) },
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
                     IconButton(onClick = onTogglePasswordVisible) {
@@ -670,12 +673,12 @@ private fun ExportStep3_PasswordAndExport(
                 )
             )
             if (password.isNotEmpty() && password.length < 6) {
-                Text("Password must be at least 6 characters", color = VaultError, fontSize = 12.sp)
+                Text(stringResource(R.string.password_min_length_backup), color = VaultError, fontSize = 12.sp)
             }
             OutlinedTextField(
                 value = confirmPassword,
                 onValueChange = onConfirmPasswordChanged,
-                label = { Text("Confirm Password") },
+                label = { Text(stringResource(R.string.confirm_new_password_label)) },
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(14.dp),
@@ -688,7 +691,7 @@ private fun ExportStep3_PasswordAndExport(
                 )
             )
             if (confirmPassword.isNotEmpty() && password != confirmPassword) {
-                Text("Passwords don't match", color = VaultError, fontSize = 12.sp)
+                Text(stringResource(R.string.passwords_not_match), color = VaultError, fontSize = 12.sp)
             }
 
             Spacer(Modifier.height(20.dp))
@@ -703,9 +706,9 @@ private fun ExportStep3_PasswordAndExport(
                     shape = RoundedCornerShape(14.dp),
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
                 ) {
-                    Icon(Icons.Default.ArrowBack, null)
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
                     Spacer(Modifier.width(8.dp))
-                    Text("Back")
+                    Text(stringResource(R.string.back))
                 }
                 Button(
                     onClick = onExport,
@@ -716,7 +719,7 @@ private fun ExportStep3_PasswordAndExport(
                 ) {
                     Icon(Icons.Default.Upload, null)
                     Spacer(Modifier.width(8.dp))
-                    Text("Export", fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.export_action), fontWeight = FontWeight.SemiBold)
                 }
             }
         }

@@ -13,6 +13,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,6 +32,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vaultix.app.ui.theme.*
 import com.vaultix.app.ui.viewmodel.BackupViewModel
+import androidx.compose.ui.res.stringResource
+import com.vaultix.app.R
 import com.vaultix.app.ui.viewmodel.QRCodeBackupViewModel
 import com.vaultix.app.ui.viewmodel.QRBackupUIState
 import com.vaultix.app.ui.components.QRCodeScannerDialog
@@ -145,7 +149,7 @@ fun BackupImportScreen(
         backupState.error?.let { err ->
             if (isRestoring) {
                 restoreDone = true
-                restoreResultMessage = "Restore failed: $err"
+                restoreResultMessage = context.getString(R.string.restore_failed_error, err)
                 isRestoring = false
                 backupViewModel.clearMessage()
             }
@@ -186,7 +190,7 @@ fun BackupImportScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-                    Text("Reading PDF / QR Image...", fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
+                    Text(stringResource(R.string.reading_pdf_qr_image), fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
                 }
             }
         }
@@ -195,10 +199,10 @@ fun BackupImportScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Import Data", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.import_data), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -298,8 +302,8 @@ fun BackupImportScreen(
                                             restoreDone = true
                                             restoreResultMessage = when (state) {
                                                 is QRBackupUIState.RestoreSuccess -> state.message
-                                                is QRBackupUIState.Error -> "Restore failed: ${state.message}"
-                                                else -> "Restore completed"
+                                                is QRBackupUIState.Error -> context.getString(R.string.restore_failed_error, state.message)
+                                                else -> context.getString(R.string.restore_complete)
                                             }
                                             isRestoring = false
                                         }
@@ -384,31 +388,31 @@ private fun ImportStep1_ChooseSource(
     val primary = MaterialTheme.colorScheme.primary
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("Choose Import Source", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
-        Text("Select where to restore your data from.", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(stringResource(R.string.choose_import_source), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
+        Text(stringResource(R.string.select_import_source_desc), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(8.dp))
 
         // .VBK File option
         ImportSourceCard(
             icon = Icons.Default.Description,
-            title = "Import .VBK File",
-            subtitle = "Pick an encrypted backup file from your device",
+            title = stringResource(R.string.import_format_vbk_title),
+            subtitle = stringResource(R.string.import_format_vbk_desc),
             onClick = onPickFile
         )
 
         // Pick PDF/Image option
         ImportSourceCard(
             icon = Icons.Default.PictureAsPdf,
-            title = "Import from PDF or QR Images",
-            subtitle = "Select a saved backup PDF or QR image from storage",
+            title = stringResource(R.string.import_format_pdf_image_title),
+            subtitle = stringResource(R.string.import_format_pdf_image_desc),
             onClick = onPickPdfOrImage
         )
 
         // QR Code scan option
         ImportSourceCard(
             icon = Icons.Default.QrCodeScanner,
-            title = "Scan QR Codes",
-            subtitle = "Use your camera to scan QR code backups",
+            title = stringResource(R.string.scan_qr_codes),
+            subtitle = stringResource(R.string.scan_qr_codes_desc),
             onClick = onScanQR
         )
 
@@ -416,8 +420,8 @@ private fun ImportStep1_ChooseSource(
         if (localBackups.isNotEmpty()) {
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.outlineVariant)
 
-            Text("Backup History", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground)
-            Text("Restore from an automatic local backup", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(stringResource(R.string.backup_history_title), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground)
+            Text(stringResource(R.string.restore_local_backup_desc), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
             Spacer(Modifier.height(4.dp))
 
@@ -447,9 +451,9 @@ private fun ImportStep1_ChooseSource(
                         Spacer(Modifier.width(12.dp))
                         Column(Modifier.weight(1f)) {
                             Text(dateStr, fontWeight = FontWeight.Medium, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
-                            Text("${sizeKb}KB", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(stringResource(R.string.kb_format, sizeKb), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
-                        Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
@@ -492,7 +496,7 @@ private fun ImportSourceCard(
                 Text(title, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface)
                 Text(subtitle, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp)
             }
-            Icon(Icons.Default.ChevronRight, null, tint = primary)
+            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = primary)
         }
     }
 }
@@ -521,7 +525,7 @@ private fun ImportStep2_PasswordAndRestore(
         label = "import_progress"
     )
     val primary = MaterialTheme.colorScheme.primary
-    val isSuccess = restoreDone && !restoreResultMessage.startsWith("Restore failed")
+    val isSuccess = restoreDone && !restoreResultMessage.contains(stringResource(R.string.restore_failed), ignoreCase = true)
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         if (restoreDone) {
@@ -556,8 +560,8 @@ private fun ImportStep2_PasswordAndRestore(
                         )
                     }
                     Spacer(Modifier.height(16.dp))
-                    Text(
-                        if (isSuccess) "Restore Complete!" else "Restore Failed",
+                     Text(
+                        if (isSuccess) stringResource(R.string.restore_complete) else stringResource(R.string.restore_failed),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -578,7 +582,7 @@ private fun ImportStep2_PasswordAndRestore(
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = primary)
             ) {
-                Text("Done", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                Text(stringResource(R.string.done), fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
             }
         } else if (isRestoring) {
             // Restoring progress
@@ -587,7 +591,7 @@ private fun ImportStep2_PasswordAndRestore(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Restoring...", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground)
+                Text(stringResource(R.string.restoring), fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground)
                 Spacer(Modifier.height(24.dp))
                 LinearProgressIndicator(
                     progress = { animatedProgress },
@@ -606,14 +610,14 @@ private fun ImportStep2_PasswordAndRestore(
         } else {
             // Password entry
             val sourceLabel = when (selectedSource) {
-                ImportSource.FILE -> "Encrypted .VBK File"
-                ImportSource.QR_SCAN -> "QR Code Scan ($scannedChunks/$totalChunks chunks)"
-                ImportSource.HISTORY -> "Local Backup History"
+                ImportSource.FILE -> stringResource(R.string.import_source_file)
+                ImportSource.QR_SCAN -> stringResource(R.string.import_source_qr_chunks, scannedChunks, totalChunks)
+                ImportSource.HISTORY -> stringResource(R.string.import_source_history)
                 ImportSource.NONE -> ""
             }
 
-            Text("Decrypt & Restore", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
-            Text("Enter your backup password to decrypt and restore your data.", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(stringResource(R.string.decrypt_restore), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
+            Text(stringResource(R.string.decrypt_restore_desc), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
             Spacer(Modifier.height(8.dp))
 
@@ -626,7 +630,7 @@ private fun ImportStep2_PasswordAndRestore(
                 Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Info, null, tint = primary, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("Source: $sourceLabel", fontSize = 13.sp, color = primary, fontWeight = FontWeight.Medium)
+                    Text(stringResource(R.string.source_label, sourceLabel), fontSize = 13.sp, color = primary, fontWeight = FontWeight.Medium)
                 }
             }
 
@@ -635,7 +639,7 @@ private fun ImportStep2_PasswordAndRestore(
                 OutlinedTextField(
                     value = password,
                     onValueChange = onPasswordChanged,
-                    label = { Text("Backup Password") },
+                    label = { Text(stringResource(R.string.backup_password_label)) },
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
                         IconButton(onClick = onTogglePasswordVisible) {
@@ -656,7 +660,7 @@ private fun ImportStep2_PasswordAndRestore(
                     )
                 )
                 if (password.isNotEmpty() && password.length < 6) {
-                    Text("Password must be at least 6 characters", color = VaultError, fontSize = 12.sp)
+                    Text(stringResource(R.string.password_min_length_backup), color = VaultError, fontSize = 12.sp)
                 }
             }
 
@@ -672,9 +676,9 @@ private fun ImportStep2_PasswordAndRestore(
                     shape = RoundedCornerShape(14.dp),
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
                 ) {
-                    Icon(Icons.Default.ArrowBack, null)
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
                     Spacer(Modifier.width(8.dp))
-                    Text("Back")
+                    Text(stringResource(R.string.back))
                 }
                 Button(
                     onClick = onRestore,
@@ -685,7 +689,7 @@ private fun ImportStep2_PasswordAndRestore(
                 ) {
                     Icon(Icons.Default.Download, null)
                     Spacer(Modifier.width(8.dp))
-                    Text("Restore", fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.restore_button), fontWeight = FontWeight.SemiBold)
                 }
             }
         }
@@ -797,7 +801,7 @@ fun processPdfOrImageBackup(
             
             if (scannedChunks.isEmpty()) {
                 withContext(Dispatchers.Main) {
-                    onError("No valid backup QR codes found in the selected file.")
+                    onError(context.getString(R.string.no_valid_qr_found))
                 }
                 return@launch
             }
@@ -812,7 +816,7 @@ fun processPdfOrImageBackup(
             
         } catch (e: Exception) {
             withContext(Dispatchers.Main) {
-                onError("Failed to read file: ${e.localizedMessage ?: e.message}")
+                onError(context.getString(R.string.failed_read_file_error, e.localizedMessage ?: e.message))
             }
         }
     }

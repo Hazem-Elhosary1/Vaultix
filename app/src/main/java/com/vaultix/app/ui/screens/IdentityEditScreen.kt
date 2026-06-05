@@ -32,6 +32,8 @@ import com.vaultix.app.ui.theme.*
 import com.vaultix.app.ui.viewmodel.AuthViewModel
 import com.vaultix.app.ui.viewmodel.IdentityViewModel
 import com.vaultix.app.util.DocumentScannerHelper
+import androidx.compose.ui.res.stringResource
+import com.vaultix.app.R
 
 /**
  * Identity document add/edit screen with photo support.
@@ -72,7 +74,13 @@ fun IdentityEditScreen(
     }
 
     // Document type dropdown
-    val documentTypes = listOf("Passport", "Driver License", "National ID", "Residence Permit", "Other")
+    val documentTypes = listOf(
+        Pair("Passport", R.string.doc_type_passport),
+        Pair("Driver License", R.string.doc_type_driver_license),
+        Pair("National ID", R.string.doc_type_national_id),
+        Pair("Residence Permit", R.string.doc_type_residence_permit),
+        Pair("Other", R.string.doc_type_other)
+    )
     var expanded by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -81,14 +89,14 @@ fun IdentityEditScreen(
             TopAppBar(
                 title = {
                     Text(
-                        "${if (existingId == null) "Add" else "Edit"} Identity Document",
+                        stringResource(if (existingId == null) R.string.add_new else R.string.edit_item),
                         fontWeight = FontWeight.Bold,
                         color = VaultTextPrimary
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onClose) {
-                        Icon(Icons.Default.Close, "Close", tint = VaultTextPrimary)
+                        Icon(Icons.Default.Close, stringResource(R.string.close), tint = VaultTextPrimary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = VaultBlack)
@@ -166,28 +174,32 @@ fun IdentityEditScreen(
                             ) {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     Icon(Icons.Default.AddAPhoto, null, tint = VaultOrange)
-                                    Text("Add", color = VaultOrange, fontSize = 11.sp)
+                                    Text(stringResource(R.string.add), color = VaultOrange, fontSize = 11.sp)
                                 }
                             }
                         }
                     }
                     if (identityState.imagePaths.isEmpty()) {
                         Spacer(Modifier.height(8.dp))
-                        Text("Add up to 3 photos (Front, Back, etc.)", color = VaultTextDisabled, fontSize = 12.sp)
+                        Text(stringResource(R.string.add_photos_hint), color = VaultTextDisabled, fontSize = 12.sp)
                     }
                 }
             }
 
             // ── Document Type Dropdown ──
+            val displayedType = remember(identityState.documentType) {
+                documentTypes.find { it.first == identityState.documentType }?.second?.let { context.getString(it) } 
+                    ?: identityState.documentType.ifEmpty { context.getString(R.string.select_type) }
+            }
             ExposedDropdownMenuBox(
                 expanded = expanded,
                 onExpandedChange = { expanded = !expanded }
             ) {
                 OutlinedTextField(
-                    value = identityState.documentType.ifEmpty { "Select Type" },
+                    value = displayedType,
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Document Type") },
+                    label = { Text(stringResource(R.string.document_type_label)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -198,11 +210,11 @@ fun IdentityEditScreen(
                     expanded = expanded,
                     onDismissRequest = { expanded = false }
                 ) {
-                    documentTypes.forEach { type ->
+                    documentTypes.forEach { (englishKey, stringResId) ->
                         DropdownMenuItem(
-                            text = { Text(type) },
+                            text = { Text(stringResource(stringResId)) },
                             onClick = {
-                                identityViewModel.updateDocumentType(type)
+                                identityViewModel.updateDocumentType(englishKey)
                                 expanded = false
                             }
                         )
@@ -214,8 +226,8 @@ fun IdentityEditScreen(
             OutlinedTextField(
                 value = identityState.documentName,
                 onValueChange = { identityViewModel.updateDocumentName(it) },
-                label = { Text("Document Name") },
-                placeholder = { Text("e.g. My Passport", color = VaultTextHint) },
+                label = { Text(stringResource(R.string.document_name_label)) },
+                placeholder = { Text(stringResource(R.string.document_name_placeholder), color = VaultTextHint) },
                 modifier = Modifier.fillMaxWidth(),
                 colors = identityFieldColors()
             )
@@ -223,7 +235,7 @@ fun IdentityEditScreen(
             OutlinedTextField(
                 value = identityState.documentNumber,
                 onValueChange = { identityViewModel.updateDocumentNumber(it) },
-                label = { Text("Document Number") },
+                label = { Text(stringResource(R.string.document_number_label)) },
                 leadingIcon = { Icon(Icons.Default.Numbers, null, tint = VaultOrange) },
                 modifier = Modifier.fillMaxWidth(),
                 colors = identityFieldColors()
@@ -232,7 +244,7 @@ fun IdentityEditScreen(
             OutlinedTextField(
                 value = identityState.fullName,
                 onValueChange = { identityViewModel.updateFullName(it) },
-                label = { Text("Full Name") },
+                label = { Text(stringResource(R.string.full_name_label)) },
                 leadingIcon = { Icon(Icons.Default.Person, null, tint = VaultOrange) },
                 modifier = Modifier.fillMaxWidth(),
                 colors = identityFieldColors()
@@ -241,8 +253,8 @@ fun IdentityEditScreen(
             OutlinedTextField(
                 value = identityState.dateOfBirth,
                 onValueChange = { identityViewModel.updateDateOfBirth(it) },
-                label = { Text("Date of Birth") },
-                placeholder = { Text("DD/MM/YYYY", color = VaultTextHint) },
+                label = { Text(stringResource(R.string.dob_label)) },
+                placeholder = { Text(stringResource(R.string.date_format_placeholder), color = VaultTextHint) },
                 leadingIcon = { Icon(Icons.Default.CalendarMonth, null, tint = VaultOrange) },
                 modifier = Modifier.fillMaxWidth(),
                 colors = identityFieldColors()
@@ -251,7 +263,7 @@ fun IdentityEditScreen(
             OutlinedTextField(
                 value = identityState.nationality,
                 onValueChange = { identityViewModel.updateNationality(it) },
-                label = { Text("Nationality") },
+                label = { Text(stringResource(R.string.nationality_label_field)) },
                 leadingIcon = { Icon(Icons.Default.Flag, null, tint = VaultOrange) },
                 modifier = Modifier.fillMaxWidth(),
                 colors = identityFieldColors()
@@ -260,7 +272,7 @@ fun IdentityEditScreen(
             OutlinedTextField(
                 value = identityState.issuedBy,
                 onValueChange = { identityViewModel.updateIssuedBy(it) },
-                label = { Text("Issued By") },
+                label = { Text(stringResource(R.string.issued_by_label)) },
                 leadingIcon = { Icon(Icons.Default.AccountBalance, null, tint = VaultOrange) },
                 modifier = Modifier.fillMaxWidth(),
                 colors = identityFieldColors()
@@ -270,16 +282,16 @@ fun IdentityEditScreen(
                 OutlinedTextField(
                     value = identityState.issuedDate,
                     onValueChange = { identityViewModel.updateIssuedDate(it) },
-                    label = { Text("Issued Date") },
-                    placeholder = { Text("DD/MM/YYYY", color = VaultTextHint) },
+                    label = { Text(stringResource(R.string.issued_date_label)) },
+                    placeholder = { Text(stringResource(R.string.date_format_placeholder), color = VaultTextHint) },
                     modifier = Modifier.weight(1f),
                     colors = identityFieldColors()
                 )
                 OutlinedTextField(
                     value = identityState.expiryDate,
                     onValueChange = { identityViewModel.updateExpiryDate(it) },
-                    label = { Text("Expiry Date") },
-                    placeholder = { Text("DD/MM/YYYY", color = VaultTextHint) },
+                    label = { Text(stringResource(R.string.expiry_date_label)) },
+                    placeholder = { Text(stringResource(R.string.date_format_placeholder), color = VaultTextHint) },
                     modifier = Modifier.weight(1f),
                     colors = identityFieldColors()
                 )
@@ -288,7 +300,7 @@ fun IdentityEditScreen(
             OutlinedTextField(
                 value = identityState.notes,
                 onValueChange = { identityViewModel.updateNotes(it) },
-                label = { Text("Notes (optional)") },
+                label = { Text(stringResource(R.string.notes_optional_label)) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(100.dp),
@@ -302,7 +314,7 @@ fun IdentityEditScreen(
             Button(
                 onClick = {
                     identityViewModel.saveIdentity()
-                    Toast.makeText(context, "Identity saved securely!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.identity_saved_success), Toast.LENGTH_SHORT).show()
                     onClose()
                 },
                 modifier = Modifier
@@ -313,7 +325,7 @@ fun IdentityEditScreen(
             ) {
                 Icon(Icons.Default.Save, null, tint = VaultBlack)
                 Spacer(Modifier.width(8.dp))
-                Text("Save Identity", color = VaultBlack, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text(stringResource(R.string.save_identity_button), color = VaultBlack, fontWeight = FontWeight.Bold, fontSize = 16.sp)
             }
 
             Spacer(Modifier.height(16.dp))
@@ -332,7 +344,7 @@ fun IdentityEditScreen(
                     .padding(bottom = 32.dp, start = 16.dp, end = 16.dp)
             ) {
                 Text(
-                    text = "Add Photo",
+                    text = stringResource(R.string.add_photo_sheet_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = VaultTextPrimary,
@@ -340,8 +352,8 @@ fun IdentityEditScreen(
                 )
                 
                 ListItem(
-                    headlineContent = { Text("Upload from Gallery", color = VaultTextPrimary) },
-                    supportingContent = { Text("Select an existing image from your device", color = VaultTextSecondary) },
+                    headlineContent = { Text(stringResource(R.string.upload_gallery_title), color = VaultTextPrimary) },
+                    supportingContent = { Text(stringResource(R.string.upload_gallery_desc), color = VaultTextSecondary) },
                     leadingContent = { Icon(Icons.Default.PhotoLibrary, "Gallery", tint = VaultOrange) },
                     modifier = Modifier.clickable {
                         pickImageLauncher.launch("image/*")
@@ -351,8 +363,8 @@ fun IdentityEditScreen(
                 )
                 
                 ListItem(
-                    headlineContent = { Text("Scan Document", color = VaultTextPrimary) },
-                    supportingContent = { Text("Scan ID card or document using camera", color = VaultTextSecondary) },
+                    headlineContent = { Text(stringResource(R.string.scan_document_title), color = VaultTextPrimary) },
+                    supportingContent = { Text(stringResource(R.string.scan_document_desc), color = VaultTextSecondary) },
                     leadingContent = { Icon(Icons.Default.DocumentScanner, "Scan", tint = VaultOrange) },
                     modifier = Modifier.clickable {
                         showSelectionSheet = false
@@ -366,7 +378,7 @@ fun IdentityEditScreen(
                                 )
                             },
                             onFailure = { e ->
-                                Toast.makeText(context, "Scanner error: ${e.message}", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, context.getString(R.string.scanner_error_format, e.message ?: ""), Toast.LENGTH_SHORT).show()
                             }
                         )
                     },

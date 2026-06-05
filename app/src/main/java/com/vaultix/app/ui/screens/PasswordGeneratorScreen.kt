@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -59,7 +60,7 @@ fun PasswordGeneratorScreen(
                 title = { Text(stringResource(R.string.password_generator), fontWeight = FontWeight.Bold, color = VaultTextPrimary) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, stringResource(R.string.back), tint = VaultTextPrimary)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back), tint = VaultTextPrimary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = VaultBlack)
@@ -127,7 +128,7 @@ fun PasswordGeneratorScreen(
                 colors = CardDefaults.cardColors(containerColor = VaultSurface)
             ) {
                 Column(Modifier.padding(20.dp)) {
-                    Text("LENGTH: ${length.toInt()}", color = VaultTextPrimary, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.length_format, length.toInt()).uppercase(java.util.Locale.getDefault()), color = VaultTextPrimary, fontWeight = FontWeight.SemiBold)
                     Slider(
                         value = length,
                         onValueChange = { length = it },
@@ -190,7 +191,7 @@ fun PasswordGeneratorScreen(
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = VaultOrange)
             ) {
-                Text("Generate New Password", color = VaultBlack, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text(stringResource(R.string.generate_new_password), color = VaultBlack, fontWeight = FontWeight.Bold, fontSize = 16.sp)
             }
             
             Spacer(Modifier.height(16.dp))

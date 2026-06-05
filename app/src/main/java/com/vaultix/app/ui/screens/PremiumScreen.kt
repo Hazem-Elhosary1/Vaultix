@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -42,7 +43,7 @@ fun PremiumScreen(
                 title = { Text(stringResource(R.string.go_pro), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -109,7 +110,7 @@ fun PremiumScreen(
 
             if (!state.isPremium) {
                 Text(
-                    "Select a Plan",
+                    stringResource(R.string.select_plan),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = VaultTextPrimary,
@@ -186,15 +187,28 @@ fun PlanItem(plan: com.vaultix.app.ui.viewmodel.PremiumPlan, isSelected: Boolean
             Spacer(Modifier.width(8.dp))
             Column(Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(plan.name, fontWeight = FontWeight.Bold, color = VaultTextPrimary, fontSize = 16.sp)
+                    val planName = when (plan.id) {
+                        "monthly" -> stringResource(R.string.plan_monthly)
+                        "yearly" -> stringResource(R.string.plan_yearly)
+                        "lifetime" -> stringResource(R.string.plan_lifetime)
+                        else -> plan.name
+                    }
+                    Text(planName, fontWeight = FontWeight.Bold, color = VaultTextPrimary, fontSize = 16.sp)
                     if (plan.description.isNotEmpty()) {
                         Spacer(Modifier.width(8.dp))
                         Surface(color = VaultOrange, shape = RoundedCornerShape(4.dp)) {
-                            Text(plan.description, color = Color.White, fontSize = 10.sp, modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp))
+                            val descText = if (plan.description == "Best Value!") stringResource(R.string.best_value) else plan.description
+                            Text(descText, color = Color.White, fontSize = 10.sp, modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp))
                         }
                     }
                 }
-                Text(plan.period, color = VaultTextSecondary, fontSize = 12.sp)
+                val periodText = when (plan.id) {
+                    "monthly" -> stringResource(R.string.period_monthly)
+                    "yearly" -> stringResource(R.string.period_yearly)
+                    "lifetime" -> stringResource(R.string.period_lifetime)
+                    else -> plan.period
+                }
+                Text(periodText, color = VaultTextSecondary, fontSize = 12.sp)
             }
             Text(plan.price, fontWeight = FontWeight.ExtraBold, color = VaultOrange, fontSize = 18.sp)
         }

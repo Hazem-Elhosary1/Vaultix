@@ -16,7 +16,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.CreditCard
@@ -25,6 +25,8 @@ import androidx.compose.material.icons.filled.FlashOn
 import androidx.camera.core.CameraControl
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.material.icons.filled.WorkspacePremium
+import androidx.compose.ui.res.stringResource
+import com.vaultix.app.R
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -34,7 +36,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -45,7 +46,6 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.Text
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
-import com.vaultix.app.R
 import com.vaultix.app.data.model.Card
 import com.vaultix.app.ui.theme.*
 import com.vaultix.app.ui.viewmodel.CardViewModel
@@ -124,8 +124,8 @@ fun CardScanScreen(
             },
             containerColor = VaultSurface,
             icon = { Icon(Icons.Default.WorkspacePremium, null, tint = VaultOrange, modifier = Modifier.size(48.dp)) },
-            title = { Text("Pro Feature Required", color = VaultTextPrimary) },
-            text = { Text("Card Scanning is a Pro feature. Upgrade to Pro for offline OCR scanning and more!", color = VaultTextSecondary) },
+            title = { Text(stringResource(R.string.pro_required_title), color = VaultTextPrimary) },
+            text = { Text(stringResource(R.string.pro_required_card_scan_text), color = VaultTextSecondary) },
             confirmButton = {
                 Button(
                     onClick = { 
@@ -133,14 +133,14 @@ fun CardScanScreen(
                         onNavigateToPremium()
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = VaultOrange)
-                ) { Text("Upgrade Now", color = Color.White) }
+                ) { Text(stringResource(R.string.upgrade_now), color = Color.White) }
             },
             dismissButton = {
                 TextButton(onClick = { 
                     showProRequiredDialog = false
                     onBack()
                 }) {
-                    Text("Maybe Later", color = VaultTextSecondary)
+                    Text(stringResource(R.string.maybe_later), color = VaultTextSecondary)
                 }
             }
         )
@@ -152,14 +152,14 @@ fun CardScanScreen(
             TopAppBar(
                 title = {
                     Text(
-                        if (scanComplete) "Verify Card Details" else "Scan Credit Card",
+                        if (scanComplete) stringResource(R.string.verify_card_details) else stringResource(R.string.scan_credit_card),
                         fontWeight = FontWeight.Bold,
                         color = VaultTextPrimary
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, "Back", tint = VaultTextPrimary)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = VaultTextPrimary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = VaultBlack)
@@ -392,29 +392,29 @@ fun CardScanScreen(
                                 ) {
                                     Text(stringResource(R.string.detecting_info), color = VaultOrange, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                                     Text(
-                                        if (scannedCardNumber.isNotBlank()) "Number: $scannedCardNumber" else "Number: detecting...",
+                                        if (scannedCardNumber.isNotBlank()) stringResource(R.string.ocr_number_format, scannedCardNumber) else stringResource(R.string.ocr_detecting_number),
                                         color = VaultTextPrimary,
                                         fontSize = 13.sp
                                     )
                                     Text(
-                                        if (scannedHolderName.isNotBlank()) "Name: $scannedHolderName" else "Name: detecting...",
+                                        if (scannedHolderName.isNotBlank()) stringResource(R.string.ocr_name_format, scannedHolderName) else stringResource(R.string.ocr_detecting_name),
                                         color = VaultTextPrimary,
                                         fontSize = 13.sp
                                     )
                                     Text(
                                         if (scannedExpiryMonth.isNotBlank()) {
-                                            "Expiry: ${scannedExpiryMonth}/${scannedExpiryYear}"
+                                            stringResource(R.string.ocr_expiry_format, scannedExpiryMonth, scannedExpiryYear)
                                         } else {
-                                            "Expiry: detecting..."
+                                            stringResource(R.string.ocr_detecting_expiry)
                                         },
                                         color = VaultTextPrimary,
                                         fontSize = 13.sp
                                     )
                                     Text(
                                         if (stableDetectionCount >= 2) {
-                                            "Detected reliably. Releasing to edit screen..."
+                                            stringResource(R.string.ocr_detected_reliable)
                                         } else {
-                                            "Hold the card steady so the number and name stabilize."
+                                            stringResource(R.string.ocr_hold_steady)
                                         },
                                         color = VaultTextSecondary,
                                         fontSize = 12.sp
@@ -440,7 +440,7 @@ fun CardScanScreen(
                                         strokeWidth = 2.dp
                                     )
                                     Spacer(Modifier.width(8.dp))
-                                    Text("Scanning...", color = VaultTextPrimary, fontSize = 13.sp)
+                                    Text(stringResource(R.string.scanning_dots), color = VaultTextPrimary, fontSize = 13.sp)
                                 }
                             }
                         }
@@ -461,12 +461,12 @@ fun CardScanScreen(
                                 modifier = Modifier.size(64.dp)
                             )
                             Spacer(Modifier.height(16.dp))
-                            Text("Camera permission required", color = VaultTextPrimary, fontSize = 16.sp)
-                            Spacer(Modifier.height(8.dp))
-                            Button(
-                                onClick = { permissionLauncher.launch(Manifest.permission.CAMERA) },
-                                colors = ButtonDefaults.buttonColors(containerColor = VaultOrange)
-                            ) { Text("Grant Permission", color = VaultBlack) }
+                             Text(stringResource(R.string.camera_permission_required), color = VaultTextPrimary, fontSize = 16.sp)
+                             Spacer(Modifier.height(8.dp))
+                             Button(
+                                 onClick = { permissionLauncher.launch(Manifest.permission.CAMERA) },
+                                 colors = ButtonDefaults.buttonColors(containerColor = VaultOrange)
+                             ) { Text(stringResource(R.string.grant_permission), color = VaultBlack) }
                         }
                     }
                 }
@@ -491,14 +491,14 @@ fun CardScanScreen(
                         ) {
                             Icon(Icons.Default.CheckCircle, null, tint = VaultSuccess, modifier = Modifier.size(24.dp))
                             Spacer(Modifier.width(12.dp))
-                            Text("Card scanned successfully! Review and save.", color = VaultSuccess, fontSize = 14.sp)
+                            Text(stringResource(R.string.card_scanned_success), color = VaultSuccess, fontSize = 14.sp)
                         }
                     }
 
                     OutlinedTextField(
                         value = cardName,
                         onValueChange = { cardName = it },
-                        label = { Text("Card Name (e.g. My Visa)") },
+                        label = { Text(stringResource(R.string.card_name_hint)) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ocrFieldColors()
                     )
@@ -506,7 +506,7 @@ fun CardScanScreen(
                     OutlinedTextField(
                         value = holderName,
                         onValueChange = { holderName = it },
-                        label = { Text("Cardholder Name") },
+                        label = { Text(stringResource(R.string.cardholder_name)) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ocrFieldColors()
                     )
@@ -514,7 +514,7 @@ fun CardScanScreen(
                     OutlinedTextField(
                         value = cardNumber,
                         onValueChange = { cardNumber = it },
-                        label = { Text("Card Number") },
+                        label = { Text(stringResource(R.string.card_number)) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ocrFieldColors()
                     )
@@ -537,7 +537,7 @@ fun CardScanScreen(
                         OutlinedTextField(
                             value = cvv,
                             onValueChange = { cvv = it },
-                            label = { Text("CVV") },
+                            label = { Text(stringResource(R.string.cvv)) },
                             modifier = Modifier.weight(1f),
                             colors = ocrFieldColors()
                         )
@@ -560,7 +560,7 @@ fun CardScanScreen(
                     ) {
                         Icon(Icons.Default.CameraAlt, null)
                         Spacer(Modifier.width(8.dp))
-                        Text("Scan Again")
+                        Text(stringResource(R.string.scan_again))
                     }
 
                     // Save
@@ -577,13 +577,13 @@ fun CardScanScreen(
                                 expiryYear = expiryYear,
                                 cvv = cvv,
                                 cardType = detectedType,
-                                notes = "Scanned via OCR",
+                                notes = context.getString(R.string.scanned_via_ocr),
                                 isFavorite = false,
                                 createdAt = now,
                                 updatedAt = now
                             )
                             cardViewModel.insertCard(card)
-                            Toast.makeText(context, "Card saved securely!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, context.getString(R.string.card_saved_success), Toast.LENGTH_SHORT).show()
                             onCardSaved()
                         },
                         modifier = Modifier
@@ -592,7 +592,7 @@ fun CardScanScreen(
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = VaultOrange)
                     ) {
-                        Text("Save Card", color = VaultBlack, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        Text(stringResource(R.string.save_card), color = VaultBlack, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                     }
                 }
             }
