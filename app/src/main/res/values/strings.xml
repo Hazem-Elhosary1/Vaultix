@@ -9,6 +9,24 @@
     <string name="delete">Delete</string>
     <string name="edit">Edit</string>
     <string name="lock_vault">Lock Vault</string>
+    <string name="confirm">Confirm</string>
+    <string name="close">Close</string>
+    <string name="done">Done</string>
+    <string name="next">Next</string>
+    <string name="skip">Skip</string>
+    <string name="get_started">Get Started</string>
+    <string name="continue_text">Continue</string>
+    <string name="copied">Copied!</string>
+    <string name="copy">Copy</string>
+    <string name="share">Share</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    
+    <!-- Language Selection -->
+    <string name="choose_language">Choose Your Language</string>
+    <string name="choose_language_desc">Select your preferred language for the app</string>
+    <string name="lang_english">English</string>
+    <string name="lang_arabic">العربية</string>
     
     <!-- Dashboard -->
     <string name="search_vault">Search Vault...</string>
@@ -18,6 +36,7 @@
     <string name="notes">Notes</string>
     <string name="files">Files</string>
     <string name="identities">Identities</string>
+    <string name="wifi">Wi-Fi</string>
     <string name="favorites">Favorites</string>
     <string name="no_favorites">No favorites yet</string>
     
@@ -26,11 +45,33 @@
     <string name="theme_mode">Theme Mode</string>
     <string name="accent_color">Accent Color</string>
     <string name="language">Language</string>
+    <string name="font_size">Font Size</string>
+    <string name="font_size_small">Small</string>
+    <string name="font_size_medium">Medium</string>
+    <string name="font_size_large">Large</string>
     <string name="security">Security</string>
     <string name="auto_lock_grace">Auto-Lock &amp; Grace Period</string>
     <string name="panic_mode">Panic Mode</string>
     <string name="backup_restore">Backup &amp; Restore</string>
     <string name="about">About</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="data_protection">Data Protection</string>
+    <string name="transfer_data">Transfer Data</string>
+    <string name="developer">Developer</string>
+    <string name="autofill">Autofill</string>
+    <string name="autofill_subtitle">Autofill passwords in apps and browsers</string>
+    <string name="recovery_key">Recovery Key</string>
+    <string name="recovery_key_subtitle">View your vault recovery key</string>
+    <string name="fake_vault">Fake Vault</string>
+    <string name="fake_vault_subtitle">Set up a decoy password for fake vault</string>
+    <string name="panic_pin">Panic PIN</string>
+    <string name="panic_pin_subtitle">Set up a PIN that triggers emergency wipe</string>
+    <string name="clipboard_auto_clear">Clipboard Auto-Clear</string>
+    <string name="clipboard_subtitle">Automatically clear clipboard after copying</string>
+    <string name="version">Version</string>
+    <string name="version_format">%1$s (%2$s)</string>
     
     <!-- Settings Items -->
     <string name="biometric_unlock">Biometric Unlock</string>
@@ -49,6 +90,96 @@
     <string name="import_backup">Import Backup</string>
     <string name="import_subtitle">Restore from encrypted backup</string>
     
+    <!-- Lock Screen -->
+    <string name="unlock">Unlock</string>
+    <string name="enter_credentials">Enter your credentials to unlock</string>
+    <string name="master_password">Master Password</string>
+    <string name="pin_label">PIN</string>
+    <string name="use_pin_instead">Use PIN instead</string>
+    <string name="use_password">Use password</string>
+    <string name="biometric">Biometric</string>
+    <string name="forgot_password_pin">Forgot Password or PIN?</string>
+    <string name="too_many_attempts">Too many failed attempts</string>
+    <string name="try_again_in">Try again in %1$ds</string>
+    <string name="failed_attempts_count">%1$d failed attempt(s)</string>
+    <string name="incorrect_password">Incorrect password</string>
+    <string name="incorrect_pin">Incorrect PIN</string>
+    <string name="unlock_vaultix">Unlock Vaultix</string>
+    <string name="biometric_prompt_subtitle">Use your biometric to access your vault</string>
+    <string name="use_pin_button">Use PIN</string>
+    
+    <!-- Recovery Dialog -->
+    <string name="vault_recovery">Vault Recovery</string>
+    <string name="reset_master_password">Reset Master Password</string>
+    <string name="recovery_key_prompt">Enter your 24-character recovery key to regain access.</string>
+    <string name="recovery_key_label">Recovery Key</string>
+    <string name="recovery_key_placeholder">XXXX-XXXX-XXXX…</string>
+    <string name="new_password">New Password</string>
+    <string name="confirm_new_password">Confirm New Password</string>
+    <string name="create_new_password_prompt">Create a new master password for your vault.</string>
+    <string name="verify_key">Verify Key</string>
+    <string name="reset_and_unlock">Reset &amp; Unlock</string>
+    <string name="invalid_recovery_key">Invalid recovery key</string>
+    <string name="passwords_not_match">Passwords do not match</string>
+    <string name="password_min_length">Password must be at least 8 characters</string>
+    
+    <!-- Setup Screen -->
+    <string name="create_master_password">Create Master Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="create_pin">Create PIN</string>
+    <string name="confirm_pin">Confirm PIN</string>
+    <string name="setup_complete">Setup Complete!</string>
+    <string name="setup_secure_vault">Secure your vault</string>
+    <string name="setup_welcome">Welcome to Vaultix</string>
+    <string name="setup_password_hint">Choose a strong password you will remember</string>
+    <string name="setup_pin_hint">Enter a 6-digit PIN for quick access</string>
+    <string name="enable_biometric">Enable Biometric</string>
+    <string name="enable_biometric_desc">Use fingerprint or face to unlock your vault</string>
+    <string name="password_strength">Password Strength</string>
+    <string name="very_weak">Very Weak</string>
+    <string name="weak">Weak</string>
+    <string name="fair">Fair</string>
+    <string name="strong">Strong</string>
+    <string name="very_strong">Very Strong</string>
+    <string name="step_of">Step %1$d of %2$d</string>
+    <string name="recovery_key_warning">Save this recovery key securely. It is the ONLY way to recover your vault if you forget your password.</string>
+    <string name="i_saved_recovery_key">I saved my recovery key</string>
+    <string name="complete_setup">Complete Setup</string>
+    <string name="setup_password_desc">This is the key to your vault. Choose something strong and memorable — there is NO recovery option.</string>
+    <string name="setup_confirm_password_desc">Re-enter your master password to confirm.</string>
+    <string name="setup_pin_desc">4-6 digit PIN for quick unlock. Different from your panic PIN.</string>
+    <string name="setup_confirm_pin_desc">Re-enter your PIN to confirm.</string>
+    <string name="setup_biometric_desc">Use fingerprint or face recognition for quick, secure access to your vault.</string>
+    <string name="setup_biometric_skip">Skip for now</string>
+    <string name="setup_recovery_key_desc">This 24-character key is the ONLY way to recover your vault if you forget your master password.</string>
+    <string name="setup_recovery_key_checkbox">I have written down this recovery key and stored it in a safe place.</string>
+    <string name="setup_recovery_key_copy">Copy to clipboard</string>
+    <string name="setup_recovery_key_copied">Recovery key copied!</string>
+    <string name="setup_warning_title">Important Warning</string>
+    <string name="setup_warning_1">There is NO password recovery</string>
+    <string name="setup_warning_2">There is NO cloud backup</string>
+    <string name="setup_warning_3">If you forget your master password, use your RECOVERY KEY</string>
+    <string name="setup_warning_4">If you lose BOTH your password and recovery key, ALL data is permanently lost</string>
+    <string name="setup_warning_5">This is by design — zero-knowledge means only YOU have access</string>
+    <string name="setup_warning_6">Write down your master password AND recovery key and store them separately</string>
+    <string name="setup_warning_button">I Understand, Let\'s Go</string>
+    <string name="setup_enter_password">Enter master password</string>
+    <string name="setup_pin_label">PIN (4-6 digits)</string>
+    <string name="setup_pin_error">PIN must be at least 4 digits</string>
+    <string name="setup_pin_match_error">PINs do not match</string>
+    
+    <!-- Onboarding -->
+    <string name="onboarding_title_1">Your Digital Vault</string>
+    <string name="onboarding_desc_1">Store passwords, cards, notes, identities and files in one secure place.</string>
+    <string name="onboarding_title_2">Military-Grade Encryption</string>
+    <string name="onboarding_desc_2">All data is encrypted with AES-256 and stored only on your device. 100%% offline.</string>
+    <string name="onboarding_title_3">Full Control</string>
+    <string name="onboarding_desc_3">Biometric unlock, panic mode, auto-lock, and smart password generation.</string>
+    
+    <!-- Splash Screen -->
+    <string name="splash_subtitle">Your Secure Digital Vault</string>
+    <string name="splash_tagline">Encrypted • Offline • Yours</string>
+    
     <!-- Dashboard Extra -->
     <string name="quick_access">Quick Access</string>
     <string name="quick_actions">Quick Actions</string>
@@ -58,7 +189,14 @@
     <string name="scan_area_only">Data is detected only inside the frame</string>
     <string name="embossed_card_tip">For embossed cards: Try tilting the card slightly to avoid glare</string>
     <string name="detecting_info">Detecting card info...</string>
-
+    <string name="password_timeline">Password Timeline</string>
+    <string name="upgrade_pro_timeline">Upgrade to Pro to see timeline</string>
+    <string name="get_pro">GET PRO</string>
+    <string name="weak_passwords_alert">%1$d weak passwords</string>
+    <string name="insecure_wifi_alert">%1$d insecure Wi-Fi</string>
+    <string name="expired_items_alert">%1$d items expired</string>
+    <string name="recent_activities">Recent Activities</string>
+    
     <!-- Premium -->
     <string name="go_pro">Upgrade to Pro</string>
     <string name="premium_features">Pro Features</string>
@@ -76,7 +214,6 @@
     <string name="password_history">Password History</string>
     <string name="last_3_passwords">Last 3 generated passwords</string>
     <string name="copy_password">Copy Password</string>
-    <string name="recent_activities">Recent Activities</string>
     <string name="recent_passwords">Recent Passwords</string>
     <string name="security_health">Security Health</string>
     <string name="all_data_encrypted">All data encrypted</string>
@@ -134,4 +271,36 @@
     <string name="sort_size_smallest">Smallest</string>
     <string name="sort_expiry">Expiry</string>
     <string name="sort_type">Type</string>
+
+    <!-- Add/Edit Fields -->
+    <string name="title">Title</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="website">Website</string>
+    <string name="notes_label">Notes</string>
+    <string name="card_name">Card Name</string>
+    <string name="card_number">Card Number</string>
+    <string name="expiry_date">Expiry Date</string>
+    <string name="cvv">CVV</string>
+    <string name="cardholder_name">Cardholder Name</string>
+    <string name="generate">Generate</string>
+    <string name="show_password">Show password</string>
+    <string name="hide_password">Hide password</string>
+    <string name="add_new">Add New</string>
+    <string name="edit_item">Edit Item</string>
+    <string name="required_field">This field is required</string>
+    
+    <!-- Detail Screen -->
+    <string name="item_details">Item Details</string>
+    <string name="created_at">Created: %1$s</string>
+    <string name="updated_at">Updated: %1$s</string>
+    <string name="add_to_favorites">Add to favorites</string>
+    <string name="remove_from_favorites">Remove from favorites</string>
+    <string name="copied_to_clipboard">Copied to clipboard</string>
+    
+    <!-- Security Audit -->
+    <string name="security_audit">Security Audit</string>
+    <string name="overall_score">Overall Score</string>
+    <string name="encrypted_files_count">%1$d encrypted file(s)</string>
+    <string name="encrypted">Encrypted</string>
 </resources>

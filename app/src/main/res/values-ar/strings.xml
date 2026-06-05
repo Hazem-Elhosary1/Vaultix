@@ -9,6 +9,24 @@
     <string name="delete">حذف</string>
     <string name="edit">تعديل</string>
     <string name="lock_vault">قفل الخزنة</string>
+    <string name="confirm">تأكيد</string>
+    <string name="close">إغلاق</string>
+    <string name="done">تم</string>
+    <string name="next">التالي</string>
+    <string name="skip">تخطي</string>
+    <string name="get_started">ابدأ الآن</string>
+    <string name="continue_text">متابعة</string>
+    <string name="copied">تم النسخ!</string>
+    <string name="copy">نسخ</string>
+    <string name="share">مشاركة</string>
+    <string name="yes">نعم</string>
+    <string name="no">لا</string>
+    
+    <!-- Language Selection -->
+    <string name="choose_language">اختر لغتك</string>
+    <string name="choose_language_desc">اختر لغة التطبيق المفضلة</string>
+    <string name="lang_english">English</string>
+    <string name="lang_arabic">العربية</string>
     
     <!-- Dashboard -->
     <string name="search_vault">بحث في الخزنة...</string>
@@ -18,6 +36,7 @@
     <string name="notes">الملاحظات</string>
     <string name="files">الملفات</string>
     <string name="identities">الهويات</string>
+    <string name="wifi">واي فاي</string>
     <string name="favorites">المفضلة</string>
     <string name="no_favorites">لا توجد عناصر مفضلة بعد</string>
     
@@ -26,11 +45,33 @@
     <string name="theme_mode">وضع المظهر</string>
     <string name="accent_color">لون التمييز</string>
     <string name="language">اللغة</string>
+    <string name="font_size">حجم الخط</string>
+    <string name="font_size_small">صغير</string>
+    <string name="font_size_medium">وسط</string>
+    <string name="font_size_large">كبير</string>
     <string name="security">الأمان</string>
     <string name="auto_lock_grace">القفل التلقائي وفترة السماح</string>
-    <string name="panic_mode">وضع الذعر (Panic Mode)</string>
+    <string name="panic_mode">وضع الطوارئ</string>
     <string name="backup_restore">النسخ الاحتياطي والاستعادة</string>
     <string name="about">حول التطبيق</string>
+    <string name="theme_system">تلقائي</string>
+    <string name="theme_light">فاتح</string>
+    <string name="theme_dark">داكن</string>
+    <string name="data_protection">حماية البيانات</string>
+    <string name="transfer_data">نقل البيانات</string>
+    <string name="developer">المطور</string>
+    <string name="autofill">الملء التلقائي</string>
+    <string name="autofill_subtitle">ملء كلمات المرور تلقائياً في التطبيقات والمتصفحات</string>
+    <string name="recovery_key">مفتاح الاسترداد</string>
+    <string name="recovery_key_subtitle">عرض مفتاح استرداد الخزنة</string>
+    <string name="fake_vault">الخزنة الوهمية</string>
+    <string name="fake_vault_subtitle">إعداد كلمة مرور وهمية للخزنة المزيفة</string>
+    <string name="panic_pin">رمز الطوارئ</string>
+    <string name="panic_pin_subtitle">إعداد رمز يقوم بمسح البيانات فوراً</string>
+    <string name="clipboard_auto_clear">مسح الحافظة تلقائياً</string>
+    <string name="clipboard_subtitle">مسح الحافظة تلقائياً بعد النسخ</string>
+    <string name="version">الإصدار</string>
+    <string name="version_format">%1$s (%2$s)</string>
     
     <!-- Settings Items -->
     <string name="biometric_unlock">فتح بالقفل البيومتري</string>
@@ -42,12 +83,102 @@
     <string name="auto_lock_inactivity">قفل تلقائي عند الخمول</string>
     <string name="grace_period_title">فترة السماح البيومترية</string>
     <string name="grace_period_subtitle">السماح بالدخول مرة أخرى بدون تسجيل دخول إذا عدت خلال:</string>
-    <string name="panic_mode_warning">يقوم وضع الذعر بحذف جميع بيانات الخزنة فوراً. هذا الإجراء لا يمكن التراجع عنه.</string>
-    <string name="trigger_panic_mode">تفعيل وضع الذعر</string>
+    <string name="panic_mode_warning">يقوم وضع الطوارئ بحذف جميع بيانات الخزنة فوراً. هذا الإجراء لا يمكن التراجع عنه.</string>
+    <string name="trigger_panic_mode">تفعيل وضع الطوارئ</string>
     <string name="export_backup">تصدير نسخة احتياطية مشفرة</string>
     <string name="export_subtitle">حفظ نسخة احتياطية مشفرة على الجهاز</string>
     <string name="import_backup">استيراد نسخة احتياطية</string>
     <string name="import_subtitle">استعادة البيانات من نسخة احتياطية مشفرة</string>
+    
+    <!-- Lock Screen -->
+    <string name="unlock">فتح القفل</string>
+    <string name="enter_credentials">أدخل بيانات الدخول لفتح القفل</string>
+    <string name="master_password">كلمة المرور الرئيسية</string>
+    <string name="pin_label">رمز PIN</string>
+    <string name="use_pin_instead">استخدم رمز PIN بدلاً</string>
+    <string name="use_password">استخدم كلمة المرور</string>
+    <string name="biometric">البصمة</string>
+    <string name="forgot_password_pin">نسيت كلمة المرور أو رمز PIN؟</string>
+    <string name="too_many_attempts">محاولات فاشلة كثيرة</string>
+    <string name="try_again_in">حاول مرة أخرى خلال %1$d ثانية</string>
+    <string name="failed_attempts_count">%1$d محاولة فاشلة</string>
+    <string name="incorrect_password">كلمة المرور غير صحيحة</string>
+    <string name="incorrect_pin">رمز PIN غير صحيح</string>
+    <string name="unlock_vaultix">فتح فولتكس</string>
+    <string name="biometric_prompt_subtitle">استخدم البصمة للوصول إلى خزنتك</string>
+    <string name="use_pin_button">استخدم رمز PIN</string>
+    
+    <!-- Recovery Dialog -->
+    <string name="vault_recovery">استرداد الخزنة</string>
+    <string name="reset_master_password">إعادة تعيين كلمة المرور الرئيسية</string>
+    <string name="recovery_key_prompt">أدخل مفتاح الاسترداد المكون من 24 حرفاً لاستعادة الوصول.</string>
+    <string name="recovery_key_label">مفتاح الاسترداد</string>
+    <string name="recovery_key_placeholder">XXXX-XXXX-XXXX…</string>
+    <string name="new_password">كلمة المرور الجديدة</string>
+    <string name="confirm_new_password">تأكيد كلمة المرور الجديدة</string>
+    <string name="create_new_password_prompt">أنشئ كلمة مرور رئيسية جديدة لخزنتك.</string>
+    <string name="verify_key">تحقق من المفتاح</string>
+    <string name="reset_and_unlock">إعادة التعيين وفتح القفل</string>
+    <string name="invalid_recovery_key">مفتاح الاسترداد غير صحيح</string>
+    <string name="passwords_not_match">كلمتا المرور غير متطابقتين</string>
+    <string name="password_min_length">يجب أن تكون كلمة المرور 8 أحرف على الأقل</string>
+    
+    <!-- Setup Screen -->
+    <string name="create_master_password">إنشاء كلمة المرور الرئيسية</string>
+    <string name="confirm_password">تأكيد كلمة المرور</string>
+    <string name="create_pin">إنشاء رمز PIN</string>
+    <string name="confirm_pin">تأكيد رمز PIN</string>
+    <string name="setup_complete">تم الإعداد بنجاح!</string>
+    <string name="setup_secure_vault">تأمين خزنتك</string>
+    <string name="setup_welcome">مرحباً بك في فولتكس</string>
+    <string name="setup_password_hint">اختر كلمة مرور قوية يمكنك تذكرها</string>
+    <string name="setup_pin_hint">أدخل رمز PIN مكون من 6 أرقام للوصول السريع</string>
+    <string name="enable_biometric">تفعيل البصمة</string>
+    <string name="enable_biometric_desc">استخدم البصمة أو الوجه لفتح خزنتك</string>
+    <string name="password_strength">قوة كلمة المرور</string>
+    <string name="very_weak">ضعيفة جداً</string>
+    <string name="weak">ضعيفة</string>
+    <string name="fair">مقبولة</string>
+    <string name="strong">قوية</string>
+    <string name="very_strong">قوية جداً</string>
+    <string name="step_of">الخطوة %1$d من %2$d</string>
+    <string name="recovery_key_warning">احفظ مفتاح الاسترداد في مكان آمن. هذا هو الطريق الوحيد لاستعادة خزنتك إذا نسيت كلمة المرور.</string>
+    <string name="i_saved_recovery_key">لقد حفظت مفتاح الاسترداد</string>
+    <string name="complete_setup">إكمال الإعداد</string>
+    <string name="setup_password_desc">هذا هو مفتاح خزنتك. اختر كلمة مرور قوية وسهلة التذكر — لا يوجد خيار لاستعادتها.</string>
+    <string name="setup_confirm_password_desc">أعد إدخال كلمة المرور الرئيسية للتأكيد.</string>
+    <string name="setup_pin_desc">رمز PIN مكون من 4 إلى 6 أرقام لفتح سريع. يختلف عن رمز الطوارئ.</string>
+    <string name="setup_confirm_pin_desc">أعد إدخال رمز PIN للتأكيد.</string>
+    <string name="setup_biometric_desc">استخدم البصمة أو التعرف على الوجه للوصول السريع والآمن إلى خزنتك.</string>
+    <string name="setup_biometric_skip">تخطي الآن</string>
+    <string name="setup_recovery_key_desc">هذا المفتاح المكون من 24 حرفاً هو الطريقة الوحيدة لاسترداد خزنتك إذا نسيت كلمة المرور الرئيسية.</string>
+    <string name="setup_recovery_key_checkbox">لقد كتبت هذا مفتاح الاسترداد وحفظته في مكان آمن.</string>
+    <string name="setup_recovery_key_copy">نسخ إلى الحافظة</string>
+    <string name="setup_recovery_key_copied">تم نسخ مفتاح الاسترداد!</string>
+    <string name="setup_warning_title">تحذير مهم</string>
+    <string name="setup_warning_1">لا توجد طريقة لاستعادة كلمة المرور</string>
+    <string name="setup_warning_2">لا يوجد نسخ احتياطي سحابي تلقائي</string>
+    <string name="setup_warning_3">إذا نسيت كلمة مرورك، استخدم مفتاح الاسترداد</string>
+    <string name="setup_warning_4">إذا فقدت كلمة المرور ومفتاح الاسترداد معاً، فستفقد جميع بياناتك نهائياً</string>
+    <string name="setup_warning_5">هذا هو مبدأ صفر معرفة — أنت فقط من يملك الصلاحية</string>
+    <string name="setup_warning_6">اكتب كلمة المرور ومفتاح الاسترداد واحفظهما في مكانين منفصلين</string>
+    <string name="setup_warning_button">أنا أفهم ذلك، لنبدأ</string>
+    <string name="setup_enter_password">أدخل كلمة المرور الرئيسية</string>
+    <string name="setup_pin_label">رمز PIN (4-6 أرقام)</string>
+    <string name="setup_pin_error">يجب ألا يقل رمز PIN عن 4 أرقام</string>
+    <string name="setup_pin_match_error">رموز PIN غير متطابقة</string>
+    
+    <!-- Onboarding -->
+    <string name="onboarding_title_1">خزنتك الرقمية</string>
+    <string name="onboarding_desc_1">خزّن كلمات المرور والبطاقات والملاحظات والهويات والملفات في مكان واحد آمن.</string>
+    <string name="onboarding_title_2">تشفير بدرجة عسكرية</string>
+    <string name="onboarding_desc_2">جميع البيانات مشفرة بتقنية AES-256 ومخزنة فقط على جهازك. أوفلاين 100%%.</string>
+    <string name="onboarding_title_3">تحكم كامل</string>
+    <string name="onboarding_desc_3">فتح بالبصمة، وضع الطوارئ، قفل تلقائي، وتوليد كلمات مرور ذكية.</string>
+    
+    <!-- Splash Screen -->
+    <string name="splash_subtitle">خزنتك الرقمية الآمنة</string>
+    <string name="splash_tagline">مشفر • أوفلاين • ملكك</string>
     
     <!-- Dashboard Extra -->
     <string name="quick_access">وصول سريع</string>
@@ -58,6 +189,13 @@
     <string name="scan_area_only">سيتم التعرف على البيانات داخل الإطار فقط</string>
     <string name="embossed_card_tip">للكروت البارزة: يرجى تحريك البطاقة قليلاً لتجنب انعكاس الضوء</string>
     <string name="detecting_info">جاري التعرف على البيانات...</string>
+    <string name="password_timeline">سجل كلمات المرور</string>
+    <string name="upgrade_pro_timeline">ترقية لنسخة برو لعرض السجل</string>
+    <string name="get_pro">احصل على برو</string>
+    <string name="weak_passwords_alert">%1$d كلمات مرور ضعيفة</string>
+    <string name="insecure_wifi_alert">%1$d شبكات واي فاي غير آمنة</string>
+    <string name="expired_items_alert">%1$d عناصر منتهية</string>
+    <string name="recent_activities">الأنشطة الأخيرة</string>
     
     <!-- Premium -->
     <string name="go_pro">الترقية لنسخة برو</string>
@@ -81,6 +219,8 @@
     <string name="all_data_encrypted">جميع البيانات مشفرة</string>
     <string name="offline_100">أوفلاين 100%</string>
     <string name="total">الإجمالي</string>
+    <string name="vault_overview">نظرة عامة على الخزنة</string>
+    <string name="items_secured">عنصر محمي</string>
     <string name="good_morning">صباح الخير</string>
     <string name="good_afternoon">مساء الخير</string>
     <string name="good_evening">مساء الخير</string>
@@ -88,9 +228,12 @@
     <string name="security_improvements_needed">تحتاج لبعض التحسينات</string>
     <string name="security_risk_detected">تم اكتشاف مخاطر أمنية</string>
     <string name="nothing_here">لا يوجد شيء هنا بعد</string>
+    <string name="empty_category_desc">ستظهر %1$s الخاصة بك هنا.</string>
+    <string name="no_items">لا توجد عناصر</string>
     <string name="add">إضافة</string>
     <string name="delete_password">حذف العنصر</string>
     <string name="delete_confirm">هل أنت متأكد من حذف \'%1$s\'؟</string>
+    <string name="autofill_service_label">خدمة الملء التلقائي فولتكس</string>
 
     <!-- Security & Expiry Notifications -->
     <string name="password_expiring_soon_title">🔑 كلمة المرور تقترب من الانتهاء</string>
@@ -100,11 +243,11 @@
     <string name="id_expiring_soon_title">🪪 الهوية تقترب من الانتهاء</string>
     <string name="id_expiring_soon_msg">\'%1$s\' تنتهي صلاحيتها خلال %2$d أيام</string>
     <string name="weak_passwords_title">🔒 تنبيه أمان: كلمات مرور ضعيفة</string>
-    <string name="weak_passwords_msg">لديك %1$d كلمة مرور ضعيفة قد تهدد حساباتك. افتح Vaultix لتحديثها وحماية بياناتك!</string>
+    <string name="weak_passwords_msg">لديك %1$d كلمة مرور ضعيفة قد تهدد حساباتك. افتح فولتكس لتحديثها وحماية بياناتك!</string>
     <string name="weak_wifi_title">⚠️ تنبيه أمان: شبكات واي فاي غير آمنة</string>
     <string name="weak_wifi_msg">تم رصد %1$d شبكة واي فاي غير آمنة أو بتشفير ضعيف. افتح التطبيق لمراجعتها وتأمين اتصالك.</string>
     <string name="vault_secure_title">🛡️ حصنك الرقمي في أمان</string>
-    <string name="vault_secure_msg">رائع! جميع بياناتك وكلمات المرور في Vaultix آمنة ومحمية بالكامل. تابع الحفاظ على سلامتك الرقمية!</string>
+    <string name="vault_secure_msg">رائع! جميع بياناتك وكلمات المرور في فولتكس آمنة ومحمية بالكامل. تابع الحفاظ على سلامتك الرقمية!</string>
 
     <!-- App Shortcuts -->
     <string name="shortcut_add_password_short">إضافة كلمة مرور</string>
@@ -128,4 +271,36 @@
     <string name="sort_size_smallest">الأصغر</string>
     <string name="sort_expiry">الانتهاء</string>
     <string name="sort_type">النوع</string>
+
+    <!-- Add/Edit Fields -->
+    <string name="title">العنوان</string>
+    <string name="username">اسم المستخدم</string>
+    <string name="password">كلمة المرور</string>
+    <string name="website">الموقع الإلكتروني</string>
+    <string name="notes_label">الملاحظات</string>
+    <string name="card_name">اسم البطاقة</string>
+    <string name="card_number">رقم البطاقة</string>
+    <string name="expiry_date">تاريخ الانتهاء</string>
+    <string name="cvv">CVV</string>
+    <string name="cardholder_name">اسم حامل البطاقة</string>
+    <string name="generate">توليد</string>
+    <string name="show_password">إظهار كلمة المرور</string>
+    <string name="hide_password">إخفاء كلمة المرور</string>
+    <string name="add_new">إضافة جديد</string>
+    <string name="edit_item">تعديل العنصر</string>
+    <string name="required_field">هذا الحقل مطلوب</string>
+    
+    <!-- Detail Screen -->
+    <string name="item_details">تفاصيل العنصر</string>
+    <string name="created_at">تاريخ الإنشاء: %1$s</string>
+    <string name="updated_at">آخر تعديل: %1$s</string>
+    <string name="add_to_favorites">إضافة للمفضلة</string>
+    <string name="remove_from_favorites">إزالة من المفضلة</string>
+    <string name="copied_to_clipboard">تم النسخ للحافظة</string>
+    
+    <!-- Security Audit -->
+    <string name="security_audit">فحص الأمان</string>
+    <string name="overall_score">النتيجة الإجمالية</string>
+    <string name="encrypted_files_count">%1$d ملف مشفر</string>
+    <string name="encrypted">مشفر</string>
 </resources>

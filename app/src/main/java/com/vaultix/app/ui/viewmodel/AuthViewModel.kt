@@ -86,6 +86,9 @@ class AuthViewModel @Inject constructor(
     private val _pendingShortcutAction = MutableStateFlow<String?>(null)
     val pendingShortcutAction: StateFlow<String?> = _pendingShortcutAction.asStateFlow()
 
+    private val _isLanguageChosen = MutableStateFlow(false)
+    val isLanguageChosen: StateFlow<Boolean> = _isLanguageChosen.asStateFlow()
+
     // Flag to temporarily bypass auto-lock when launching system/external intents (e.g. ML Kit Document Scanner)
     private var isSystemActivityActive = false
 
@@ -129,6 +132,7 @@ class AuthViewModel @Inject constructor(
             // Load saved state
             _isSetupComplete.value = securePreferences.getBoolean(SecurePreferences.KEY_IS_SETUP_COMPLETE)
             _isOnboardingComplete.value = securePreferences.getBoolean(SecurePreferences.KEY_ONBOARDING_COMPLETE)
+            _isLanguageChosen.value = securePreferences.getBoolean(SecurePreferences.KEY_LANGUAGE_CHOSEN)
             _isBiometricEnabled.value = securePreferences.getBoolean(SecurePreferences.KEY_BIOMETRIC_ENABLED)
             _failedAttempts.value = securePreferences.getInt(SecurePreferences.KEY_FAILED_ATTEMPTS)
             _autoLockTimeoutSeconds.value = securePreferences.getInt(
@@ -664,6 +668,20 @@ class AuthViewModel @Inject constructor(
             category  = DebugCategory.SYSTEM,
             eventType = "ONBOARDING_COMPLETE",
             details   = "User completed onboarding flow",
+            source    = "AuthViewModel"
+        )
+    }
+
+    /**
+     * Mark language selection as complete (first-launch).
+     */
+    suspend fun completeLanguageSelection() {
+        securePreferences.putBoolean(SecurePreferences.KEY_LANGUAGE_CHOSEN, true)
+        _isLanguageChosen.value = true
+        DebugEventBus.log(
+            category  = DebugCategory.SYSTEM,
+            eventType = "LANGUAGE_CHOSEN",
+            details   = "User completed language selection",
             source    = "AuthViewModel"
         )
     }

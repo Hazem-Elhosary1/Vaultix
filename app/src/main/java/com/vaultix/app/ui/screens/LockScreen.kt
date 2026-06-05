@@ -34,6 +34,8 @@ import com.vaultix.app.data.model.AuthState
 import com.vaultix.app.ui.theme.*
 import com.vaultix.app.ui.viewmodel.AuthViewModel
 import kotlinx.coroutines.launch
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.graphics.Color
 
 @Composable
 fun LockScreen(
@@ -79,7 +81,10 @@ fun LockScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(
-                Brush.verticalGradient(colors = listOf(VaultNavy, VaultBlack))
+                Brush.verticalGradient(colors = listOf(
+                    MaterialTheme.colorScheme.background,
+                    MaterialTheme.colorScheme.background
+                ))
             )
     ) {
         Column(
@@ -96,8 +101,8 @@ fun LockScreen(
                 modifier = Modifier.size(72.dp)
             )
             Spacer(Modifier.height(16.dp))
-            Text("VAULTIX", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = VaultTextPrimary, letterSpacing = 6.sp)
-            Text("Enter your credentials to unlock", fontSize = 14.sp, color = VaultTextSecondary)
+            Text(stringResource(R.string.app_name).uppercase(), fontSize = 28.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground, letterSpacing = 6.sp)
+            Text(stringResource(R.string.enter_credentials), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
             Spacer(Modifier.height(48.dp))
 
@@ -114,7 +119,7 @@ fun LockScreen(
                     ) {
                         Icon(Icons.Default.Lock, null, tint = VaultError, modifier = Modifier.size(32.dp))
                         Spacer(Modifier.height(8.dp))
-                        Text("Too many failed attempts", color = VaultError, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        Text(stringResource(R.string.too_many_attempts), color = VaultError, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                         Spacer(Modifier.height(4.dp))
                         Text(
                             "Try again in ${lockoutRemaining}s",
@@ -140,7 +145,7 @@ fun LockScreen(
                         Icon(Icons.Default.Warning, null, tint = VaultError, modifier = Modifier.size(20.dp))
                         Spacer(Modifier.width(8.dp))
                         Text(
-                            "$failedAttempts failed attempt${if (failedAttempts > 1) "s" else ""}",
+                            stringResource(R.string.failed_attempts_count, failedAttempts),
                             color = VaultError,
                             fontSize = 14.sp
                         )
@@ -163,7 +168,7 @@ fun LockScreen(
                         OutlinedTextField(
                             value = password,
                             onValueChange = { password = it; errorMessage = null },
-                            label = { Text("Master Password") },
+                            label = { Text(stringResource(R.string.master_password)) },
                             enabled = !isLockedOut && !isAuthLoading,
                             visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
                             trailingIcon = {
@@ -193,7 +198,7 @@ fun LockScreen(
                                     password.toCharArray(),
                                     onSuccess = onAuthenticated,
                                     onFailure = {
-                                        errorMessage = "Incorrect password"
+                                        errorMessage = context.getString(R.string.incorrect_password)
                                         isShaking = true
                                         password = ""
                                     }
@@ -207,13 +212,13 @@ fun LockScreen(
                             if (isAuthLoading) {
                                 CircularProgressIndicator(modifier = Modifier.size(24.dp), color = VaultBlack, strokeWidth = 2.dp)
                             } else {
-                                Text("Unlock", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = VaultBlack)
+                                Text(stringResource(R.string.unlock), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = if (LocalIsDarkTheme.current) VaultBlack else Color.White)
                             }
                         }
 
                         Spacer(Modifier.height(16.dp))
                         TextButton(onClick = { showPasswordMode = false }, enabled = !isAuthLoading) {
-                            Text("Use PIN instead", color = VaultOrange)
+                            Text(stringResource(R.string.use_pin_instead), color = VaultOrange)
                         }
                     }
                 } else {
@@ -230,7 +235,7 @@ fun LockScreen(
                                     errorMessage = null
                                 }
                             },
-                            label = { Text("PIN") },
+                            label = { Text(stringResource(R.string.pin_label)) },
                             enabled = !isLockedOut && !isAuthLoading,
                             visualTransformation = PasswordVisualTransformation(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
@@ -254,7 +259,7 @@ fun LockScreen(
                                     pin.toCharArray(),
                                     onSuccess = onAuthenticated,
                                     onFailure = {
-                                        errorMessage = "Incorrect PIN"
+                                        errorMessage = context.getString(R.string.incorrect_pin)
                                         isShaking = true
                                         pin = ""
                                     }
@@ -268,7 +273,7 @@ fun LockScreen(
                             if (isAuthLoading) {
                                 CircularProgressIndicator(modifier = Modifier.size(24.dp), color = VaultBlack, strokeWidth = 2.dp)
                             } else {
-                                Text("Unlock", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = VaultBlack)
+                                Text(stringResource(R.string.unlock), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = if (LocalIsDarkTheme.current) VaultBlack else Color.White)
                             }
                         }
 
@@ -292,12 +297,12 @@ fun LockScreen(
                                 ) {
                                     Icon(Icons.Default.Fingerprint, null)
                                     Spacer(Modifier.width(4.dp))
-                                    Text("Biometric")
+                                    Text(stringResource(R.string.biometric))
                                 }
                             }
 
                             TextButton(onClick = { showPasswordMode = true }) {
-                                Text("Use password", color = VaultTextSecondary)
+                                Text(stringResource(R.string.use_password), color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
                     }
@@ -306,7 +311,7 @@ fun LockScreen(
 
             Spacer(Modifier.height(24.dp))
             TextButton(onClick = { showRecoveryDialog = true }) {
-                Text("Forgot Password or PIN?", color = VaultOrange.copy(alpha = 0.7f), fontSize = 13.sp)
+                Text(stringResource(R.string.forgot_password_pin), color = VaultOrange.copy(alpha = 0.7f), fontSize = 13.sp)
             }
 
             errorMessage?.let { msg ->
@@ -344,25 +349,25 @@ fun RecoveryDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = VaultSurface,
-        title = { Text(if (step == 1) "Vault Recovery" else "Reset Master Password", color = VaultOrange, fontWeight = FontWeight.Bold) },
+        title = { Text(if (step == 1) stringResource(R.string.vault_recovery) else stringResource(R.string.reset_master_password), color = VaultOrange, fontWeight = FontWeight.Bold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (step == 1) {
-                    Text("Enter your 24-character recovery key to regain access.", fontSize = 13.sp, color = VaultTextSecondary)
+                    Text(stringResource(R.string.recovery_key_prompt), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     OutlinedTextField(
                         value = recoveryKey,
                         onValueChange = { recoveryKey = it.uppercase(); error = null },
-                        label = { Text("Recovery Key") },
-                        placeholder = { Text("XXXX-XXXX-XXXX...") },
+                        label = { Text(stringResource(R.string.recovery_key_label)) },
+                        placeholder = { Text(stringResource(R.string.recovery_key_placeholder)) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = VaultOrange, unfocusedBorderColor = VaultBorder)
                     )
                 } else {
-                    Text("Create a new master password for your vault.", fontSize = 13.sp, color = VaultTextSecondary)
+                    Text(stringResource(R.string.create_new_password_prompt), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     OutlinedTextField(
                         value = newPassword,
                         onValueChange = { newPassword = it; error = null },
-                        label = { Text("New Password") },
+                        label = { Text(stringResource(R.string.new_password)) },
                         visualTransformation = PasswordVisualTransformation(),
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = VaultOrange, unfocusedBorderColor = VaultBorder)
@@ -370,7 +375,7 @@ fun RecoveryDialog(
                     OutlinedTextField(
                         value = confirmPassword,
                         onValueChange = { confirmPassword = it; error = null },
-                        label = { Text("Confirm New Password") },
+                        label = { Text(stringResource(R.string.confirm_new_password)) },
                         visualTransformation = PasswordVisualTransformation(),
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = VaultOrange, unfocusedBorderColor = VaultBorder)
@@ -411,11 +416,11 @@ fun RecoveryDialog(
                 enabled = if (step == 1) recoveryKey.isNotEmpty() else (newPassword.isNotEmpty() && confirmPassword.isNotEmpty()),
                 colors = ButtonDefaults.buttonColors(containerColor = VaultOrange)
             ) {
-                Text(if (step == 1) "Verify Key" else "Reset & Unlock", color = VaultBlack)
+                Text(if (step == 1) stringResource(R.string.verify_key) else stringResource(R.string.reset_and_unlock), color = if (LocalIsDarkTheme.current) VaultBlack else Color.White)
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel", color = VaultTextSecondary) }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel), color = MaterialTheme.colorScheme.onSurfaceVariant) }
         }
     )
 }
@@ -450,9 +455,9 @@ private fun launchBiometric(
     }
 
     val promptInfo = BiometricPrompt.PromptInfo.Builder()
-        .setTitle("Unlock Vaultix")
-        .setSubtitle("Use your biometric to access your vault")
-        .setNegativeButtonText("Use PIN")
+        .setTitle(context.getString(R.string.unlock_vaultix))
+        .setSubtitle(context.getString(R.string.biometric_prompt_subtitle))
+        .setNegativeButtonText(context.getString(R.string.use_pin_button))
         .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG)
         .build()
 

@@ -136,11 +136,23 @@ class MainActivity : FragmentActivity() {
                 resources.updateConfiguration(configuration, resources.displayMetrics)
             }
 
-            VaultixTheme(
-                themeMode = configState.themeMode,
-                accentColorHex = configState.accentColorHex
+            // Determine layout direction based on language
+            val layoutDirection = if (configState.language == "ar") {
+                androidx.compose.ui.unit.LayoutDirection.Rtl
+            } else {
+                androidx.compose.ui.unit.LayoutDirection.Ltr
+            }
+
+            androidx.compose.runtime.CompositionLocalProvider(
+                androidx.compose.ui.platform.LocalLayoutDirection provides layoutDirection
             ) {
-                VaultixNavGraph(authViewModel = authViewModel)
+                VaultixTheme(
+                    themeMode = configState.themeMode,
+                    accentColorHex = configState.accentColorHex,
+                    fontSizeScale = configState.fontSizeScale
+                ) {
+                    VaultixNavGraph(authViewModel = authViewModel)
+                }
             }
         }
     }

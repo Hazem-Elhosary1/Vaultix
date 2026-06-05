@@ -469,12 +469,12 @@ data class CategoryItem(
 @Composable
 private fun CategoryGrid(onNavigateToCategory: (String) -> Unit) {
     val categories = listOf(
-        CategoryItem("Passwords", Icons.Default.Key, CategoryPasswords, "passwords"),
-        CategoryItem("Cards", Icons.Default.CreditCard, CategoryCards, "cards"),
-        CategoryItem("Wi-Fi", Icons.Default.Wifi, CategoryWifi, "wifi"),
-        CategoryItem("Notes", Icons.Default.Note, CategoryNotes, "notes"),
-        CategoryItem("Files", Icons.Default.Folder, CategoryFiles, "files"),
-        CategoryItem("IDs", Icons.Default.Badge, CategoryIDs, "identities")
+        CategoryItem(stringResource(R.string.passwords), Icons.Default.Key, CategoryPasswords, "passwords"),
+        CategoryItem(stringResource(R.string.cards), Icons.Default.CreditCard, CategoryCards, "cards"),
+        CategoryItem(stringResource(R.string.wifi), Icons.Default.Wifi, CategoryWifi, "wifi"),
+        CategoryItem(stringResource(R.string.notes), Icons.Default.Note, CategoryNotes, "notes"),
+        CategoryItem(stringResource(R.string.files), Icons.Default.Folder, CategoryFiles, "files"),
+        CategoryItem(stringResource(R.string.identities), Icons.Default.Badge, CategoryIDs, "identities")
     )
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -679,13 +679,13 @@ private fun SecurityHealthCard(
                 Spacer(Modifier.height(12.dp))
                 
                 if (state.weakPasswordsCount > 0) {
-                    HealthAlertItem(Icons.Default.Warning, "${state.weakPasswordsCount} weak passwords", VaultWarning)
+                    HealthAlertItem(Icons.Default.Warning, stringResource(R.string.weak_passwords_alert, state.weakPasswordsCount), VaultWarning)
                 }
                 if (state.weakWifiCount > 0) {
-                    HealthAlertItem(Icons.Default.WifiOff, "${state.weakWifiCount} insecure Wi-Fi", CategoryWifi)
+                    HealthAlertItem(Icons.Default.WifiOff, stringResource(R.string.insecure_wifi_alert, state.weakWifiCount), CategoryWifi)
                 }
                 if (state.expiredItemsCount > 0) {
-                    HealthAlertItem(Icons.Default.ErrorOutline, "${state.expiredItemsCount} items expired", VaultError)
+                    HealthAlertItem(Icons.Default.ErrorOutline, stringResource(R.string.expired_items_alert, state.expiredItemsCount), VaultError)
                 }
             }
         }
@@ -750,10 +750,10 @@ fun PasswordTimelineSection(
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                "Password Timeline",
+                stringResource(R.string.password_timeline),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = VaultTextPrimary
+                color = MaterialTheme.colorScheme.onBackground
             )
             Spacer(Modifier.width(8.dp))
             if (!isPremium) {
@@ -791,9 +791,9 @@ fun PasswordTimelineSection(
                         ) {
                             Icon(Icons.Default.Lock, null, tint = VaultOrange)
                             Spacer(Modifier.height(8.dp))
-                            Text("Upgrade to Pro to see timeline", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.upgrade_pro_timeline), color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                             TextButton(onClick = onUpgrade) {
-                                Text("GET PRO", color = VaultOrange, fontWeight = FontWeight.ExtraBold)
+                                Text(stringResource(R.string.get_pro), color = VaultOrange, fontWeight = FontWeight.ExtraBold)
                             }
                         }
                     }

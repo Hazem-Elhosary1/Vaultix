@@ -5,14 +5,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
-// Global Dynamic Theme Accent Bridge
+// Global Dynamic Theme Accent and Mode Bridge
 var DynamicThemeAccent by mutableStateOf(Color(0xFFFF7A00))
+var IsDarkThemeBridge by mutableStateOf(true)
 
-// Primary Brand Colors (linked dynamically to current accent)
-val VaultNavy = Color(0xFF0A1F44)
-val VaultNavyLight = Color(0xFF1A3460)
-val VaultNavyDark = Color(0xFF060F22)
-val VaultBlack = Color(0xFF000000)
+// Primary Brand Colors (linked dynamically to current accent and theme mode)
+val VaultNavy: Color
+    get() = if (IsDarkThemeBridge) Color(0xFF0A1F44) else Color(0xFFE1E8F0)
+val VaultNavyLight: Color
+    get() = if (IsDarkThemeBridge) Color(0xFF1A3460) else Color(0xFFF1F5F9)
+val VaultNavyDark: Color
+    get() = if (IsDarkThemeBridge) Color(0xFF060F22) else Color(0xFFCBD5E1)
+val VaultBlack: Color
+    get() = if (IsDarkThemeBridge) Color(0xFF000000) else VaultLightBackground
 
 val VaultOrange: Color
     get() = DynamicThemeAccent
@@ -24,16 +29,24 @@ val VaultOrangeDark: Color
     get() = DynamicThemeAccent
 
 // Surface Colors
-val VaultSurface = Color(0xFF0D1B35)
-val VaultSurfaceVariant = Color(0xFF142448)
-val VaultCard = Color(0xFF111D3A)
-val VaultCardElevated = Color(0xFF1A2D4E)
+val VaultSurface: Color
+    get() = if (IsDarkThemeBridge) Color(0xFF0D1B35) else VaultLightSurface
+val VaultSurfaceVariant: Color
+    get() = if (IsDarkThemeBridge) Color(0xFF142448) else Color(0xFFECEFF1)
+val VaultCard: Color
+    get() = if (IsDarkThemeBridge) Color(0xFF111D3A) else VaultLightCard
+val VaultCardElevated: Color
+    get() = if (IsDarkThemeBridge) Color(0xFF1A2D4E) else VaultLightCard
 
 // Text Colors
-val VaultTextPrimary = Color(0xFFFFFFFF)
-val VaultTextSecondary = Color(0xFFB0BEC5)
-val VaultTextDisabled = Color(0xFF546E7A)
-val VaultTextHint = Color(0xFF607D8B)
+val VaultTextPrimary: Color
+    get() = if (IsDarkThemeBridge) Color(0xFFFFFFFF) else VaultLightTextPrimary
+val VaultTextSecondary: Color
+    get() = if (IsDarkThemeBridge) Color(0xFFB0BEC5) else VaultLightTextSecondary
+val VaultTextDisabled: Color
+    get() = if (IsDarkThemeBridge) Color(0xFF546E7A) else VaultLightTextDisabled
+val VaultTextHint: Color
+    get() = if (IsDarkThemeBridge) Color(0xFF607D8B) else VaultLightTextDisabled
 
 // Status Colors
 val VaultSuccess = Color(0xFF00E676)
@@ -57,8 +70,10 @@ val CategoryIDs = Color(0xFF66BB6A)
 val CategoryWifi = Color(0xFF0288D1)
 
 // Divider / Border
-val VaultDivider = Color(0xFF1E3054)
-val VaultBorder = Color(0xFF1E3054)
+val VaultDivider: Color
+    get() = if (IsDarkThemeBridge) Color(0xFF1E3054) else VaultLightDivider
+val VaultBorder: Color
+    get() = if (IsDarkThemeBridge) Color(0xFF1E3054) else VaultLightBorder
 
 // Light Mode Surface Colors
 val VaultLightBackground = Color(0xFFF5F7FA)

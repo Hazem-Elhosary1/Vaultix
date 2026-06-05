@@ -3,6 +3,7 @@ package com.vaultix.app.ui.navigation
 import PasswordGeneratorScreen
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -39,6 +40,7 @@ fun VaultixNavGraph(
     val authState by authViewModel.authState.collectAsStateWithLifecycle()
     val isSetupComplete by authViewModel.isSetupComplete.collectAsStateWithLifecycle()
     val isOnboardingComplete by authViewModel.isOnboardingComplete.collectAsStateWithLifecycle()
+    val isLanguageChosen by authViewModel.isLanguageChosen.collectAsStateWithLifecycle()
 
     val pendingShortcutAction by authViewModel.pendingShortcutAction.collectAsStateWithLifecycle()
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
@@ -48,6 +50,7 @@ fun VaultixNavGraph(
         if (authState is AuthState.Unauthenticated) {
             val bypassScreens = listOf(
                 Screen.Splash.route,
+                Screen.LanguageSelection.route,
                 Screen.Onboarding.route,
                 Screen.Setup.route,
                 Screen.Lock.route
@@ -64,6 +67,7 @@ fun VaultixNavGraph(
         pendingShortcutAction?.let { action ->
             val bypassScreens = listOf(
                 Screen.Splash.route,
+                Screen.LanguageSelection.route,
                 Screen.Onboarding.route,
                 Screen.Setup.route,
                 Screen.Lock.route
@@ -116,12 +120,29 @@ fun VaultixNavGraph(
             SplashScreen(
                 onNavigate = {
                     val destination = when {
+                        !isLanguageChosen -> Screen.LanguageSelection.route
                         !isOnboardingComplete -> Screen.Onboarding.route
                         !isSetupComplete -> Screen.Setup.route
                         else -> Screen.Lock.route
                     }
                     navController.navigate(destination) {
                         popUpTo(Screen.Splash.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        // Language Selection (first launch)
+        composable(Screen.LanguageSelection.route) {
+            val configViewModel: com.vaultix.app.ui.viewmodel.AppConfigViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+            LanguageSelectionScreen(
+                onLanguageSelected = { lang ->
+                    configViewModel.setLanguage(lang)
+                    kotlinx.coroutines.MainScope().launch {
+                        authViewModel.completeLanguageSelection()
+                    }
+                    navController.navigate(Screen.Onboarding.route) {
+                        popUpTo(Screen.LanguageSelection.route) { inclusive = true }
                     }
                 }
             )

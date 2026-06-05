@@ -60,6 +60,10 @@ class SecurePreferences @Inject constructor(
         val KEY_RECOVERY_ENCRYPTED = stringPreferencesKey("recovery_enc")
         val KEY_IS_PREMIUM = booleanPreferencesKey("is_premium")
 
+        // Font & Language
+        val KEY_FONT_SIZE_SCALE = stringPreferencesKey("font_size_scale") // SMALL, MEDIUM, LARGE
+        val KEY_LANGUAGE_CHOSEN = booleanPreferencesKey("language_chosen") // First-launch language picker completed
+
         // Backup Configuration
         val KEY_BACKUP_ENABLED = booleanPreferencesKey("backup_enabled")
         val KEY_BACKUP_FREQUENCY = stringPreferencesKey("backup_frequency") // DAILY, WEEKLY, MONTHLY, NEVER

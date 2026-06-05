@@ -5,9 +5,14 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import com.vaultix.app.ui.viewmodel.ThemeMode
+
+// CompositionLocal to expose dark/light theme state to screens
+val LocalIsDarkTheme = staticCompositionLocalOf { true }
 
 private fun getDarkColorScheme(accentColor: Color) = darkColorScheme(
     primary = accentColor,
@@ -85,6 +90,7 @@ private fun getLightColorScheme(accentColor: Color) = lightColorScheme(
 fun VaultixTheme(
     themeMode: ThemeMode = ThemeMode.SYSTEM,
     accentColorHex: String = "#FF9800",
+    fontSizeScale: FontSizeScale = FontSizeScale.MEDIUM,
     content: @Composable () -> Unit
 ) {
     val darkTheme = when (themeMode) {
@@ -101,6 +107,7 @@ fun VaultixTheme(
 
     // DynamicThemeAccent update propagates color changes to all hardcoded VaultOrange elements!
     DynamicThemeAccent = accentColor
+    IsDarkThemeBridge = darkTheme
 
     val colorScheme = if (darkTheme) {
         getDarkColorScheme(accentColor)
@@ -108,9 +115,11 @@ fun VaultixTheme(
         getLightColorScheme(accentColor)
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = VaultixTypography,
-        content = content
-    )
+    CompositionLocalProvider(LocalIsDarkTheme provides darkTheme) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = createVaultixTypography(fontSizeScale),
+            content = content
+        )
+    }
 }

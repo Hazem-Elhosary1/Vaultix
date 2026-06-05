@@ -16,6 +16,9 @@ import androidx.compose.ui.unit.sp
 import com.vaultix.app.ui.theme.*
 import kotlinx.coroutines.delay
 
+import androidx.compose.ui.res.stringResource
+import com.vaultix.app.R
+
 @Composable
 fun SplashScreen(
     onNavigate: () -> Unit
@@ -76,7 +79,7 @@ fun SplashScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "VAULTIX",
+                text = stringResource(R.string.app_name).uppercase(),
                 fontSize = 36.sp,
                 fontWeight = FontWeight.Bold,
                 color = VaultTextPrimary,
@@ -86,7 +89,7 @@ fun SplashScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Your Secure Digital Vault",
+                text = stringResource(R.string.splash_subtitle),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Light,
                 color = VaultOrange,
@@ -102,7 +105,7 @@ fun SplashScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Zero Knowledge • Fully Offline • AES-256",
+                text = stringResource(R.string.splash_tagline),
                 fontSize = 11.sp,
                 color = VaultTextDisabled,
                 letterSpacing = 1.sp

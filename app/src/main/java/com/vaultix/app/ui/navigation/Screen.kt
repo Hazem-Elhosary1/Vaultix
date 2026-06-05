@@ -2,6 +2,7 @@ package com.vaultix.app.ui.navigation
 
 sealed class Screen(val route: String) {
     object Splash : Screen("splash")
+    object LanguageSelection : Screen("language_selection")
     object Onboarding : Screen("onboarding")
     object Setup : Screen("setup")
     object Backup : Screen("backup")

@@ -396,6 +396,33 @@ fun SettingsScreen(
             // Appearance Section
             SettingsSection(title = stringResource(R.string.appearance)) {
                 Column(Modifier.padding(16.dp)) {
+                    // Theme Mode
+                    Text(stringResource(R.string.theme_mode), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
+                    Spacer(Modifier.height(8.dp))
+                    Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listOf(
+                            Triple(ThemeMode.SYSTEM, stringResource(R.string.theme_system), Icons.Default.Settings),
+                            Triple(ThemeMode.LIGHT, stringResource(R.string.theme_light), Icons.Default.LightMode),
+                            Triple(ThemeMode.DARK, stringResource(R.string.theme_dark), Icons.Default.DarkMode)
+                        ).forEach { (mode, label, icon) ->
+                            FilterChip(
+                                selected = configState.themeMode == mode,
+                                onClick = { appConfigViewModel.setThemeMode(mode) },
+                                label = { Text(label, fontSize = 12.sp) },
+                                leadingIcon = { Icon(icon, null, modifier = Modifier.size(16.dp)) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primary.copy(0.2f),
+                                    selectedLabelColor = MaterialTheme.colorScheme.primary
+                                )
+                            )
+                        }
+                    }
+
+                    Spacer(Modifier.height(16.dp))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+                    Spacer(Modifier.height(16.dp))
+
+                    // Accent Color
                     Text(stringResource(R.string.accent_color), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
                     Spacer(Modifier.height(8.dp))
                     Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -419,6 +446,55 @@ fun SettingsScreen(
                                     Icon(Icons.Default.Check, null, tint = Color.White)
                                 }
                             }
+                        }
+                    }
+
+                    Spacer(Modifier.height(16.dp))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+                    Spacer(Modifier.height(16.dp))
+
+                    // Language
+                    Text(stringResource(R.string.language), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
+                    Spacer(Modifier.height(8.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listOf(
+                            Pair("en", stringResource(R.string.lang_english)),
+                            Pair("ar", stringResource(R.string.lang_arabic))
+                        ).forEach { (code, label) ->
+                            FilterChip(
+                                selected = configState.language == code,
+                                onClick = { appConfigViewModel.setLanguage(code) },
+                                label = { Text(label, fontSize = 12.sp) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primary.copy(0.2f),
+                                    selectedLabelColor = MaterialTheme.colorScheme.primary
+                                )
+                            )
+                        }
+                    }
+
+                    Spacer(Modifier.height(16.dp))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+                    Spacer(Modifier.height(16.dp))
+
+                    // Font Size Scale
+                    Text(stringResource(R.string.font_size), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
+                    Spacer(Modifier.height(8.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listOf(
+                            Pair(FontSizeScale.SMALL, stringResource(R.string.font_size_small)),
+                            Pair(FontSizeScale.MEDIUM, stringResource(R.string.font_size_medium)),
+                            Pair(FontSizeScale.LARGE, stringResource(R.string.font_size_large))
+                        ).forEach { (scale, label) ->
+                            FilterChip(
+                                selected = configState.fontSizeScale == scale,
+                                onClick = { appConfigViewModel.setFontSizeScale(scale) },
+                                label = { Text(label, fontSize = 12.sp) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primary.copy(0.2f),
+                                    selectedLabelColor = MaterialTheme.colorScheme.primary
+                                )
+                            )
                         }
                     }
                 }

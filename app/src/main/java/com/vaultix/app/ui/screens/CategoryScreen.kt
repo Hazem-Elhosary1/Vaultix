@@ -54,7 +54,7 @@ fun CategoryScreen(
         "notes" -> stringResource(R.string.notes)
         "files" -> stringResource(R.string.files)
         "identities" -> stringResource(R.string.identities)
-        "wifi" -> "Wi-Fi Networks"
+        "wifi" -> stringResource(R.string.wifi)
         else -> stringResource(R.string.app_name)
     }
     val accentColor = MaterialTheme.colorScheme.primary
@@ -76,7 +76,7 @@ fun CategoryScreen(
     }
 
     Scaffold(
-        containerColor = VaultBlack,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             Column {
                 TopAppBar(
@@ -129,16 +129,16 @@ fun CategoryScreen(
                         // Scan FAB
                         SmallFloatingActionButton(
                             onClick = onNavigateToScan,
-                            containerColor = CategoryCards,
-                            contentColor = VaultBlack
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                         ) {
                             Icon(Icons.Default.CameraAlt, "Scan Card")
                         }
                         // Add FAB
                         FloatingActionButton(
                             onClick = onNavigateToAdd,
-                            containerColor = VaultOrange,
-                            contentColor = VaultBlack,
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
                             shape = RoundedCornerShape(16.dp)
                         ) {
                             Icon(Icons.Default.Add, "Add")
@@ -148,8 +148,8 @@ fun CategoryScreen(
                 "files" -> {
                     FloatingActionButton(
                         onClick = onNavigateToFileVault,
-                        containerColor = VaultOrange,
-                        contentColor = VaultBlack,
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
                         shape = RoundedCornerShape(16.dp)
                     ) {
                         Icon(Icons.Default.Upload, "Import File")
@@ -158,8 +158,8 @@ fun CategoryScreen(
                 "identities" -> {
                     FloatingActionButton(
                         onClick = { onNavigateToIdentityEdit(null) },
-                        containerColor = VaultOrange,
-                        contentColor = VaultBlack,
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
                         shape = RoundedCornerShape(16.dp)
                     ) {
                         Icon(Icons.Default.Add, "Add ID")
@@ -296,7 +296,7 @@ private fun PasswordListItem(
                 modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight()
-                    .background(VaultSurface, RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
                     .padding(horizontal = 16.dp),
                 horizontalArrangement = if (isSwipingRight) Arrangement.Start else Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
@@ -309,12 +309,12 @@ private fun PasswordListItem(
                         },
                         modifier = Modifier
                             .size(40.dp)
-                            .background(VaultOrange.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
                     ) {
                         Icon(
                             if (password.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                             contentDescription = "Toggle Favorite",
-                            tint = if (password.isFavorite) VaultOrange else VaultTextSecondary.copy(alpha = 0.5f),
+                            tint = if (password.isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -326,12 +326,12 @@ private fun PasswordListItem(
                         },
                         modifier = Modifier
                             .size(40.dp)
-                            .background(VaultError.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
+                            .background(MaterialTheme.colorScheme.error.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
                     ) {
                         Icon(
                             Icons.Default.Delete,
                             contentDescription = "Delete Password",
-                            tint = VaultError,
+                            tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -367,7 +367,7 @@ private fun PasswordListItem(
                 }
                 .clickable(onClick = onClick),
             shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(containerColor = VaultSurface)
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
         ) {
             Row(
                 Modifier.fillMaxWidth().padding(16.dp),
@@ -394,7 +394,7 @@ private fun PasswordListItem(
                         Text(password.title, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface, maxLines = 1)
                         if (password.isFavorite) {
                             Spacer(Modifier.width(6.dp))
-                            Icon(Icons.Default.Star, null, tint = VaultOrange, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.Star, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
                         }
                     }
                     Text(password.username, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -413,7 +413,7 @@ private fun PasswordListItem(
                         offsetXAnim.animateTo(target)
                     }
                 }) {
-                    Icon(Icons.Default.MoreVert, null, tint = VaultTextSecondary)
+                    Icon(Icons.Default.MoreVert, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }
@@ -518,7 +518,7 @@ private fun CardListItem(
                 modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight()
-                    .background(VaultSurface, RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(16.dp))
                     .padding(horizontal = 16.dp),
                 horizontalArrangement = if (isSwipingRight) Arrangement.Start else Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
@@ -531,12 +531,12 @@ private fun CardListItem(
                         },
                         modifier = Modifier
                             .size(40.dp)
-                            .background(VaultOrange.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
                     ) {
                         Icon(
                             if (card.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                             contentDescription = "Toggle Favorite",
-                            tint = if (card.isFavorite) VaultOrange else VaultTextSecondary.copy(alpha = 0.5f),
+                            tint = if (card.isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -548,12 +548,12 @@ private fun CardListItem(
                         },
                         modifier = Modifier
                             .size(40.dp)
-                            .background(VaultError.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
+                            .background(MaterialTheme.colorScheme.error.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
                     ) {
                         Icon(
                             Icons.Default.Delete,
                             contentDescription = "Delete Card",
-                            tint = VaultError,
+                            tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -589,14 +589,17 @@ private fun CardListItem(
                 }
                 .clickable(onClick = onClick),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary)
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
                         androidx.compose.ui.graphics.Brush.horizontalGradient(
-                            colors = listOf(VaultNavy, VaultNavyLight)
+                            colors = listOf(
+                                MaterialTheme.colorScheme.primary,
+                                MaterialTheme.colorScheme.primaryContainer
+                            )
                         )
                     )
                     .padding(20.dp)
@@ -604,25 +607,25 @@ private fun CardListItem(
                 Column {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(card.cardName, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSecondary)
+                            Text(card.cardName, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onPrimary)
                             if (card.isFavorite) {
                                 Spacer(Modifier.width(6.dp))
-                                Icon(Icons.Default.Star, null, tint = VaultOrange, modifier = Modifier.size(16.dp))
+                                Icon(Icons.Default.Star, null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(16.dp))
                             }
                         }
-                        Text(card.cardType, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSecondary.copy(0.8f), fontWeight = FontWeight.Medium)
+                        Text(card.cardType, fontSize = 14.sp, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f), fontWeight = FontWeight.Medium)
                     }
                     Spacer(Modifier.height(16.dp))
-                    Text(card.maskedCardNumber, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSecondary, letterSpacing = 2.sp)
+                    Text(card.maskedCardNumber, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary, letterSpacing = 2.sp)
                     Spacer(Modifier.height(12.dp))
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Column {
-                            Text(stringResource(R.string.accent_color).uppercase(), fontSize = 10.sp, color = MaterialTheme.colorScheme.onSecondary.copy(0.6f), letterSpacing = 1.sp)
-                            Text(card.holderName, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSecondary, fontWeight = FontWeight.Medium)
+                            Text(stringResource(R.string.accent_color).uppercase(), fontSize = 10.sp, color = MaterialTheme.colorScheme.onPrimary.copy(0.6f), letterSpacing = 1.sp)
+                            Text(card.holderName, fontSize = 14.sp, color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Medium)
                         }
                         Column(horizontalAlignment = Alignment.End) {
-                            Text(stringResource(R.string.appearance).uppercase(), fontSize = 10.sp, color = MaterialTheme.colorScheme.onSecondary.copy(0.6f), letterSpacing = 1.sp)
-                            Text("${card.expiryMonth}/${card.expiryYear}", fontSize = 14.sp, color = if (card.isExpired) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSecondary, fontWeight = FontWeight.Medium)
+                            Text(stringResource(R.string.appearance).uppercase(), fontSize = 10.sp, color = MaterialTheme.colorScheme.onPrimary.copy(0.6f), letterSpacing = 1.sp)
+                            Text("${card.expiryMonth}/${card.expiryYear}", fontSize = 14.sp, color = if (card.isExpired) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Medium)
                         }
                     }
                 }
@@ -633,17 +636,17 @@ private fun CardListItem(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Delete Card") },
-            text = { Text("Are you sure you want to delete \"${card.cardName}\"? This action cannot be undone.") },
+            title = { Text(stringResource(R.string.delete_password)) },
+            text = { Text(stringResource(R.string.delete_confirm, card.cardName)) },
             confirmButton = {
                 TextButton(onClick = { onDelete(); showDeleteDialog = false }) {
-                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") }
+                TextButton(onClick = { showDeleteDialog = false }) { Text(stringResource(R.string.cancel)) }
             },
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
         )
     }
 }
@@ -728,7 +731,7 @@ private fun NoteListItem(
                 modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight()
-                    .background(VaultSurface, RoundedCornerShape(14.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(14.dp))
                     .padding(horizontal = 16.dp),
                 horizontalArrangement = if (isSwipingRight) Arrangement.Start else Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
@@ -747,12 +750,12 @@ private fun NoteListItem(
                             },
                             modifier = Modifier
                                 .size(40.dp)
-                                .background(VaultOrange.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
                         ) {
                             Icon(
                                 Icons.Default.PushPin,
                                 contentDescription = "Toggle Pin",
-                                tint = if (note.isPinned) VaultOrange else VaultTextSecondary.copy(alpha = 0.5f),
+                                tint = if (note.isPinned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                                 modifier = Modifier.size(18.dp)
                             )
                         }
@@ -765,12 +768,12 @@ private fun NoteListItem(
                             },
                             modifier = Modifier
                                 .size(40.dp)
-                                .background(VaultError.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
+                                .background(MaterialTheme.colorScheme.error.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
                         ) {
                             Icon(
                                 if (note.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                                 contentDescription = "Toggle Favorite",
-                                tint = if (note.isFavorite) VaultError else VaultTextSecondary.copy(alpha = 0.5f),
+                                tint = if (note.isFavorite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                                 modifier = Modifier.size(18.dp)
                             )
                         }
@@ -784,12 +787,12 @@ private fun NoteListItem(
                         },
                         modifier = Modifier
                             .size(40.dp)
-                            .background(VaultError.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
+                            .background(MaterialTheme.colorScheme.error.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
                     ) {
                         Icon(
                             Icons.Default.Delete,
                             contentDescription = "Delete Note",
-                            tint = VaultError,
+                            tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -867,7 +870,7 @@ private fun NoteListItem(
                                 Icon(
                                     Icons.Default.PushPin,
                                     contentDescription = "Pinned",
-                                    tint = VaultOrange,
+                                    tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier
                                         .size(13.dp)
                                         .graphicsLayer(rotationZ = 45f)
@@ -887,7 +890,7 @@ private fun NoteListItem(
                                 Icon(
                                     Icons.Default.Star,
                                     contentDescription = null,
-                                    tint = VaultOrange,
+                                    tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(16.dp)
                                 )
                             }
@@ -920,17 +923,17 @@ private fun NoteListItem(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Delete Note") },
-            text = { Text("Are you sure you want to delete \"${note.title}\"? This action cannot be undone.") },
+            title = { Text(stringResource(R.string.delete_password)) },
+            text = { Text(stringResource(R.string.delete_confirm, note.title)) },
             confirmButton = {
                 TextButton(onClick = { onDelete(); showDeleteDialog = false }) {
-                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") }
+                TextButton(onClick = { showDeleteDialog = false }) { Text(stringResource(R.string.cancel)) }
             },
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
         )
     }
 }
@@ -989,8 +992,8 @@ private fun FileList(searchQuery: String, sortKey: String, isAscending: Boolean,
     ) {
         item {
             Text(
-                "${sorted.size} encrypted file${if (sorted.size > 1) "s" else ""}",
-                color = VaultTextSecondary,
+                stringResource(R.string.encrypted_files_count, sorted.size),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 13.sp
             )
         }
@@ -1117,7 +1120,7 @@ private fun FileListItem(
                 modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight()
-                    .background(VaultSurface, RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
                     .padding(horizontal = 16.dp),
                 horizontalArrangement = if (isSwipingRight) Arrangement.Start else Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
@@ -1130,12 +1133,12 @@ private fun FileListItem(
                         },
                         modifier = Modifier
                             .size(40.dp)
-                            .background(VaultOrange.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
                     ) {
                         Icon(
                             if (file.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                             contentDescription = "Toggle Favorite",
-                            tint = if (file.isFavorite) VaultOrange else VaultTextSecondary.copy(alpha = 0.5f),
+                            tint = if (file.isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -1147,12 +1150,12 @@ private fun FileListItem(
                         },
                         modifier = Modifier
                             .size(40.dp)
-                            .background(VaultError.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
+                            .background(MaterialTheme.colorScheme.error.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
                     ) {
                         Icon(
                             Icons.Default.Delete,
                             contentDescription = "Delete File",
-                            tint = VaultError,
+                            tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -1188,7 +1191,7 @@ private fun FileListItem(
                 }
                 .clickable(onClick = onClick),
             shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(0.4f))
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
         ) {
             Row(
                 Modifier.fillMaxWidth().padding(16.dp),
@@ -1215,10 +1218,10 @@ private fun FileListItem(
                         Text(file.fileName, fontSize = 15.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface, maxLines = 1, modifier = Modifier.weight(1f, fill = false))
                         if (file.isFavorite) {
                             Spacer(Modifier.width(6.dp))
-                            Icon(Icons.Default.Star, null, tint = VaultOrange, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.Star, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
                         }
                     }
-                    Text("${(file.fileSizeBytes / 1024)} KB • 🔒 Encrypted", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("${(file.fileSizeBytes / 1024)} KB • 🔒 ${stringResource(R.string.encrypted)}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 IconButton(onClick = {
                     scope.launch {
@@ -1235,17 +1238,17 @@ private fun FileListItem(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Delete File") },
-            text = { Text("Are you sure you want to delete \"${file.fileName}\"? This action cannot be undone.") },
+            title = { Text(stringResource(R.string.delete_password)) },
+            text = { Text(stringResource(R.string.delete_confirm, file.fileName)) },
             confirmButton = {
                 TextButton(onClick = { onDelete(); showDeleteDialog = false }) {
-                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") }
+                TextButton(onClick = { showDeleteDialog = false }) { Text(stringResource(R.string.cancel)) }
             },
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
         )
     }
 }
@@ -1324,7 +1327,7 @@ private fun IdentityListItem(
                 modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight()
-                    .background(VaultSurface, RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
                     .padding(horizontal = 16.dp),
                 horizontalArrangement = if (isSwipingRight) Arrangement.Start else Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
@@ -1337,12 +1340,12 @@ private fun IdentityListItem(
                         },
                         modifier = Modifier
                             .size(40.dp)
-                            .background(VaultOrange.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
                     ) {
                         Icon(
                             if (identity.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                             contentDescription = "Toggle Favorite",
-                            tint = if (identity.isFavorite) VaultOrange else VaultTextSecondary.copy(alpha = 0.5f),
+                            tint = if (identity.isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -1354,12 +1357,12 @@ private fun IdentityListItem(
                         },
                         modifier = Modifier
                             .size(40.dp)
-                            .background(VaultError.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
+                            .background(MaterialTheme.colorScheme.error.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
                     ) {
                         Icon(
                             Icons.Default.Delete,
                             contentDescription = "Delete Identity",
-                            tint = VaultError,
+                            tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -1395,7 +1398,7 @@ private fun IdentityListItem(
                 }
                 .clickable(onClick = onClick),
             shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(0.4f))
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
         ) {
             Row(
                 Modifier.fillMaxWidth().padding(16.dp),
@@ -1420,7 +1423,7 @@ private fun IdentityListItem(
                         Text(identity.documentName.ifEmpty { identity.documentType }, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface, maxLines = 1)
                         if (identity.isFavorite) {
                             Spacer(Modifier.width(6.dp))
-                            Icon(Icons.Default.Star, null, tint = VaultOrange, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.Star, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
                         }
                     }
                     Text(identity.fullName, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -1455,17 +1458,17 @@ private fun IdentityListItem(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Delete Identity") },
-            text = { Text("Are you sure you want to delete \"${identity.documentName}\"? This action cannot be undone.") },
+            title = { Text(stringResource(R.string.delete_password)) },
+            text = { Text(stringResource(R.string.delete_confirm, identity.documentName)) },
             confirmButton = {
                 TextButton(onClick = { onDelete(); showDeleteDialog = false }) {
-                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") }
+                TextButton(onClick = { showDeleteDialog = false }) { Text(stringResource(R.string.cancel)) }
             },
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
         )
     }
 }
@@ -1543,7 +1546,7 @@ private fun SortChipRow(
                         selectedContainerColor = accentColor.copy(alpha = 0.2f),
                         selectedLabelColor = accentColor,
                         selectedLeadingIconColor = accentColor,
-                        containerColor = VaultSurface,
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
                         labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
                         iconColor = MaterialTheme.colorScheme.onSurfaceVariant
                     ),

@@ -27,15 +27,22 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.Canvas
+import androidx.compose.ui.res.stringResource
+import com.vaultix.app.R
 import com.vaultix.app.ui.theme.*
 import com.vaultix.app.ui.viewmodel.AuthViewModel
 import kotlinx.coroutines.launch
+
+enum class OnboardingAnimationType {
+    SHIELD, LOCK, SEARCH
+}
 
 data class OnboardingPage(
     val icon: ImageVector,
     val title: String,
     val description: String,
-    val accentColor: androidx.compose.ui.graphics.Color
+    val accentColor: androidx.compose.ui.graphics.Color,
+    val animationType: OnboardingAnimationType
 )
 
 @Composable
@@ -46,21 +53,24 @@ fun OnboardingScreen(
     val pages = listOf(
         OnboardingPage(
             icon = Icons.Default.Shield,
-            title = "Zero-Knowledge Security",
-            description = "All your data is encrypted with AES-256. Only you hold the keys. We never see your data — ever.",
-            accentColor = VaultOrange
+            title = stringResource(R.string.onboarding_title_1),
+            description = stringResource(R.string.onboarding_desc_1),
+            accentColor = MaterialTheme.colorScheme.primary,
+            animationType = OnboardingAnimationType.SHIELD
         ),
         OnboardingPage(
             icon = Icons.Default.Lock,
-            title = "Truly Offline",
-            description = "No internet. No cloud. No servers. Your vault lives entirely on your device, protected by military-grade encryption.",
-            accentColor = VaultInfo
+            title = stringResource(R.string.onboarding_title_2),
+            description = stringResource(R.string.onboarding_desc_2),
+            accentColor = VaultInfo,
+            animationType = OnboardingAnimationType.LOCK
         ),
         OnboardingPage(
             icon = Icons.Default.Search,
-            title = "Everything in One Place",
-            description = "Store passwords, credit cards, secure notes, files, and IDs. Search instantly across all your encrypted data.",
-            accentColor = VaultSuccess
+            title = stringResource(R.string.onboarding_title_3),
+            description = stringResource(R.string.onboarding_desc_3),
+            accentColor = VaultSuccess,
+            animationType = OnboardingAnimationType.SEARCH
         )
     )
 
@@ -70,7 +80,7 @@ fun OnboardingScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(VaultBlack)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -90,7 +100,7 @@ fun OnboardingScreen(
                         onComplete()
                     }
                 }) {
-                    Text("Skip", color = VaultTextSecondary, fontSize = 14.sp)
+                    Text(stringResource(R.string.skip), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                 }
             }
 
@@ -112,7 +122,7 @@ fun OnboardingScreen(
                 repeat(pages.size) { index ->
                     val isSelected = pagerState.currentPage == index
                     val color by animateColorAsState(
-                        targetValue = if (isSelected) VaultOrange else VaultTextDisabled,
+                        targetValue = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
                         animationSpec = tween(300),
                         label = "indicator"
                     )
@@ -147,13 +157,13 @@ fun OnboardingScreen(
                         .fillMaxWidth()
                         .height(56.dp),
                     shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = VaultOrange)
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
                     Text(
-                        text = if (pagerState.currentPage < pages.size - 1) "Next" else "Get Started",
+                        text = if (pagerState.currentPage < pages.size - 1) stringResource(R.string.next) else stringResource(R.string.get_started),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = VaultBlack
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                 }
             }
@@ -185,16 +195,16 @@ private fun OnboardingPageContent(page: OnboardingPage) {
                 ),
             contentAlignment = Alignment.Center
         ) {
-            when (page.title) {
-                "Zero-Knowledge Security" -> {
+            when (page.animationType) {
+                OnboardingAnimationType.SHIELD -> {
                     // Shield with glow animation
                     ShieldWithGlow(color = page.accentColor)
                 }
-                "Truly Offline" -> {
+                OnboardingAnimationType.LOCK -> {
                     // Lock with locking animation
                     LockWithAnimation(color = page.accentColor)
                 }
-                "Everything in One Place" -> {
+                OnboardingAnimationType.SEARCH -> {
                     // Search with rotation animation
                     SearchWithRotation(color = page.accentColor)
                 }
@@ -215,7 +225,7 @@ private fun OnboardingPageContent(page: OnboardingPage) {
             text = page.title,
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
-            color = VaultTextPrimary,
+            color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Center,
             lineHeight = 36.sp
         )
@@ -225,7 +235,7 @@ private fun OnboardingPageContent(page: OnboardingPage) {
         Text(
             text = page.description,
             fontSize = 16.sp,
-            color = VaultTextSecondary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
             lineHeight = 24.sp
         )

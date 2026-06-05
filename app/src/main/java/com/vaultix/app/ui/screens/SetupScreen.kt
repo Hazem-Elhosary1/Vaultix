@@ -1,6 +1,7 @@
 package com.vaultix.app.ui.screens
 
 import androidx.compose.animation.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -14,6 +15,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -21,6 +26,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.widget.Toast
+import com.vaultix.app.R
 import com.vaultix.app.ui.theme.*
 import com.vaultix.app.ui.viewmodel.AuthViewModel
 import kotlinx.coroutines.launch
@@ -48,11 +55,12 @@ fun SetupScreen(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var isProcessing by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(VaultBlack)
+            .background(MaterialTheme.colorScheme.background)
             .statusBarsPadding()
     ) {
         // Step progress indicator at top
@@ -70,8 +78,8 @@ fun SetupScreen(
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                color = VaultOrange,
-                trackColor = VaultSurface
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant
             )
             
             if (currentStep != SetupStep.CREATE_PASSWORD) {
@@ -90,7 +98,11 @@ fun SetupScreen(
                     },
                     modifier = Modifier.padding(8.dp)
                 ) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = VaultOrange)
+                    Icon(
+                        Icons.Default.ArrowBack,
+                        contentDescription = stringResource(R.string.back),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
                 }
             }
         }
@@ -100,7 +112,8 @@ fun SetupScreen(
             transitionSpec = {
                 slideInHorizontally { it } togetherWith slideOutHorizontally { -it }
             },
-            label = "setup_step"
+            label = "setup_step",
+            modifier = Modifier.fillMaxSize()
         ) { step ->
             when (step) {
                 SetupStep.CREATE_PASSWORD -> CreatePasswordStep(
@@ -113,7 +126,7 @@ fun SetupScreen(
                     isProcessing = isProcessing,
                     onNext = {
                         if (masterPassword.length < 8) {
-                            errorMessage = "Password must be at least 8 characters"
+                            errorMessage = context.getString(R.string.password_min_length)
                         } else {
                             currentStep = SetupStep.CONFIRM_PASSWORD
                         }
@@ -130,7 +143,7 @@ fun SetupScreen(
                     isProcessing = isProcessing,
                     onNext = {
                         if (masterPassword != confirmPassword) {
-                            errorMessage = "Passwords do not match"
+                            errorMessage = context.getString(R.string.passwords_not_match)
                         } else {
                             scope.launch {
                                 isProcessing = true
@@ -154,7 +167,7 @@ fun SetupScreen(
                     isProcessing = isProcessing,
                     onNext = {
                         if (pin.length < 4) {
-                            errorMessage = "PIN must be at least 4 digits"
+                            errorMessage = context.getString(R.string.setup_pin_error)
                         } else {
                             currentStep = SetupStep.CONFIRM_PIN
                         }
@@ -173,7 +186,7 @@ fun SetupScreen(
                     isProcessing = isProcessing,
                     onNext = {
                         if (pin != confirmPin) {
-                            errorMessage = "PINs do not match"
+                            errorMessage = context.getString(R.string.setup_pin_match_error)
                         } else {
                             scope.launch {
                                 isProcessing = true
@@ -231,8 +244,8 @@ fun SetupScreen(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(16.dp),
-                containerColor = VaultError,
-                contentColor = VaultTextPrimary
+                containerColor = MaterialTheme.colorScheme.error,
+                contentColor = MaterialTheme.colorScheme.onError
             ) {
                 Text(msg)
             }
@@ -260,16 +273,21 @@ private fun CreatePasswordStep(
         Icon(
             Icons.Default.Lock,
             contentDescription = null,
-            tint = VaultOrange,
+            tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(56.dp)
         )
         Spacer(modifier = Modifier.height(24.dp))
-        Text("Create Master Password", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = VaultTextPrimary)
+        Text(
+            text = stringResource(R.string.create_master_password),
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground
+        )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            "This is the key to your vault. Choose something strong and memorable — there is NO recovery option.",
+            text = stringResource(R.string.setup_password_desc),
             fontSize = 14.sp,
-            color = VaultTextSecondary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(32.dp))
@@ -277,15 +295,15 @@ private fun CreatePasswordStep(
         OutlinedTextField(
             value = password,
             onValueChange = onPasswordChange,
-            label = { Text("Master Password") },
-            placeholder = { Text("Enter master password") },
+            label = { Text(stringResource(R.string.master_password)) },
+            placeholder = { Text(stringResource(R.string.setup_enter_password)) },
             visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                 IconButton(onClick = { showPassword = !showPassword }) {
                     Icon(
                         if (showPassword) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                         contentDescription = null,
-                        tint = VaultTextSecondary
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             },
@@ -293,12 +311,12 @@ private fun CreatePasswordStep(
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = VaultOrange,
-                unfocusedBorderColor = VaultBorder,
-                focusedLabelColor = VaultOrange,
-                cursorColor = VaultOrange,
-                focusedTextColor = VaultTextPrimary,
-                unfocusedTextColor = VaultTextPrimary
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                cursorColor = MaterialTheme.colorScheme.primary,
+                focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                unfocusedTextColor = MaterialTheme.colorScheme.onBackground
             ),
             isError = errorMessage != null
         )
@@ -315,13 +333,13 @@ private fun CreatePasswordStep(
             onClick = onNext,
             modifier = Modifier.fillMaxWidth().height(56.dp),
             shape = RoundedCornerShape(16.dp),
-            enabled = !isProcessing,
-            colors = ButtonDefaults.buttonColors(containerColor = VaultOrange)
+            enabled = !isProcessing && password.isNotEmpty(),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
         ) {
             if (isProcessing) {
-                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = VaultBlack, strokeWidth = 2.dp)
+                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
             } else {
-                Text("Continue", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = VaultBlack)
+                Text(stringResource(R.string.continue_text), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onPrimary)
             }
         }
     }
@@ -342,33 +360,33 @@ private fun ConfirmPasswordStep(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(Icons.Default.Lock, null, tint = VaultOrange, modifier = Modifier.size(56.dp))
+        Icon(Icons.Default.Lock, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(56.dp))
         Spacer(Modifier.height(24.dp))
-        Text("Confirm Password", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = VaultTextPrimary)
+        Text(stringResource(R.string.confirm_password), fontSize = 24.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
         Spacer(Modifier.height(8.dp))
-        Text("Re-enter your master password to confirm.", fontSize = 14.sp, color = VaultTextSecondary, textAlign = TextAlign.Center)
+        Text(stringResource(R.string.setup_confirm_password_desc), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
         Spacer(Modifier.height(32.dp))
 
         OutlinedTextField(
             value = password,
             onValueChange = onPasswordChange,
-            label = { Text("Confirm Password") },
+            label = { Text(stringResource(R.string.confirm_password)) },
             visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                 IconButton(onClick = { showPassword = !showPassword }) {
-                    Icon(if (showPassword) Icons.Default.VisibilityOff else Icons.Default.Visibility, null, tint = VaultTextSecondary)
+                    Icon(if (showPassword) Icons.Default.VisibilityOff else Icons.Default.Visibility, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = VaultOrange,
-                unfocusedBorderColor = VaultBorder,
-                focusedLabelColor = VaultOrange,
-                cursorColor = VaultOrange,
-                focusedTextColor = VaultTextPrimary,
-                unfocusedTextColor = VaultTextPrimary
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                cursorColor = MaterialTheme.colorScheme.primary,
+                focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                unfocusedTextColor = MaterialTheme.colorScheme.onBackground
             ),
             isError = errorMessage != null
         )
@@ -379,12 +397,12 @@ private fun ConfirmPasswordStep(
             modifier = Modifier.fillMaxWidth().height(56.dp),
             shape = RoundedCornerShape(16.dp),
             enabled = !isProcessing && password.isNotEmpty(),
-            colors = ButtonDefaults.buttonColors(containerColor = VaultOrange)
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
         ) {
             if (isProcessing) {
-                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = VaultBlack, strokeWidth = 2.dp)
+                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
             } else {
-                Text("Continue", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = VaultBlack)
+                Text(stringResource(R.string.continue_text), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onPrimary)
             }
         }
     }
@@ -403,11 +421,11 @@ private fun CreatePinStep(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(Icons.Default.Pin, null, tint = VaultOrange, modifier = Modifier.size(56.dp))
+        Icon(Icons.Default.Pin, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(56.dp))
         Spacer(Modifier.height(24.dp))
-        Text("Create PIN", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = VaultTextPrimary)
+        Text(stringResource(R.string.create_pin), fontSize = 24.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
         Spacer(Modifier.height(8.dp))
-        Text("4-6 digit PIN for quick unlock. Different from your panic PIN.", fontSize = 14.sp, color = VaultTextSecondary, textAlign = TextAlign.Center)
+        Text(stringResource(R.string.setup_pin_desc), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
         Spacer(Modifier.height(32.dp))
 
         PinDots(pin = pin, maxLength = 6)
@@ -417,25 +435,31 @@ private fun CreatePinStep(
         OutlinedTextField(
             value = pin,
             onValueChange = onPinChange,
-            label = { Text("PIN (4-6 digits)") },
+            label = { Text(stringResource(R.string.setup_pin_label)) },
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = VaultOrange,
-                unfocusedBorderColor = VaultBorder,
-                focusedLabelColor = VaultOrange,
-                cursorColor = VaultOrange,
-                focusedTextColor = VaultTextPrimary,
-                unfocusedTextColor = VaultTextPrimary
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                cursorColor = MaterialTheme.colorScheme.primary,
+                focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                unfocusedTextColor = MaterialTheme.colorScheme.onBackground
             ),
             isError = errorMessage != null
         )
 
         Spacer(Modifier.height(32.dp))
-        Button(onClick = onNext, modifier = Modifier.fillMaxWidth().height(56.dp), shape = RoundedCornerShape(16.dp), colors = ButtonDefaults.buttonColors(containerColor = VaultOrange)) {
-            Text("Continue", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = VaultBlack)
+        Button(
+            onClick = onNext,
+            modifier = Modifier.fillMaxWidth().height(56.dp),
+            shape = RoundedCornerShape(16.dp),
+            enabled = !isProcessing && pin.isNotEmpty(),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+        ) {
+            Text(stringResource(R.string.continue_text), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onPrimary)
         }
     }
 }
@@ -453,11 +477,11 @@ private fun ConfirmPinStep(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(Icons.Default.Pin, null, tint = VaultOrange, modifier = Modifier.size(56.dp))
+        Icon(Icons.Default.Pin, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(56.dp))
         Spacer(Modifier.height(24.dp))
-        Text("Confirm PIN", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = VaultTextPrimary)
+        Text(stringResource(R.string.confirm_pin), fontSize = 24.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
         Spacer(Modifier.height(8.dp))
-        Text("Re-enter your PIN to confirm.", fontSize = 14.sp, color = VaultTextSecondary, textAlign = TextAlign.Center)
+        Text(stringResource(R.string.setup_confirm_pin_desc), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
         Spacer(Modifier.height(32.dp))
 
         PinDots(pin = pin, maxLength = 6)
@@ -467,18 +491,18 @@ private fun ConfirmPinStep(
         OutlinedTextField(
             value = pin,
             onValueChange = onPinChange,
-            label = { Text("Confirm PIN") },
+            label = { Text(stringResource(R.string.confirm_pin)) },
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = VaultOrange,
-                unfocusedBorderColor = VaultBorder,
-                focusedLabelColor = VaultOrange,
-                cursorColor = VaultOrange,
-                focusedTextColor = VaultTextPrimary,
-                unfocusedTextColor = VaultTextPrimary
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                cursorColor = MaterialTheme.colorScheme.primary,
+                focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                unfocusedTextColor = MaterialTheme.colorScheme.onBackground
             ),
             isError = errorMessage != null
         )
@@ -489,12 +513,12 @@ private fun ConfirmPinStep(
             modifier = Modifier.fillMaxWidth().height(56.dp),
             shape = RoundedCornerShape(16.dp),
             enabled = !isProcessing && pin.isNotEmpty(),
-            colors = ButtonDefaults.buttonColors(containerColor = VaultOrange)
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
         ) {
             if (isProcessing) {
-                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = VaultBlack, strokeWidth = 2.dp)
+                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
             } else {
-                Text("Continue", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = VaultBlack)
+                Text(stringResource(R.string.continue_text), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onPrimary)
             }
         }
     }
@@ -511,14 +535,14 @@ private fun BiometricSetupStep(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(Icons.Default.Fingerprint, null, tint = VaultOrange, modifier = Modifier.size(80.dp))
+        Icon(Icons.Default.Fingerprint, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(80.dp))
         Spacer(Modifier.height(24.dp))
-        Text("Enable Biometric", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = VaultTextPrimary)
+        Text(stringResource(R.string.enable_biometric), fontSize = 24.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
         Spacer(Modifier.height(8.dp))
         Text(
-            "Use fingerprint or face recognition for quick, secure access to your vault.",
+            stringResource(R.string.setup_biometric_desc),
             fontSize = 14.sp,
-            color = VaultTextSecondary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
         )
         Spacer(Modifier.height(48.dp))
@@ -528,14 +552,14 @@ private fun BiometricSetupStep(
             modifier = Modifier.fillMaxWidth().height(56.dp),
             shape = RoundedCornerShape(16.dp),
             enabled = !isProcessing,
-            colors = ButtonDefaults.buttonColors(containerColor = VaultOrange)
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
         ) {
             if (isProcessing) {
-                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = VaultBlack, strokeWidth = 2.dp)
+                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
             } else {
-                Icon(Icons.Default.Fingerprint, null, tint = VaultBlack)
+                Icon(Icons.Default.Fingerprint, null, tint = MaterialTheme.colorScheme.onPrimary)
                 Spacer(Modifier.width(8.dp))
-                Text("Enable Biometric", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = VaultBlack)
+                Text(stringResource(R.string.enable_biometric), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onPrimary)
             }
         }
 
@@ -546,10 +570,10 @@ private fun BiometricSetupStep(
             modifier = Modifier.fillMaxWidth().height(56.dp),
             shape = RoundedCornerShape(16.dp),
             enabled = !isProcessing,
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = VaultTextSecondary),
-            border = androidx.compose.foundation.BorderStroke(1.dp, VaultBorder)
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurfaceVariant),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
         ) {
-            Text("Skip for now", fontSize = 16.sp)
+            Text(stringResource(R.string.setup_biometric_skip), fontSize = 16.sp)
         }
     }
 }
@@ -567,27 +591,27 @@ private fun WarningStep(
         Box(
             modifier = Modifier
                 .size(80.dp)
-                .background(VaultError.copy(alpha = 0.1f), RoundedCornerShape(20.dp)),
+                .background(MaterialTheme.colorScheme.error.copy(alpha = 0.1f), RoundedCornerShape(20.dp)),
             contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Default.Warning, null, tint = VaultError, modifier = Modifier.size(48.dp))
+            Icon(Icons.Default.Warning, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(48.dp))
         }
         Spacer(Modifier.height(24.dp))
-        Text("⚠️ Important Warning", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = VaultError)
+        Text(stringResource(R.string.setup_warning_title), fontSize = 24.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
         Spacer(Modifier.height(24.dp))
 
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = VaultSurface),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
             shape = RoundedCornerShape(16.dp)
         ) {
             Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                WarningItem("There is NO password recovery")
-                WarningItem("There is NO cloud backup")
-                WarningItem("If you forget your master password, use your RECOVERY KEY")
-                WarningItem("If you lose BOTH your password and recovery key, ALL data is permanently lost")
-                WarningItem("This is by design — zero-knowledge means only YOU have access")
-                WarningItem("Write down your master password AND recovery key and store them separately")
+                WarningItem(stringResource(R.string.setup_warning_1))
+                WarningItem(stringResource(R.string.setup_warning_2))
+                WarningItem(stringResource(R.string.setup_warning_3))
+                WarningItem(stringResource(R.string.setup_warning_4))
+                WarningItem(stringResource(R.string.setup_warning_5))
+                WarningItem(stringResource(R.string.setup_warning_6))
             }
         }
 
@@ -598,12 +622,12 @@ private fun WarningStep(
             modifier = Modifier.fillMaxWidth().height(56.dp),
             shape = RoundedCornerShape(16.dp),
             enabled = !isProcessing,
-            colors = ButtonDefaults.buttonColors(containerColor = VaultOrange)
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
         ) {
             if (isProcessing) {
-                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = VaultBlack, strokeWidth = 2.dp)
+                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
             } else {
-                Text("I Understand, Let's Go", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = VaultBlack)
+                Text(stringResource(R.string.setup_warning_button), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onPrimary)
             }
         }
     }
@@ -612,9 +636,9 @@ private fun WarningStep(
 @Composable
 private fun WarningItem(text: String) {
     Row(verticalAlignment = Alignment.Top) {
-        Text("•", color = VaultError, fontSize = 16.sp)
+        Text("•", color = MaterialTheme.colorScheme.error, fontSize = 16.sp)
         Spacer(Modifier.width(8.dp))
-        Text(text, fontSize = 14.sp, color = VaultTextSecondary)
+        Text(text, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -626,7 +650,7 @@ fun PinDots(pin: String, maxLength: Int) {
                 modifier = Modifier
                     .size(16.dp)
                     .background(
-                        if (index < pin.length) VaultOrange else VaultBorder,
+                        if (index < pin.length) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
                         CircleShape
                     )
             )
@@ -648,16 +672,16 @@ fun PasswordStrengthBar(password: CharArray) {
     }
 
     val (color, label) = when {
-        strength <= 1 -> Pair(StrengthVeryWeak, "Very Weak")
-        strength == 2 -> Pair(StrengthWeak, "Weak")
-        strength == 3 -> Pair(StrengthFair, "Fair")
-        strength in 4..5 -> Pair(StrengthStrong, "Strong")
-        else -> Pair(StrengthVeryStrong, "Very Strong")
+        strength <= 1 -> Pair(StrengthVeryWeak, stringResource(R.string.very_weak))
+        strength == 2 -> Pair(StrengthWeak, stringResource(R.string.weak))
+        strength == 3 -> Pair(StrengthFair, stringResource(R.string.fair))
+        strength in 4..5 -> Pair(StrengthStrong, stringResource(R.string.strong))
+        else -> Pair(StrengthVeryStrong, stringResource(R.string.very_strong))
     }
 
     Column {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("Password strength", fontSize = 12.sp, color = VaultTextSecondary)
+            Text(stringResource(R.string.password_strength), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text(label, fontSize = 12.sp, color = color, fontWeight = FontWeight.Medium)
         }
         Spacer(Modifier.height(4.dp))
@@ -665,7 +689,7 @@ fun PasswordStrengthBar(password: CharArray) {
             progress = { strength / 6f },
             modifier = Modifier.fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp)),
             color = color,
-            trackColor = VaultSurface
+            trackColor = MaterialTheme.colorScheme.surfaceVariant
         )
     }
 }
@@ -679,51 +703,51 @@ private fun RecoveryKeyStep(
     val recoveryKey = remember { authViewModel.generateRecoveryKey() }
     val scope = rememberCoroutineScope()
     var isSaved by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     Column(
         modifier = Modifier.fillMaxSize().padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(Icons.Default.Key, null, tint = VaultOrange, modifier = Modifier.size(56.dp))
+        Icon(Icons.Default.Key, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(56.dp))
         Spacer(Modifier.height(24.dp))
-        Text("Your Recovery Key", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = VaultTextPrimary)
+        Text(stringResource(R.string.recovery_key), fontSize = 24.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
         Spacer(Modifier.height(12.dp))
         Text(
-            "This 24-character key is the ONLY way to recover your vault if you forget your master password.",
+            stringResource(R.string.setup_recovery_key_desc),
             fontSize = 14.sp,
-            color = VaultTextSecondary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
         )
         Spacer(Modifier.height(32.dp))
 
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = VaultSurface),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
             shape = RoundedCornerShape(16.dp),
-            border = androidx.compose.foundation.BorderStroke(1.dp, VaultOrange.copy(0.3f))
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(0.3f))
         ) {
             Column(Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     recoveryKey,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = VaultOrange,
+                    color = MaterialTheme.colorScheme.primary,
                     letterSpacing = 2.sp,
                     textAlign = TextAlign.Center,
                     lineHeight = 32.sp
                 )
                 Spacer(Modifier.height(16.dp))
-                val context = androidx.compose.ui.platform.LocalContext.current
-                val clipboardManager = androidx.compose.ui.platform.LocalClipboardManager.current
+                val clipboardManager = LocalClipboardManager.current
                 
                 TextButton(onClick = { 
-                    clipboardManager.setText(androidx.compose.ui.text.AnnotatedString(recoveryKey))
-                    android.widget.Toast.makeText(context, "Recovery key copied!", android.widget.Toast.LENGTH_SHORT).show()
+                    clipboardManager.setText(AnnotatedString(recoveryKey))
+                    Toast.makeText(context, context.getString(R.string.setup_recovery_key_copied), Toast.LENGTH_SHORT).show()
                 }) {
                     Icon(Icons.Default.ContentCopy, null, Modifier.size(16.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("Copy to clipboard", fontSize = 12.sp)
+                    Text(stringResource(R.string.setup_recovery_key_copy), fontSize = 12.sp)
                 }
             }
         }
@@ -734,12 +758,12 @@ private fun RecoveryKeyStep(
             Checkbox(
                 checked = isSaved,
                 onCheckedChange = { isSaved = it },
-                colors = CheckboxDefaults.colors(checkedColor = VaultOrange)
+                colors = CheckboxDefaults.colors(checkedColor = MaterialTheme.colorScheme.primary)
             )
             Text(
-                "I have written down this recovery key and stored it in a safe place.",
+                stringResource(R.string.setup_recovery_key_checkbox),
                 fontSize = 12.sp,
-                color = VaultTextPrimary
+                color = MaterialTheme.colorScheme.onBackground
             )
         }
 
@@ -750,12 +774,12 @@ private fun RecoveryKeyStep(
             enabled = isSaved && !isProcessing,
             modifier = Modifier.fillMaxWidth().height(56.dp),
             shape = RoundedCornerShape(16.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = VaultOrange)
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
         ) {
             if (isProcessing) {
-                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = VaultBlack, strokeWidth = 2.dp)
+                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
             } else {
-                Text("Confirm & Continue", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = VaultBlack)
+                Text(stringResource(R.string.continue_text), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onPrimary)
             }
         }
     }
