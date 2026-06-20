@@ -1,0 +1,74 @@
+{
+  "brand_name": "Vaultix",
+  "category": "Mobile Security & Digital Vault",
+  "design_philosophy": {
+    "style": "Glassmorphism & Modern Dark/Light Mode",
+    "vibes": ["Secure", "Premium", "Futuristic", "Minimalist", "Trustworthy"],
+    "visual_cues": [
+      "Smooth gradients",
+      "Subtle micro-animations",
+      "Curved device frames",
+      "Glow effects for active states",
+      "RTL (Right-to-Left) and LTR bilingual coherence"
+    ]
+  },
+  "color_palette": {
+    "primary": "#FF9800",
+    "primary_name": "Amber Orange",
+    "accent_color_hex": "#FF9800",
+    "dark_theme": {
+      "background": "#121212",
+      "surface": "#1E1E1E",
+      "text_primary": "#FFFFFF",
+      "text_secondary": "#B0B0B0"
+    },
+    "light_theme": {
+      "background": "#F5F5F5",
+      "surface": "#FFFFFF",
+      "text_primary": "#212121",
+      "text_secondary": "#757575"
+    },
+    "gradient_suggestions": [
+      "linear-gradient(135deg, #FF9800 0%, #FF5722 100%)",
+      "linear-gradient(135deg, #1E1E1E 0%, #121212 100%)"
+    ]
+  },
+  "typography": {
+    "english_fonts": ["Outfit", "Inter"],
+    "arabic_fonts": ["Cairo", "Tajawal"],
+    "scale": {
+      "title": "Bold & Prominent",
+      "body": "Clean, highly readable"
+    }
+  },
+  "core_features": [
+    {
+      "id": "file_vault",
+      "title_en": "Encrypted File Vault",
+      "title_ar": "خزنة الملفات المشفرة",
+      "desc_en": "Securely hide and encrypt photos, videos, and PDFs.",
+      "desc_ar": "إخفاء وتشفير الصور، الفيديوهات، وملفات PDF بأمان تام."
+    },
+    {
+      "id": "identity_manager",
+      "title_en": "Secure Identity Manager",
+      "title_ar": "مدير الهوية الآمن",
+      "desc_en": "Store logins, credit cards, and sensitive credentials.",
+      "desc_ar": "حفظ بيانات تسجيل الدخول، البطاقات الائتمانية، والبيانات الحساسة."
+    },
+    {
+      "id": "password_generator",
+      "title_en": "Smart Password Generator",
+      "title_ar": "مولد كلمة المرور الذكي",
+      "desc_en": "Generate strong, uncrackable passwords in one tap.",
+      "desc_ar": "إنشاء كلمات مرور قوية وغير قابلة للاختراق بنقرة واحدة."
+    },
+    {
+      "id": "security_audit",
+      "title_en": "Real-time Security Audit",
+      "title_ar": "فحص الأمان في الوقت الفعلي",
+      "desc_en": "Analyze and audit weak passwords and leaking info.",
+      "desc_ar": "تحليل وفحص كلمات المرور الضعيفة والبيانات المسربة."
+    }
+  ]
+}

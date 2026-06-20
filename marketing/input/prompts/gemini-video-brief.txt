@@ -1,0 +1,34 @@
+Produce a polished 30-second promotional video for [APP_NAME]. Resolution 1920x1080, 30fps. Deliver horizontal and vertical versions (1920x1080 and 1080x1920) and a thumbnail 1280x720.
+
+Visual style:
+- Modern, clean, cinematic with brand gradient (#0A73FF → #FFB800).
+- Use device mockups to show app screenshots with subtle parallax and micro-interactions (taps, swipes, UI transitions).
+- Use fast but smooth cuts for feature highlights, slowed short pauses for social proof and CTA.
+
+Structure (30s):
+- 0-3s: Logo intro + tagline (soft reveal)
+- 3-10s: Onboarding / Hero value line (motion to the home screen)
+- 10-20s: Feature highlight montage (3 quick features with short captions)
+- 20-27s: Social proof (ratings, quick testimonial line) + CTA action (tap on CTA)
+- 27-30s: End card: logo, app icon, "حمّل الآن" / "Download Now", Play Store badge
+
+Audio:
+- Arabic voiceover (specify dialect: Egyptian / Gulf / Modern Standard) — warm confident tone, ~55-65 words.
+- Music: upbeat cinematic, royalty-free; lower volume during voiceover (VO -18dB), VO around -3dB.
+- SFX: soft UI tap sounds and subtle whooshes for transitions.
+
+Deliverables:
+- video-30s-fhd.mp4 (1920x1080)
+- video-30s-vertical.mp4 (1080x1920)
+- thumbnail-1280x720.jpg
+- raw project file (if available: AE/PR/Figma prototype)
+- separate audio stems (VO, music, SFX)
+
+Voiceover script prompt (generate or record):
+"Write a friendly 30-second Modern Standard Arabic voiceover script for [APP_NAME], ~55-65 words, includes a short hook, two feature benefits, and a CTA 'حمّل الآن'. Tone: warm and confident."
+
+Example VO script (Arabic, ~58 words):
+"تعرف على [APP_NAME]، الحل الذكي لإدارة [الميزة]. جرّب واجهة سهلة وسريعة توفر عليك وقتك وتزيد إنتاجيتك. استكشف الميزات الآن، وانضم لملايين المستخدمين. حمّل التطبيق الآن وابدأ التجربة!"
+
+Prompt for video generator (English example):
+"Produce a polished 30-second promotional video for [APP_NAME]. Visual style: modern, clean, cinematic with brand gradient (#0A73FF → #FFB800). Use device mockups to show app screenshots with subtle parallax and UI micro-interactions. Include Arabic voiceover (specify dialect), upbeat cinematic music, and crisp SFX for UI taps. Structure: 0-3s logo intro, 3-10s onboarding + hero line, 10-20s feature highlights, 20-27s social proof + CTA, 27-30s end card with Play Store badge. Deliver horizontal and vertical MP4 outputs and a 1280x720 thumbnail."
