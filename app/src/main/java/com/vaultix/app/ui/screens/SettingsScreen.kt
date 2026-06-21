@@ -523,8 +523,6 @@ fun SettingsScreen(
             // ══════════════════════════════════════════════
             // ║  Support Section  ═════════════════════════
             // ══════════════════════════════════════════════
-            var showSupportTypeDialog by remember { mutableStateOf(false) }
-            var showContactDialog by remember { mutableStateOf(false) }
 
             SettingsSection(title = stringResource(R.string.support)) {
                 SettingsClickItem(
