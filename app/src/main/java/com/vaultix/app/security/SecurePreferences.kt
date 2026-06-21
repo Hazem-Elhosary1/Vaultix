@@ -69,6 +69,10 @@ class SecurePreferences @Inject constructor(
         val KEY_BACKUP_FREQUENCY = stringPreferencesKey("backup_frequency") // DAILY, WEEKLY, MONTHLY, NEVER
         val KEY_LAST_BACKUP_TIME = longPreferencesKey("last_backup_time")
         val KEY_MAX_BACKUP_HISTORY = intPreferencesKey("max_backup_history")
+
+        // Support Configuration
+        val KEY_SUPPORT_EMAIL = stringPreferencesKey("support_email")
+        val KEY_SUPPORT_PHONE = stringPreferencesKey("support_phone")
     }
 
     private val secretKey = KeystoreManager.getOrCreatePrefsKey()

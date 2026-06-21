@@ -680,4 +680,80 @@
     <string name="duration_1m">دقيقة واحدة</string>
     <string name="duration_5m">5 دقائق</string>
     <string name="duration_15m">15 دقيقة</string>
+
+    <!-- Support Section -->
+    <string name="support">الدعم</string>
+    <string name="email_support">الدعم عبر البريد الإلكتروني</string>
+    <string name="email_support_subtitle">أرسل لنا رسالة مع تفاصيل الجهاز</string>
+    <string name="phone_support">الهاتف / واتساب</string>
+    <string name="phone_support_subtitle">اتصل بنا أو راسلنا عبر واتساب</string>
+    <string name="support_type_title">كيف يمكننا مساعدتك؟</string>
+    <string name="support_type_suggestion">اقتراح</string>
+    <string name="support_type_suggestion_desc">شاركنا فكرة لتحسين Vaultix</string>
+    <string name="support_type_problem">الإبلاغ عن مشكلة</string>
+    <string name="support_type_problem_desc">شيء ما لا يعمل كما هو متوقع</string>
+    <string name="support_type_other">أخرى</string>
+    <string name="support_type_other_desc">سؤال عام أو استفسار</string>
+    <string name="support_email_subject_suggestion">اقتراح Vaultix - %1$s</string>
+    <string name="support_email_subject_problem">تقرير خطأ Vaultix - %1$s</string>
+    <string name="support_email_subject_other">استفسار Vaultix - %1$s</string>
+    <string name="support_email_body_suggestion">مرحباً فريق Vaultix،\n\nلدي اقتراح لتحسين التطبيق:\n\n[يرجى وصف اقتراحك هنا]\n\n---\nمعلومات الجهاز (تم ملؤها تلقائياً):\n• الجهاز: %1$s\n• أندرويد: %2$s\n• إصدار التطبيق: %3$s\n• اللغة: %4$s</string>
+    <string name="support_email_body_problem">مرحباً فريق Vaultix،\n\nأواجه مشكلة في التطبيق:\n\n[يرجى وصف المشكلة هنا]\n\nخطوات إعادة الإنتاج:\n1. \n2. \n3. \n\nالسلوك المتوقع:\n\nالسلوك الفعلي:\n\n---\nمعلومات الجهاز (تم ملؤها تلقائياً):\n• الجهاز: %1$s\n• أندرويد: %2$s\n• إصدار التطبيق: %3$s\n• اللغة: %4$s</string>
+    <string name="support_email_body_other">مرحباً فريق Vaultix،\n\n[يرجى كتابة رسالتك هنا]\n\n---\nمعلومات الجهاز (تم ملؤها تلقائياً):\n• الجهاز: %1$s\n• أندرويد: %2$s\n• إصدار التطبيق: %3$s\n• اللغة: %4$s</string>
+    <string name="support_contact_title">الاتصال بالدعم</string>
+    <string name="support_whatsapp">واتساب</string>
+    <string name="support_call">اتصال</string>
+    <string name="support_whatsapp_desc">تواصل معنا عبر واتساب</string>
+    <string name="support_call_desc">اتصل بخط الدعم الخاص بنا</string>
+
+    <!-- Legal Section -->
+    <string name="legal">قانوني</string>
+    <string name="terms_and_conditions">الشروط والأحكام</string>
+    <string name="terms_and_conditions_subtitle">اقرأ شروط الاستخدام</string>
+    <string name="privacy_policy">سياسة الخصوصية</string>
+    <string name="privacy_policy_subtitle">كيف نحمي بياناتك</string>
+    <string name="last_updated">آخر تحديث: يونيو 2026</string>
+
+    <!-- Terms and Conditions Content -->
+    <string name="terms_section_1_title">1. قبول الشروط</string>
+    <string name="terms_section_1_body">بتحميل أو تثبيت أو استخدام Vaultix ("التطبيق")، فإنك توافق على الالتزام بهذه الشروط والأحكام. إذا كنت لا توافق، يرجى عدم استخدام التطبيق.</string>
+    <string name="terms_section_2_title">2. وصف الخدمة</string>
+    <string name="terms_section_2_body">Vaultix هو مدير كلمات مرور وخزنة رقمية تعمل بدون إنترنت بمبدأ صفر معرفة. جميع البيانات مخزنة محلياً على جهازك ومشفرة بتقنية AES-256-GCM. التطبيق لا ينقل أو يخزن أو يمتلك الوصول إلى بياناتك على أي خادم.</string>
+    <string name="terms_section_3_title">3. مسؤولية المستخدم</string>
+    <string name="terms_section_3_body">أنت المسؤول الوحيد عن:\n• الحفاظ على كلمة المرور الرئيسية ورمز PIN ومفتاح الاسترداد آمنين.\n• إنشاء نسخ احتياطية منتظمة لبيانات خزنتك.\n• فهم أنه إذا فقدت كلمة المرور الرئيسية ومفتاح الاسترداد، فلا يمكن لأحد استعادة بياناتك، بما فيهم نحن.\n• أي إجراءات تتم داخل التطبيق باستخدام بيانات اعتمادك.</string>
+    <string name="terms_section_4_title">4. بنية صفر معرفة</string>
+    <string name="terms_section_4_body">يعمل Vaultix بمبدأ صفر معرفة. نحن لا نمتلك الوصول إلى كلمات المرور أو رموز PIN أو مفاتيح التشفير أو أي بيانات مخزنة. هذا يعني:\n• لا يمكننا إعادة تعيين كلمة المرور الرئيسية.\n• لا يمكننا استعادة بياناتك إذا فقدت الوصول.\n• لا يمكننا عرض أو تعديل أو مشاركة معلوماتك المخزنة.</string>
+    <string name="terms_section_5_title">5. الملكية الفكرية</string>
+    <string name="terms_section_5_body">جميع الحقوق والملكية في التطبيق، بما في ذلك التصميم والكود والرسومات والعلامة التجارية، مملوكة لـ Vaultix. يتم منحك ترخيصاً محدوداً وغير حصري وغير قابل للتحويل لاستخدام التطبيق للأغراض الشخصية.</string>
+    <string name="terms_section_6_title">6. إخلاء المسؤولية عن الضمانات</string>
+    <string name="terms_section_6_body">يتم تقديم التطبيق "كما هو" دون أي ضمانات من أي نوع، صريحة أو ضمنية. نحن لا نضمن أن التطبيق سيكون خالياً من الأخطاء أو غير منقطع أو خالياً من الثغرات الأمنية. استخدم التطبيق على مسؤوليتك الخاصة.</string>
+    <string name="terms_section_7_title">7. تحديد المسؤولية</string>
+    <string name="terms_section_7_body">إلى أقصى حد يسمح به القانون، لن يكون Vaultix ومطوروه مسؤولين عن أي أضرار غير مباشرة أو عرضية أو خاصة أو تبعية أو عقابية، بما في ذلك فقدان البيانات، الناتجة عن استخدامك للتطبيق.</string>
+    <string name="terms_section_8_title">8. التعديلات</string>
+    <string name="terms_section_8_body">نحتفظ بالحق في تعديل هذه الشروط في أي وقت. يعتبر استمرار استخدام التطبيق بعد التغييرات قبولاً للشروط المعدلة. ننصح بمراجعة هذه الشروط بشكل دوري.</string>
+    <string name="terms_section_9_title">9. التواصل</string>
+    <string name="terms_section_9_body">إذا كانت لديك أسئلة حول هذه الشروط، يرجى التواصل معنا عبر البريد الإلكتروني المتوفر في قسم الدعم في إعدادات التطبيق.</string>
+
+    <!-- Privacy Policy Content -->
+    <string name="privacy_section_1_title">1. نظرة عامة</string>
+    <string name="privacy_section_1_body">صُمم Vaultix مع خصوصيتك كأعلى أولوية. نتبع بنية صفر معرفة صارمة، مما يعني أننا لا نمتلك أي وصول إلى بياناتك على الإطلاق. توضح هذه السياسة كيفية تعامل التطبيق مع معلوماتك.</string>
+    <string name="privacy_section_2_title">2. جمع البيانات</string>
+    <string name="privacy_section_2_body">Vaultix لا يجمع أو ينقل أو يخزن أي بيانات شخصية على خوادم خارجية. تحديداً:\n• لا تحليلات أو تتبع.\n• لا تقارير أعطال لخدمات خارجية.\n• لا حزم إعلانية.\n• لا طلبات شبكة من أي نوع.\n• التطبيق يعمل أوفلاين 100%%.</string>
+    <string name="privacy_section_3_title">3. تخزين البيانات</string>
+    <string name="privacy_section_3_body">جميع بياناتك (كلمات المرور، البطاقات، الملاحظات، الهويات، الملفات) مخزنة حصرياً على جهازك باستخدام:\n• تشفير AES-256-GCM لجميع البيانات المخزنة.\n• Android Keystore لإدارة المفاتيح بأمان.\n• اشتقاق مفاتيح Argon2 لكلمة المرور الرئيسية.\n\nلا تغادر أي بيانات جهازك إلا إذا قمت بتصديرها صراحةً.</string>
+    <string name="privacy_section_4_title">4. التشفير</string>
+    <string name="privacy_section_4_body">خزنتك محمية بتشفير بدرجة عسكرية:\n• AES-256-GCM — تستخدمه الحكومات والبنوك حول العالم.\n• كل عملية تشفير تستخدم متجه تهيئة (IV) فريد.\n• يتم اشتقاق المفاتيح من كلمة المرور الرئيسية باستخدام Argon2، مما يجعل هجمات التخمين صعبة للغاية.\n• مفاتيح التشفير مخزنة في Android Keystore، محمية بالأمان المادي.</string>
+    <string name="privacy_section_5_title">5. البيانات البيومترية</string>
+    <string name="privacy_section_5_body">إذا قمت بتفعيل القفل البيومتري، يستخدم Vaultix واجهة Android BiometricPrompt. بياناتك البيومترية (البصمة، الوجه) تتم إدارتها بالكامل بواسطة نظام أندرويد ولا يمكن لـ Vaultix الوصول إليها أبداً.</string>
+    <string name="privacy_section_6_title">6. النسخ الاحتياطي</string>
+    <string name="privacy_section_6_body">عند إنشاء نسخة احتياطية:\n• يتم تشفير ملف النسخة الاحتياطية بكلمة مرور تختارها.\n• ملفات النسخ الاحتياطي مخزنة محلياً على جهازك.\n• أنت تتحكم في مكان حفظ ومشاركة النسخ الاحتياطية.\n• لا نمتلك أبداً الوصول إلى ملفات النسخ الاحتياطي أو محتوياتها.</string>
+    <string name="privacy_section_7_title">7. حقوقك</string>
+    <string name="privacy_section_7_body">بما أن جميع البيانات مخزنة محلياً على جهازك، فلديك التحكم الكامل:\n• الحذف: استخدم وضع الطوارئ لمسح جميع بيانات الخزنة فوراً.\n• التصدير: صدّر بياناتك في أي وقت بصيغة مشفرة.\n• التعديل: عدّل أو احذف أي عنصر مخزن.\n• لا حساب مطلوب: Vaultix لا يتطلب تسجيل أو إنشاء حساب.</string>
+    <string name="privacy_section_8_title">8. خصوصية الأطفال</string>
+    <string name="privacy_section_8_body">Vaultix لا يجمع بيانات من الأطفال عن علم. بما أنه لا يتم جمع بيانات من أي مستخدم، فلا توجد حاجة لمعاملة خاصة لبيانات الأطفال.</string>
+    <string name="privacy_section_9_title">9. تغييرات على هذه السياسة</string>
+    <string name="privacy_section_9_body">قد نقوم بتحديث سياسة الخصوصية هذه من وقت لآخر. أي تغييرات ستنعكس في تحديث التطبيق. ننصح بمراجعة هذه السياسة بشكل دوري.</string>
+    <string name="privacy_section_10_title">10. التواصل</string>
+    <string name="privacy_section_10_body">إذا كانت لديك أسئلة حول سياسة الخصوصية هذه، يرجى التواصل معنا عبر قسم الدعم في إعدادات التطبيق.</string>
+
 </resources>

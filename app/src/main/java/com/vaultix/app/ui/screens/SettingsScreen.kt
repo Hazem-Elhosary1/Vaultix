@@ -2,6 +2,7 @@ package com.vaultix.app.ui.screens
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -53,6 +54,8 @@ fun SettingsScreen(
     onNavigateToExport: () -> Unit = {},
     onNavigateToImport: () -> Unit = {},
     onNavigateToDevelopment: () -> Unit = {},
+    onNavigateToTerms: () -> Unit = {},
+    onNavigateToPrivacy: () -> Unit = {},
     appConfigViewModel: AppConfigViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -68,6 +71,9 @@ fun SettingsScreen(
     val gracePeriodSeconds by authViewModel.gracePeriodSeconds.collectAsStateWithLifecycle()
 
     val configState by appConfigViewModel.configState.collectAsStateWithLifecycle()
+
+    var showSupportTypeDialog by remember { mutableStateOf(false) }
+    var showContactDialog by remember { mutableStateOf(false) }
 
     var selectedAutoLock by remember(autoLockSeconds) { mutableStateOf(autoLockSeconds) }
     var selectedGracePeriod by remember(gracePeriodSeconds) { mutableStateOf(gracePeriodSeconds) }
@@ -513,6 +519,55 @@ fun SettingsScreen(
             }
 
 
+
+            // ══════════════════════════════════════════════
+            // ║  Support Section  ═════════════════════════
+            // ══════════════════════════════════════════════
+            var showSupportTypeDialog by remember { mutableStateOf(false) }
+            var showContactDialog by remember { mutableStateOf(false) }
+
+            SettingsSection(title = stringResource(R.string.support)) {
+                SettingsClickItem(
+                    icon = Icons.Default.Email,
+                    title = stringResource(R.string.email_support),
+                    subtitle = stringResource(R.string.email_support_subtitle),
+                    iconTint = MaterialTheme.colorScheme.primary
+                ) {
+                    showSupportTypeDialog = true
+                }
+                SettingsDivider()
+                SettingsClickItem(
+                    icon = Icons.Default.Phone,
+                    title = stringResource(R.string.phone_support),
+                    subtitle = stringResource(R.string.phone_support_subtitle),
+                    iconTint = VaultSuccess
+                ) {
+                    showContactDialog = true
+                }
+            }
+
+            // ══════════════════════════════════════════════
+            // ║  Legal Section  ═══════════════════════════
+            // ══════════════════════════════════════════════
+            SettingsSection(title = stringResource(R.string.legal)) {
+                SettingsClickItem(
+                    icon = Icons.Default.Description,
+                    title = stringResource(R.string.terms_and_conditions),
+                    subtitle = stringResource(R.string.terms_and_conditions_subtitle),
+                    iconTint = VaultInfo
+                ) {
+                    onNavigateToTerms()
+                }
+                SettingsDivider()
+                SettingsClickItem(
+                    icon = Icons.Default.PrivacyTip,
+                    title = stringResource(R.string.privacy_policy),
+                    subtitle = stringResource(R.string.privacy_policy_subtitle),
+                    iconTint = VaultOrange
+                ) {
+                    onNavigateToPrivacy()
+                }
+            }
 
             // App Info
             SettingsSection(title = stringResource(R.string.about)) {
@@ -1209,6 +1264,131 @@ fun SettingsScreen(
             }
         )
     }
+
+    // ── Support Type Picker Dialog ──
+    if (showSupportTypeDialog) {
+        val deviceModel = "${Build.MANUFACTURER} ${Build.MODEL}"
+        val androidVersion = Build.VERSION.RELEASE
+        val appVersion = "1.0.0"
+        val language = configState.language
+        val supportEmail = configState.supportEmail
+
+        AlertDialog(
+            onDismissRequest = { showSupportTypeDialog = false },
+            containerColor = MaterialTheme.colorScheme.surface,
+            title = {
+                Text(
+                    stringResource(R.string.support_type_title),
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    // Suggestion
+                    SupportTypeCard(
+                        icon = Icons.Default.Lightbulb,
+                        iconTint = VaultOrange,
+                        title = stringResource(R.string.support_type_suggestion),
+                        subtitle = stringResource(R.string.support_type_suggestion_desc)
+                    ) {
+                        showSupportTypeDialog = false
+                        val subject = context.getString(R.string.support_email_subject_suggestion, deviceModel)
+                        val body = context.getString(R.string.support_email_body_suggestion, deviceModel, androidVersion, appVersion, language)
+                        launchSupportEmail(context, supportEmail, subject, body)
+                    }
+                    // Problem
+                    SupportTypeCard(
+                        icon = Icons.Default.BugReport,
+                        iconTint = VaultError,
+                        title = stringResource(R.string.support_type_problem),
+                        subtitle = stringResource(R.string.support_type_problem_desc)
+                    ) {
+                        showSupportTypeDialog = false
+                        val subject = context.getString(R.string.support_email_subject_problem, deviceModel)
+                        val body = context.getString(R.string.support_email_body_problem, deviceModel, androidVersion, appVersion, language)
+                        launchSupportEmail(context, supportEmail, subject, body)
+                    }
+                    // Other
+                    SupportTypeCard(
+                        icon = Icons.Default.QuestionAnswer,
+                        iconTint = VaultInfo,
+                        title = stringResource(R.string.support_type_other),
+                        subtitle = stringResource(R.string.support_type_other_desc)
+                    ) {
+                        showSupportTypeDialog = false
+                        val subject = context.getString(R.string.support_email_subject_other, deviceModel)
+                        val body = context.getString(R.string.support_email_body_other, deviceModel, androidVersion, appVersion, language)
+                        launchSupportEmail(context, supportEmail, subject, body)
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { showSupportTypeDialog = false }) {
+                    Text(stringResource(R.string.cancel), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        )
+    }
+
+    // ── Phone / WhatsApp Contact Dialog ──
+    if (showContactDialog) {
+        val supportPhone = configState.supportPhone
+        val phoneDigits = supportPhone.replace(Regex("[^0-9]"), "")
+
+        AlertDialog(
+            onDismissRequest = { showContactDialog = false },
+            containerColor = MaterialTheme.colorScheme.surface,
+            title = {
+                Text(
+                    stringResource(R.string.support_contact_title),
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    // WhatsApp
+                    SupportTypeCard(
+                        icon = Icons.Default.Chat,
+                        iconTint = VaultSuccess,
+                        title = stringResource(R.string.support_whatsapp),
+                        subtitle = stringResource(R.string.support_whatsapp_desc)
+                    ) {
+                        showContactDialog = false
+                        try {
+                            val waIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/$phoneDigits"))
+                            context.startActivity(waIntent)
+                        } catch (_: Exception) {
+                            Toast.makeText(context, "WhatsApp not installed", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    // Call
+                    SupportTypeCard(
+                        icon = Icons.Default.Phone,
+                        iconTint = VaultInfo,
+                        title = stringResource(R.string.support_call),
+                        subtitle = stringResource(R.string.support_call_desc)
+                    ) {
+                        showContactDialog = false
+                        try {
+                            val callIntent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:$supportPhone"))
+                            context.startActivity(callIntent)
+                        } catch (_: Exception) {
+                            Toast.makeText(context, "Cannot open dialer", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { showContactDialog = false }) {
+                    Text(stringResource(R.string.cancel), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        )
+    }
     }
 
 @Composable
@@ -1315,3 +1495,64 @@ fun toggleBackupScope(selectedScopes: MutableList<BackupScope>, scope: BackupSco
     }
 }
 
+@Composable
+fun SupportTypeCard(
+    icon: ImageVector,
+    iconTint: Color,
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f)
+        ),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Row(
+            Modifier.padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                Modifier
+                    .size(40.dp)
+                    .background(iconTint.copy(0.15f), RoundedCornerShape(10.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(icon, null, tint = iconTint, modifier = Modifier.size(22.dp))
+            }
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(title, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
+                Text(subtitle, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Icon(
+                Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.4f)
+            )
+        }
+    }
+}
+
+private fun launchSupportEmail(
+    context: android.content.Context,
+    email: String,
+    subject: String,
+    body: String
+) {
+    try {
+        val intent = Intent(Intent.ACTION_SENDTO).apply {
+            data = Uri.parse("mailto:")
+            putExtra(Intent.EXTRA_EMAIL, arrayOf(email))
+            putExtra(Intent.EXTRA_SUBJECT, subject)
+            putExtra(Intent.EXTRA_TEXT, body)
+        }
+        context.startActivity(Intent.createChooser(intent, ""))
+    } catch (_: Exception) {
+        android.widget.Toast.makeText(context, "No email app found", android.widget.Toast.LENGTH_SHORT).show()
+    }
+}

@@ -680,4 +680,80 @@
     <string name="duration_1m">1m</string>
     <string name="duration_5m">5m</string>
     <string name="duration_15m">15m</string>
+
+    <!-- Support Section -->
+    <string name="support">Support</string>
+    <string name="email_support">Email Support</string>
+    <string name="email_support_subtitle">Send us a message with device details</string>
+    <string name="phone_support">Phone / WhatsApp</string>
+    <string name="phone_support_subtitle">Call or message us on WhatsApp</string>
+    <string name="support_type_title">How can we help?</string>
+    <string name="support_type_suggestion">Suggestion</string>
+    <string name="support_type_suggestion_desc">Share an idea to improve Vaultix</string>
+    <string name="support_type_problem">Report a Problem</string>
+    <string name="support_type_problem_desc">Something isn\'t working as expected</string>
+    <string name="support_type_other">Other</string>
+    <string name="support_type_other_desc">General question or inquiry</string>
+    <string name="support_email_subject_suggestion">Vaultix Suggestion - %1$s</string>
+    <string name="support_email_subject_problem">Vaultix Bug Report - %1$s</string>
+    <string name="support_email_subject_other">Vaultix Inquiry - %1$s</string>
+    <string name="support_email_body_suggestion">Hi Vaultix Team,\n\nI have a suggestion to improve the app:\n\n[Please describe your suggestion here]\n\n---\nDevice Info (auto-filled):\n• Device: %1$s\n• Android: %2$s\n• App Version: %3$s\n• Language: %4$s</string>
+    <string name="support_email_body_problem">Hi Vaultix Team,\n\nI\'m experiencing an issue with the app:\n\n[Please describe the problem here]\n\nSteps to reproduce:\n1. \n2. \n3. \n\nExpected behavior:\n\nActual behavior:\n\n---\nDevice Info (auto-filled):\n• Device: %1$s\n• Android: %2$s\n• App Version: %3$s\n• Language: %4$s</string>
+    <string name="support_email_body_other">Hi Vaultix Team,\n\n[Please type your message here]\n\n---\nDevice Info (auto-filled):\n• Device: %1$s\n• Android: %2$s\n• App Version: %3$s\n• Language: %4$s</string>
+    <string name="support_contact_title">Contact Support</string>
+    <string name="support_whatsapp">WhatsApp</string>
+    <string name="support_call">Call</string>
+    <string name="support_whatsapp_desc">Chat with us on WhatsApp</string>
+    <string name="support_call_desc">Call our support line</string>
+
+    <!-- Legal Section -->
+    <string name="legal">Legal</string>
+    <string name="terms_and_conditions">Terms &amp; Conditions</string>
+    <string name="terms_and_conditions_subtitle">Read our terms of use</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="privacy_policy_subtitle">How we protect your data</string>
+    <string name="last_updated">Last Updated: June 2026</string>
+
+    <!-- Terms and Conditions Content -->
+    <string name="terms_section_1_title">1. Acceptance of Terms</string>
+    <string name="terms_section_1_body">By downloading, installing, or using Vaultix ("the App"), you agree to be bound by these Terms and Conditions. If you do not agree, please do not use the App.</string>
+    <string name="terms_section_2_title">2. Description of Service</string>
+    <string name="terms_section_2_body">Vaultix is an offline, zero-knowledge password manager and digital vault. All data is stored locally on your device and encrypted using AES-256-GCM encryption. The App does not transmit, store, or have access to your data on any server.</string>
+    <string name="terms_section_3_title">3. User Responsibility</string>
+    <string name="terms_section_3_body">You are solely responsible for:\n• Keeping your master password, PIN, and recovery key safe and secure.\n• Creating regular backups of your vault data.\n• Understanding that if you lose your master password and recovery key, your data cannot be recovered by anyone, including us.\n• Any actions performed within the App using your credentials.</string>
+    <string name="terms_section_4_title">4. Zero-Knowledge Architecture</string>
+    <string name="terms_section_4_body">Vaultix operates on a zero-knowledge principle. We do not have access to your passwords, PINs, encryption keys, or any stored data. This means:\n• We cannot reset your master password.\n• We cannot recover your data if you lose access.\n• We cannot view, modify, or share your stored information.</string>
+    <string name="terms_section_5_title">5. Intellectual Property</string>
+    <string name="terms_section_5_body">All rights, title, and interest in the App, including its design, code, graphics, and branding, are owned by Vaultix. You are granted a limited, non-exclusive, non-transferable license to use the App for personal purposes.</string>
+    <string name="terms_section_6_title">6. Disclaimer of Warranties</string>
+    <string name="terms_section_6_body">The App is provided "as is" without warranties of any kind, express or implied. We do not guarantee that the App will be error-free, uninterrupted, or free of security vulnerabilities. Use the App at your own risk.</string>
+    <string name="terms_section_7_title">7. Limitation of Liability</string>
+    <string name="terms_section_7_body">To the maximum extent permitted by law, Vaultix and its developers shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including data loss, resulting from your use of the App.</string>
+    <string name="terms_section_8_title">8. Modifications</string>
+    <string name="terms_section_8_body">We reserve the right to modify these Terms at any time. Continued use of the App after changes constitutes acceptance of the modified Terms. We recommend reviewing these Terms periodically.</string>
+    <string name="terms_section_9_title">9. Contact</string>
+    <string name="terms_section_9_body">If you have questions about these Terms, please contact us at the email provided in the Support section of the App settings.</string>
+
+    <!-- Privacy Policy Content -->
+    <string name="privacy_section_1_title">1. Overview</string>
+    <string name="privacy_section_1_body">Vaultix is designed with your privacy as the highest priority. We follow a strict zero-knowledge architecture, meaning we have absolutely no access to your data. This policy explains how the App handles your information.</string>
+    <string name="privacy_section_2_title">2. Data Collection</string>
+    <string name="privacy_section_2_body">Vaultix does NOT collect, transmit, or store any personal data on external servers. Specifically:\n• No analytics or tracking.\n• No crash reporting to external services.\n• No advertising SDKs.\n• No network requests of any kind.\n• The App operates 100%% offline.</string>
+    <string name="privacy_section_3_title">3. Data Storage</string>
+    <string name="privacy_section_3_body">All your data (passwords, cards, notes, identities, files) is stored exclusively on your device using:\n• AES-256-GCM encryption for all stored data.\n• Android Keystore for secure key management.\n• Argon2 key derivation for your master password.\n\nNo data ever leaves your device unless you explicitly export it.</string>
+    <string name="privacy_section_4_title">4. Encryption</string>
+    <string name="privacy_section_4_body">Your vault is protected with military-grade encryption:\n• AES-256-GCM — used by governments and banks worldwide.\n• Each encryption operation uses a unique initialization vector (IV).\n• Keys are derived from your master password using Argon2, making brute-force attacks extremely difficult.\n• Encryption keys are stored in Android Keystore, protected by hardware security.</string>
+    <string name="privacy_section_5_title">5. Biometric Data</string>
+    <string name="privacy_section_5_body">If you enable biometric unlock, Vaultix uses the Android BiometricPrompt API. Your biometric data (fingerprint, face) is managed entirely by the Android operating system and is never accessible to Vaultix.</string>
+    <string name="privacy_section_6_title">6. Backups</string>
+    <string name="privacy_section_6_body">When you create a backup:\n• The backup file is encrypted with a password you choose.\n• Backup files are stored locally on your device.\n• You control where backups are saved and shared.\n• We never have access to your backup files or their contents.</string>
+    <string name="privacy_section_7_title">7. Your Rights</string>
+    <string name="privacy_section_7_body">Since all data is stored locally on your device, you have complete control:\n• Delete: Use Panic Mode to instantly wipe all vault data.\n• Export: Export your data at any time in encrypted format.\n• Modify: Edit or remove any stored item.\n• No account required: Vaultix does not require registration or an account.</string>
+    <string name="privacy_section_8_title">8. Children\'s Privacy</string>
+    <string name="privacy_section_8_body">Vaultix does not knowingly collect data from children. Since no data is collected from any user, there is no special treatment needed for children\'s data.</string>
+    <string name="privacy_section_9_title">9. Changes to This Policy</string>
+    <string name="privacy_section_9_body">We may update this Privacy Policy from time to time. Any changes will be reflected in the App update. We recommend reviewing this policy periodically.</string>
+    <string name="privacy_section_10_title">10. Contact</string>
+    <string name="privacy_section_10_body">If you have questions about this Privacy Policy, please contact us through the Support section in the App settings.</string>
+
 </resources>

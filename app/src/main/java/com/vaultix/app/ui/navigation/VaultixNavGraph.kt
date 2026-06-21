@@ -337,7 +337,27 @@ fun VaultixNavGraph(
                 },
                 onNavigateToDevelopment = {
                     navController.navigate(Screen.Development.route)
+                },
+                onNavigateToTerms = {
+                    navController.navigate(Screen.TermsAndConditions.route)
+                },
+                onNavigateToPrivacy = {
+                    navController.navigate(Screen.PrivacyPolicy.route)
                 }
+            )
+        }
+
+        // Terms & Conditions
+        composable(Screen.TermsAndConditions.route) {
+            TermsAndConditionsScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        // Privacy Policy
+        composable(Screen.PrivacyPolicy.route) {
+            PrivacyPolicyScreen(
+                onBack = { navController.popBackStack() }
             )
         }
 

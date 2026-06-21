@@ -59,6 +59,10 @@ sealed class Screen(val route: String) {
 
     object Premium : Screen("premium")
 
+    // ── Legal Pages ──
+    object TermsAndConditions : Screen("terms_and_conditions")
+    object PrivacyPolicy : Screen("privacy_policy")
+
     // ── Dev-only Screen (develop branch) ──
     object Development : Screen("development")
 }

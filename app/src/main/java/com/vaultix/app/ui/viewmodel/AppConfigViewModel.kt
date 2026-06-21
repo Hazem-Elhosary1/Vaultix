@@ -25,6 +25,8 @@ data class AppConfigState(
     val language: String = "en",
     val fontSizeScale: FontSizeScale = FontSizeScale.MEDIUM,
     val isPremium: Boolean = true,
+    val supportEmail: String = "hazemelhosary3@gmail.com",
+    val supportPhone: String = "+201234567890",
     val availablePlans: List<PremiumPlan> = listOf(
         PremiumPlan("monthly", "Monthly", "$4.99", "per month"),
         PremiumPlan("yearly", "Yearly", "$39.99", "per year", "Best Value!"),
@@ -46,6 +48,8 @@ class AppConfigViewModel @Inject constructor(
         var initialLang: String? = null
         var initialPremium = true
         var initialFontScale: String? = null
+        var initialSupportEmail: String? = null
+        var initialSupportPhone: String? = null
 
         try {
             kotlinx.coroutines.runBlocking {
@@ -54,6 +58,8 @@ class AppConfigViewModel @Inject constructor(
                 initialLang = securePreferences.getPlainString(SecurePreferences.KEY_APP_LANGUAGE)
                 initialPremium = securePreferences.getBoolean(SecurePreferences.KEY_IS_PREMIUM, true)
                 initialFontScale = securePreferences.getPlainString(SecurePreferences.KEY_FONT_SIZE_SCALE)
+                initialSupportEmail = securePreferences.getPlainString(SecurePreferences.KEY_SUPPORT_EMAIL)
+                initialSupportPhone = securePreferences.getPlainString(SecurePreferences.KEY_SUPPORT_PHONE)
             }
         } catch (e: Exception) {
             // Fallback to defaults if runBlocking fails
@@ -64,7 +70,9 @@ class AppConfigViewModel @Inject constructor(
             accentColorHex = initialColor ?: "#FF9800",
             language = initialLang ?: "en",
             fontSizeScale = initialFontScale?.let { runCatching { FontSizeScale.valueOf(it) }.getOrNull() } ?: FontSizeScale.MEDIUM,
-            isPremium = initialPremium
+            isPremium = initialPremium,
+            supportEmail = initialSupportEmail ?: "hazemelhosary3@gmail.com",
+            supportPhone = initialSupportPhone ?: "+201234567890"
         )
 
         loadConfig()
@@ -77,19 +85,25 @@ class AppConfigViewModel @Inject constructor(
                 securePreferences.getPlainStringFlow(SecurePreferences.KEY_ACCENT_COLOR),
                 securePreferences.getPlainStringFlow(SecurePreferences.KEY_APP_LANGUAGE),
                 securePreferences.getBooleanFlow(SecurePreferences.KEY_IS_PREMIUM, true),
-                securePreferences.getPlainStringFlow(SecurePreferences.KEY_FONT_SIZE_SCALE)
+                securePreferences.getPlainStringFlow(SecurePreferences.KEY_FONT_SIZE_SCALE),
+                securePreferences.getPlainStringFlow(SecurePreferences.KEY_SUPPORT_EMAIL),
+                securePreferences.getPlainStringFlow(SecurePreferences.KEY_SUPPORT_PHONE)
             ) { values ->
                 val theme = values[0] as? String
                 val color = values[1] as? String
                 val lang = values[2] as? String
                 val isPremium = values[3] as? Boolean ?: true
                 val fontScale = values[4] as? String
+                val email = values[5] as? String
+                val phone = values[6] as? String
                 AppConfigState(
                     themeMode = theme?.let { ThemeMode.valueOf(it) } ?: ThemeMode.SYSTEM,
                     accentColorHex = color ?: "#FF9800",
                     language = lang ?: "en",
                     fontSizeScale = fontScale?.let { runCatching { FontSizeScale.valueOf(it) }.getOrNull() } ?: FontSizeScale.MEDIUM,
-                    isPremium = isPremium
+                    isPremium = isPremium,
+                    supportEmail = email ?: "hazemelhosary3@gmail.com",
+                    supportPhone = phone ?: "+201234567890"
                 )
             }.collect {
                 _configState.value = it
@@ -124,6 +138,18 @@ class AppConfigViewModel @Inject constructor(
     fun unlockPremium() {
         viewModelScope.launch {
             securePreferences.putBoolean(SecurePreferences.KEY_IS_PREMIUM, true)
+        }
+    }
+
+    fun setSupportEmail(email: String) {
+        viewModelScope.launch {
+            securePreferences.putPlainString(SecurePreferences.KEY_SUPPORT_EMAIL, email)
+        }
+    }
+
+    fun setSupportPhone(phone: String) {
+        viewModelScope.launch {
+            securePreferences.putPlainString(SecurePreferences.KEY_SUPPORT_PHONE, phone)
         }
     }
 }
