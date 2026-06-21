@@ -27,6 +27,7 @@ data class AppConfigState(
     val isPremium: Boolean = true,
     val supportEmail: String = "hazemelhosary3@gmail.com",
     val supportPhone: String = "+201234567890",
+    val isDeveloperMode: Boolean = false,
     val availablePlans: List<PremiumPlan> = listOf(
         PremiumPlan("monthly", "Monthly", "$4.99", "per month"),
         PremiumPlan("yearly", "Yearly", "$39.99", "per year", "Best Value!"),
@@ -50,6 +51,7 @@ class AppConfigViewModel @Inject constructor(
         var initialFontScale: String? = null
         var initialSupportEmail: String? = null
         var initialSupportPhone: String? = null
+        var initialDevMode = false
 
         try {
             kotlinx.coroutines.runBlocking {
@@ -60,6 +62,7 @@ class AppConfigViewModel @Inject constructor(
                 initialFontScale = securePreferences.getPlainString(SecurePreferences.KEY_FONT_SIZE_SCALE)
                 initialSupportEmail = securePreferences.getPlainString(SecurePreferences.KEY_SUPPORT_EMAIL)
                 initialSupportPhone = securePreferences.getPlainString(SecurePreferences.KEY_SUPPORT_PHONE)
+                initialDevMode = securePreferences.getBoolean(SecurePreferences.KEY_DEVELOPER_MODE, false)
             }
         } catch (e: Exception) {
             // Fallback to defaults if runBlocking fails
@@ -72,7 +75,8 @@ class AppConfigViewModel @Inject constructor(
             fontSizeScale = initialFontScale?.let { runCatching { FontSizeScale.valueOf(it) }.getOrNull() } ?: FontSizeScale.MEDIUM,
             isPremium = initialPremium,
             supportEmail = initialSupportEmail ?: "hazemelhosary3@gmail.com",
-            supportPhone = initialSupportPhone ?: "+201234567890"
+            supportPhone = initialSupportPhone ?: "+201234567890",
+            isDeveloperMode = initialDevMode
         )
 
         loadConfig()
@@ -87,7 +91,8 @@ class AppConfigViewModel @Inject constructor(
                 securePreferences.getBooleanFlow(SecurePreferences.KEY_IS_PREMIUM, true),
                 securePreferences.getPlainStringFlow(SecurePreferences.KEY_FONT_SIZE_SCALE),
                 securePreferences.getPlainStringFlow(SecurePreferences.KEY_SUPPORT_EMAIL),
-                securePreferences.getPlainStringFlow(SecurePreferences.KEY_SUPPORT_PHONE)
+                securePreferences.getPlainStringFlow(SecurePreferences.KEY_SUPPORT_PHONE),
+                securePreferences.getBooleanFlow(SecurePreferences.KEY_DEVELOPER_MODE, false)
             ) { values ->
                 val theme = values[0] as? String
                 val color = values[1] as? String
@@ -96,6 +101,7 @@ class AppConfigViewModel @Inject constructor(
                 val fontScale = values[4] as? String
                 val email = values[5] as? String
                 val phone = values[6] as? String
+                val devMode = values[7] as? Boolean ?: false
                 AppConfigState(
                     themeMode = theme?.let { ThemeMode.valueOf(it) } ?: ThemeMode.SYSTEM,
                     accentColorHex = color ?: "#FF9800",
@@ -103,7 +109,8 @@ class AppConfigViewModel @Inject constructor(
                     fontSizeScale = fontScale?.let { runCatching { FontSizeScale.valueOf(it) }.getOrNull() } ?: FontSizeScale.MEDIUM,
                     isPremium = isPremium,
                     supportEmail = email ?: "hazemelhosary3@gmail.com",
-                    supportPhone = phone ?: "+201234567890"
+                    supportPhone = phone ?: "+201234567890",
+                    isDeveloperMode = devMode
                 )
             }.collect {
                 _configState.value = it
@@ -150,6 +157,12 @@ class AppConfigViewModel @Inject constructor(
     fun setSupportPhone(phone: String) {
         viewModelScope.launch {
             securePreferences.putPlainString(SecurePreferences.KEY_SUPPORT_PHONE, phone)
+        }
+    }
+
+    fun setDeveloperMode(enabled: Boolean) {
+        viewModelScope.launch {
+            securePreferences.putBoolean(SecurePreferences.KEY_DEVELOPER_MODE, enabled)
         }
     }
 }

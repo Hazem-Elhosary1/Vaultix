@@ -43,7 +43,7 @@ object DebugEventBus {
     val events: StateFlow<List<DebugEvent>> = _events.asStateFlow()
 
     /**
-     * Emit a debug event. No-op in release builds.
+     * Emit a debug event.
      */
     fun log(
         category: DebugCategory,
@@ -52,8 +52,6 @@ object DebugEventBus {
         severity: DebugSeverity = DebugSeverity.INFO,
         source: String = ""
     ) {
-        if (!BuildConfig.DEBUG) return
-
         val event = DebugEvent(
             category = category,
             eventType = eventType,
@@ -72,9 +70,8 @@ object DebugEventBus {
         }
     }
 
-    /** Clear all buffered events. No-op in release builds. */
+    /** Clear all buffered events. */
     fun clear() {
-        if (!BuildConfig.DEBUG) return
         _events.value = emptyList()
     }
 }

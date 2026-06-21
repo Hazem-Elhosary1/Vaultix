@@ -74,6 +74,8 @@ fun SettingsScreen(
 
     var showSupportTypeDialog by remember { mutableStateOf(false) }
     var showContactDialog by remember { mutableStateOf(false) }
+    var showDebuggerDialog by remember { mutableStateOf(false) }
+    val debugEvents by com.vaultix.app.debug.DebugEventBus.events.collectAsStateWithLifecycle()
 
     var selectedAutoLock by remember(autoLockSeconds) { mutableStateOf(autoLockSeconds) }
     var selectedGracePeriod by remember(gracePeriodSeconds) { mutableStateOf(gracePeriodSeconds) }
@@ -568,8 +570,25 @@ fun SettingsScreen(
             }
 
             // App Info
+            var developerModeTaps by remember { mutableStateOf(0) }
             SettingsSection(title = stringResource(R.string.about)) {
-                SettingsInfoItem(stringResource(R.string.version), "1.0.0")
+                SettingsInfoItem(stringResource(R.string.version), "1.0.0") {
+                    if (!configState.isDeveloperMode) {
+                        developerModeTaps++
+                        if (developerModeTaps >= 7) {
+                            appConfigViewModel.setDeveloperMode(true)
+                            val msg = if (configState.language == "ar") "وضع المطور مفعل الآن!" else "Developer Mode Enabled!"
+                            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                            developerModeTaps = 0
+                        } else if (developerModeTaps > 2) {
+                            val remaining = 7 - developerModeTaps
+                            val msg = if (configState.language == "ar") "تفصلك $remaining خطوات عن تفعيل وضع المطور." else "You are $remaining steps away from being a developer."
+                            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                        showDebuggerDialog = true
+                    }
+                }
                 SettingsDivider()
                 SettingsInfoItem(stringResource(R.string.info_encryption), "AES-256-GCM")
                 SettingsDivider()
@@ -578,6 +597,37 @@ fun SettingsScreen(
                 SettingsInfoItem(stringResource(R.string.info_architecture), "Zero-Knowledge")
                 SettingsDivider()
                 SettingsInfoItem(stringResource(R.string.info_internet_access), stringResource(R.string.info_no_internet_desc))
+            }
+
+            // Developer Settings Section
+            if (configState.isDeveloperMode) {
+                val isAr = configState.language == "ar"
+                val devSettingsTitle = if (isAr) "إعدادات المطور" else "Developer Settings"
+                val devConsoleTitle = if (isAr) "لوحة تحكم المطور (الكونسل)" else "Developer Console"
+                val devConsoleSubtitle = if (isAr) "عرض سجل العمليات البرمجية والتنبيهات" else "View application logs and events"
+                val devModeTitle = if (isAr) "وضع المطور" else "Developer Mode"
+                val devModeSubtitle = if (isAr) "تفعيل خيارات المطور والكونسل" else "Enable developer tools and logs"
+
+                Spacer(Modifier.height(8.dp))
+                SettingsSection(title = devSettingsTitle) {
+                    SettingsClickItem(
+                        icon = Icons.Default.Terminal,
+                        title = devConsoleTitle,
+                        subtitle = devConsoleSubtitle,
+                        iconTint = MaterialTheme.colorScheme.primary
+                    ) {
+                        showDebuggerDialog = true
+                    }
+                    SettingsDivider()
+                    SettingsToggleItem(
+                        icon = Icons.Default.BugReport,
+                        title = devModeTitle,
+                        subtitle = devModeSubtitle,
+                        checked = configState.isDeveloperMode
+                    ) { enabled ->
+                        appConfigViewModel.setDeveloperMode(enabled)
+                    }
+                }
             }
 
             // Panic Mode Section
@@ -1387,6 +1437,15 @@ fun SettingsScreen(
             }
         )
     }
+
+    // ── Live Debugger Dialog ──
+    if (showDebuggerDialog) {
+        com.vaultix.app.debug.LiveDebuggerDialog(
+            events = debugEvents,
+            onClear = { com.vaultix.app.debug.DebugEventBus.clear() },
+            onDismiss = { showDebuggerDialog = false }
+        )
+    }
     }
 
 @Composable
@@ -1432,8 +1491,18 @@ fun SettingsClickItem(icon: ImageVector, title: String, subtitle: String, iconTi
 }
 
 @Composable
-fun SettingsInfoItem(label: String, value: String) {
-    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+fun SettingsInfoItem(label: String, value: String, onClick: (() -> Unit)? = null) {
+    val modifier = if (onClick != null) {
+        Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+    } else {
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+    }
+    Row(modifier, horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
         Text(label, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text(value, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium)
     }

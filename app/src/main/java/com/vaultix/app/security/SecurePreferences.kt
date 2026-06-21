@@ -73,6 +73,7 @@ class SecurePreferences @Inject constructor(
         // Support Configuration
         val KEY_SUPPORT_EMAIL = stringPreferencesKey("support_email")
         val KEY_SUPPORT_PHONE = stringPreferencesKey("support_phone")
+        val KEY_DEVELOPER_MODE = booleanPreferencesKey("developer_mode")
     }
 
     private val secretKey = KeystoreManager.getOrCreatePrefsKey()
