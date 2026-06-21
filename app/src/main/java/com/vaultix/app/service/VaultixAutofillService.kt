@@ -59,14 +59,12 @@ class VaultixAutofillService : AutofillService() {
                 val browserDomain = extractWebDomain(structure)
                 Log.d("VaultixAutofill", "Detected browser domain: $browserDomain")
 
-                // Fetch all potential candidates for this package OR general web items
-                val allPasswords = passwordDao.getPasswordsByMatch(packageName)
+                // Fetch all passwords in the database to allow cross-app and browser matching
+                val allPasswords = passwordDao.getAllPasswordsList()
                 
-                // Broad search segments
-                val searchSegments = mutableSetOf<String>()
-                searchSegments.add(packageName.lowercase())
-                browserDomain?.let { searchSegments.add(it.lowercase()) }
-                packageName.split(".").filter { it.length > 3 && it != "com" && it != "android" }.forEach { searchSegments.add(it.lowercase()) }
+                val isBrowser = packageName.contains("chrome") || packageName.contains("browser") || 
+                                packageName.contains("webview") || packageName.contains("firefox") || 
+                                packageName.contains("opera") || packageName.contains("edge")
 
                 val matches = allPasswords.filter { entity ->
                     val isSameVault = entity.isFake == com.vaultix.app.security.VaultSession.isFakeVaultActive
@@ -75,13 +73,25 @@ class VaultixAutofillService : AutofillService() {
                     val decryptedTitle = runCatching { cryptoManager.decrypt(entity.title, key) }.getOrDefault("").lowercase()
                     val decryptedWebsite = runCatching { cryptoManager.decrypt(entity.website, key) }.getOrDefault("").lowercase()
                     
-                    val pkgMatch = entity.appPackageName == packageName
-                    val domainMatch = browserDomain != null && (decryptedWebsite.contains(browserDomain) || decryptedTitle.contains(browserDomain))
-                    val segmentMatch = searchSegments.any { segment -> 
-                        decryptedTitle.contains(segment) || decryptedWebsite.contains(segment) 
-                    }
+                    val pkgMatch = if (!isBrowser) {
+                        entity.appPackageName.isNotEmpty() && entity.appPackageName == packageName
+                    } else false
+                    
+                    val domainMatch = browserDomain != null && (
+                        decryptedWebsite.contains(browserDomain) || 
+                        decryptedTitle.contains(browserDomain) ||
+                        browserDomain.contains(decryptedWebsite.replace(Regex("https?://(www\\.)?"), "").split("/").first())
+                    )
+                    
+                    val crossAppMatch = if (!isBrowser) {
+                        val appSegments = packageName.split(".")
+                            .filter { it.length > 3 && it != "com" && it != "android" && it != "apps" }
+                        appSegments.any { segment ->
+                            decryptedTitle.contains(segment) || decryptedWebsite.contains(segment)
+                        }
+                    } else false
 
-                    pkgMatch || domainMatch || segmentMatch
+                    pkgMatch || domainMatch || crossAppMatch
                 }
                 
                 Log.d("VaultixAutofill", "Final matches found: ${matches.size} for $packageName / $browserDomain")
@@ -218,23 +228,18 @@ class VaultixAutofillService : AutofillService() {
             }
         }
         
-        // Fallback: Use EditTexts if specific hints are missing
-        if (fields.passwordId == null) {
+        // Fallback: If we found a password field but no username field, assume the EditText/TextField right before it is the username
+        if (fields.passwordId != null && fields.usernameId == null) {
             val editTexts = nodes.filter { node ->
                 (node.visibility == android.view.View.VISIBLE) && (
                 node.className?.contains("EditText", true) == true || 
                 node.className?.contains("TextField", true) == true ||
                 node.inputType != 0)
             }
-            
-            if (editTexts.isNotEmpty()) {
-                // Usually password is the last one in a simple form, username is before it
-                val lastEdit = editTexts.last()
-                val prevEdit = if (editTexts.size > 1) editTexts[editTexts.size - 2] else null
-                
-                if (fields.passwordId == null) fields.passwordId = lastEdit.autofillId
-                if (fields.usernameId == null) fields.usernameId = prevEdit?.autofillId
-                Log.d("VaultixAutofill", "Using fallback EditTexts: last=${lastEdit.idEntry}, prev=${prevEdit?.idEntry}")
+            val passwordIndex = editTexts.indexOfFirst { it.autofillId == fields.passwordId }
+            if (passwordIndex > 0) {
+                fields.usernameId = editTexts[passwordIndex - 1].autofillId
+                Log.d("VaultixAutofill", "Found username field right before password: ${editTexts[passwordIndex - 1].idEntry}")
             }
         }
         
