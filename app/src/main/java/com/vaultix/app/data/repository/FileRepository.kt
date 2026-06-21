@@ -25,7 +25,8 @@ class FileRepository @Inject constructor(
     private val cryptoManager: CryptoManager,
     private val context: Context
 ) {
-    private val key = KeystoreManager.getOrCreateFilesKey()
+    private val key: javax.crypto.SecretKey
+        get() = KeystoreManager.getOrCreateFilesKey()
     private val vaultFilesDir: File
         get() = File(context.filesDir, "vault_files").also { it.mkdirs() }
 

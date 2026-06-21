@@ -344,6 +344,7 @@ fun RecoveryDialog(
     var confirmPassword by remember { mutableStateOf("") }
     var step by remember { mutableStateOf(1) } // 1: Enter Key, 2: New Password
     var error by remember { mutableStateOf<String?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
     AlertDialog(
@@ -360,6 +361,7 @@ fun RecoveryDialog(
                         label = { Text(stringResource(R.string.recovery_key_label)) },
                         placeholder = { Text(stringResource(R.string.recovery_key_placeholder)) },
                         modifier = Modifier.fillMaxWidth(),
+                        enabled = !isLoading,
                         colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = VaultOrange, unfocusedBorderColor = VaultBorder)
                     )
                 } else {
@@ -370,6 +372,7 @@ fun RecoveryDialog(
                         label = { Text(stringResource(R.string.new_password)) },
                         visualTransformation = PasswordVisualTransformation(),
                         modifier = Modifier.fillMaxWidth(),
+                        enabled = !isLoading,
                         colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = VaultOrange, unfocusedBorderColor = VaultBorder)
                     )
                     OutlinedTextField(
@@ -378,6 +381,7 @@ fun RecoveryDialog(
                         label = { Text(stringResource(R.string.confirm_new_password)) },
                         visualTransformation = PasswordVisualTransformation(),
                         modifier = Modifier.fillMaxWidth(),
+                        enabled = !isLoading,
                         colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = VaultOrange, unfocusedBorderColor = VaultBorder)
                     )
                 }
@@ -390,10 +394,17 @@ fun RecoveryDialog(
                 onClick = {
                     if (step == 1) {
                         scope.launch {
-                            if (authViewModel.verifyRecoveryKey(recoveryKey)) {
-                                step = 2
-                            } else {
-                                error = "Invalid recovery key"
+                            isLoading = true
+                            try {
+                                if (authViewModel.verifyRecoveryKey(recoveryKey)) {
+                                    step = 2
+                                } else {
+                                    error = "Invalid recovery key"
+                                }
+                            } catch (e: Exception) {
+                                error = e.message ?: "Verification failed"
+                            } finally {
+                                isLoading = false
                             }
                         }
                     } else {
@@ -405,22 +416,33 @@ fun RecoveryDialog(
                             error = "Password must be at least 8 characters"
                             return@Button
                         }
+                        isLoading = true
                         authViewModel.resetPasswordWithRecoveryKey(
                             recoveryKey = recoveryKey,
                             newPassword = newPassword.toCharArray(),
-                            onSuccess = onSuccess,
-                            onFailure = { error = it }
+                            onSuccess = {
+                                isLoading = false
+                                onSuccess()
+                            },
+                            onFailure = {
+                                isLoading = false
+                                error = it
+                            }
                         )
                     }
                 },
-                enabled = if (step == 1) recoveryKey.isNotEmpty() else (newPassword.isNotEmpty() && confirmPassword.isNotEmpty()),
+                enabled = !isLoading && (if (step == 1) recoveryKey.isNotEmpty() else (newPassword.isNotEmpty() && confirmPassword.isNotEmpty())),
                 colors = ButtonDefaults.buttonColors(containerColor = VaultOrange)
             ) {
-                Text(if (step == 1) stringResource(R.string.verify_key) else stringResource(R.string.reset_and_unlock), color = if (LocalIsDarkTheme.current) VaultBlack else Color.White)
+                if (isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = if (LocalIsDarkTheme.current) VaultBlack else Color.White, strokeWidth = 2.dp)
+                } else {
+                    Text(if (step == 1) stringResource(R.string.verify_key) else stringResource(R.string.reset_and_unlock), color = if (LocalIsDarkTheme.current) VaultBlack else Color.White)
+                }
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel), color = MaterialTheme.colorScheme.onSurfaceVariant) }
+            TextButton(onClick = onDismiss, enabled = !isLoading) { Text(stringResource(R.string.cancel), color = MaterialTheme.colorScheme.onSurfaceVariant) }
         }
     )
 }

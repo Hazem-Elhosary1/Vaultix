@@ -18,7 +18,8 @@ class NoteRepository @Inject constructor(
     private val noteDao: NoteDao,
     private val cryptoManager: CryptoManager
 ) {
-    private val key = KeystoreManager.getOrCreateDatabaseKey()
+    private val key: javax.crypto.SecretKey
+        get() = KeystoreManager.getOrCreateDatabaseKey()
 
     fun getAllNotes(): Flow<List<Note>> {
         return noteDao.getAllNotes().map { entities ->

@@ -40,9 +40,18 @@ object KeystoreManager {
     private fun getOrCreateKey(alias: String): SecretKey {
         val keyStore = KeyStore.getInstance(ANDROID_KEYSTORE).apply { load(null) }
 
-        // Return existing key if present
-        if (keyStore.containsAlias(alias)) {
-            return (keyStore.getEntry(alias, null) as KeyStore.SecretKeyEntry).secretKey
+        try {
+            if (keyStore.containsAlias(alias)) {
+                val entry = keyStore.getEntry(alias, null)
+                if (entry is KeyStore.SecretKeyEntry) {
+                    return entry.secretKey
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.w("KeystoreManager", "Key $alias is invalid, deleting and regenerating", e)
+            try {
+                keyStore.deleteEntry(alias)
+            } catch (_: Exception) {}
         }
 
         // Generate new AES-256-GCM key

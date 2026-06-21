@@ -18,7 +18,8 @@ class PasswordRepository @Inject constructor(
     private val passwordDao: PasswordDao,
     private val cryptoManager: CryptoManager
 ) {
-    private val key = KeystoreManager.getOrCreateDatabaseKey()
+    private val key: javax.crypto.SecretKey
+        get() = KeystoreManager.getOrCreateDatabaseKey()
 
     fun getAllPasswords(): Flow<List<Password>> {
         return passwordDao.getAllPasswords().map { entities ->

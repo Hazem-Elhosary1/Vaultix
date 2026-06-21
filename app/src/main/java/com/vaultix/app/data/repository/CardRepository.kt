@@ -18,7 +18,8 @@ class CardRepository @Inject constructor(
     private val cardDao: CardDao,
     private val cryptoManager: CryptoManager
 ) {
-    private val key = KeystoreManager.getOrCreateDatabaseKey()
+    private val key: javax.crypto.SecretKey
+        get() = KeystoreManager.getOrCreateDatabaseKey()
 
     fun getAllCards(): Flow<List<Card>> {
         return cardDao.getAllCards().map { entities ->

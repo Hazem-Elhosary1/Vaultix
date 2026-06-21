@@ -28,7 +28,8 @@ class IdentityViewModel @Inject constructor(
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
-    private val filesKey = KeystoreManager.getOrCreateFilesKey()
+    private val filesKey: javax.crypto.SecretKey
+        get() = KeystoreManager.getOrCreateFilesKey()
 
     // Holds a single Identity for edit/add screen
     private val _identity = MutableStateFlow(

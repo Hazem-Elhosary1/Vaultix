@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.crypto.Cipher
+import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "vaultix_secure_prefs")
@@ -76,7 +77,8 @@ class SecurePreferences @Inject constructor(
         val KEY_DEVELOPER_MODE = booleanPreferencesKey("developer_mode")
     }
 
-    private val secretKey = KeystoreManager.getOrCreatePrefsKey()
+    private val secretKey: SecretKey
+        get() = KeystoreManager.getOrCreatePrefsKey()
 
     private fun encrypt(value: String): String {
         val cipher = Cipher.getInstance(TRANSFORMATION)
