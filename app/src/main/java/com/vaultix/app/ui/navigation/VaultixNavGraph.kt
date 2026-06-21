@@ -41,6 +41,8 @@ fun VaultixNavGraph(
     val isSetupComplete by authViewModel.isSetupComplete.collectAsStateWithLifecycle()
     val isOnboardingComplete by authViewModel.isOnboardingComplete.collectAsStateWithLifecycle()
     val isLanguageChosen by authViewModel.isLanguageChosen.collectAsStateWithLifecycle()
+    val configViewModel: com.vaultix.app.ui.viewmodel.AppConfigViewModel = hiltViewModel()
+    val configState by configViewModel.configState.collectAsStateWithLifecycle()
 
     val pendingShortcutAction by authViewModel.pendingShortcutAction.collectAsStateWithLifecycle()
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
@@ -491,8 +493,96 @@ fun VaultixNavGraph(
             )
         }
 
+        // ── Dev Tools (restored) ──
+        composable(Screen.Development.route) {
+            com.vaultix.app.ui.screens.DevelopmentScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
     }
 
+    // ── LIVE DEBUGGER FLOATING ACTION BUTTON & TERMINAL OVERLAY ──
+    if (authState is AuthState.Authenticated && configState.isDeveloperMode) {
+        var showDebugConsole by remember { mutableStateOf(false) }
+        val debugEvents by com.vaultix.app.debug.DebugEventBus.events.collectAsStateWithLifecycle()
+        var lastSeenEventId by remember { mutableStateOf(0L) }
 
+        LaunchedEffect(showDebugConsole, debugEvents) {
+            if (showDebugConsole && debugEvents.isNotEmpty()) {
+                lastSeenEventId = debugEvents.last().id
+            }
+        }
+
+        val unreadCount = remember(debugEvents, lastSeenEventId, showDebugConsole) {
+            if (showDebugConsole) 0
+            else debugEvents.count { it.id > lastSeenEventId }
+        }
+
+        // Log navigation events
+        DisposableEffect(navController) {
+            val listener = NavController.OnDestinationChangedListener { _, destination, arguments ->
+                val route = destination.route ?: "unknown"
+                val argsStr = arguments?.let { bundle ->
+                    bundle.keySet().joinToString(", ") { key ->
+                        "$key=${bundle.get(key)}"
+                    }
+                } ?: ""
+                com.vaultix.app.debug.DebugEventBus.log(
+                    category = com.vaultix.app.debug.DebugCategory.NAVIGATION,
+                    eventType = "NAVIGATE",
+                    details = "Route: $route" + (if (argsStr.isNotEmpty()) " with $argsStr" else ""),
+                    source = "VaultixNavGraph"
+                )
+            }
+            navController.addOnDestinationChangedListener(listener)
+            onDispose {
+                navController.removeOnDestinationChangedListener(listener)
+            }
+        }
+
+        // Floating Debug Console Button (Bottom Start corner to not overlap other FABs)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 76.dp, start = 16.dp),
+            contentAlignment = Alignment.BottomStart
+        ) {
+            BadgedBox(
+                badge = {
+                    if (unreadCount > 0) {
+                        Badge(
+                            containerColor = Color.Red,
+                            contentColor = Color.White
+                        ) {
+                            Text(text = if (unreadCount > 99) "99+" else unreadCount.toString())
+                        }
+                    }
+                }
+            ) {
+                FloatingActionButton(
+                    onClick = { showDebugConsole = true },
+                    containerColor = Color(0xFF1E1E1E), // hacker dark color
+                    contentColor = Color(0xFF4AF626), // hacker green
+                    shape = androidx.compose.foundation.shape.CircleShape,
+                    modifier = Modifier.size(56.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Terminal,
+                        contentDescription = "Debugger console",
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+        }
+
+        if (showDebugConsole) {
+            com.vaultix.app.debug.LiveDebuggerDialog(
+                events = debugEvents,
+                onClear = { com.vaultix.app.debug.DebugEventBus.clear() },
+                onDismiss = { showDebugConsole = false }
+            )
+        }
+    }
 }
 }

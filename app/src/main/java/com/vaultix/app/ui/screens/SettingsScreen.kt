@@ -619,6 +619,15 @@ fun SettingsScreen(
                         showDebuggerDialog = true
                     }
                     SettingsDivider()
+                    SettingsClickItem(
+                        icon = Icons.Default.Code,
+                        title = if (isAr) "أدوات التطوير" else "Development Tools",
+                        subtitle = if (isAr) "توليد بيانات وهمية وتفريغ قاعدة البيانات" else "Seed mock data, clear database & more",
+                        iconTint = VaultInfo
+                    ) {
+                        onNavigateToDevelopment()
+                    }
+                    SettingsDivider()
                     SettingsToggleItem(
                         icon = Icons.Default.BugReport,
                         title = devModeTitle,
