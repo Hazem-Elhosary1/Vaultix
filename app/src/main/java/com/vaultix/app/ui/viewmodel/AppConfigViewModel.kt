@@ -8,6 +8,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import java.util.Locale
 
 enum class ThemeMode { SYSTEM, LIGHT, DARK }
 
@@ -28,6 +29,10 @@ data class AppConfigState(
     val supportEmail: String = "hazemelhosary3@gmail.com",
     val supportPhone: String = "+201234567890",
     val isDeveloperMode: Boolean = false,
+    val notifCardExpiry: Boolean = true,
+    val notifWeakPasswords: Boolean = true,
+    val notifAutoBackup: Boolean = true,
+    val notifExpiryThreshold: Int = 30,
     val availablePlans: List<PremiumPlan> = listOf(
         PremiumPlan("monthly", "Monthly", "$4.99", "per month"),
         PremiumPlan("yearly", "Yearly", "$39.99", "per year", "Best Value!"),
@@ -52,6 +57,10 @@ class AppConfigViewModel @Inject constructor(
         var initialSupportEmail: String? = null
         var initialSupportPhone: String? = null
         var initialDevMode = false
+        var initialNotifCardExpiry = true
+        var initialNotifWeakPasswords = true
+        var initialNotifAutoBackup = true
+        var initialNotifExpiryThreshold = 30
 
         try {
             kotlinx.coroutines.runBlocking {
@@ -63,6 +72,11 @@ class AppConfigViewModel @Inject constructor(
                 initialSupportEmail = securePreferences.getPlainString(SecurePreferences.KEY_SUPPORT_EMAIL)
                 initialSupportPhone = securePreferences.getPlainString(SecurePreferences.KEY_SUPPORT_PHONE)
                 initialDevMode = securePreferences.getBoolean(SecurePreferences.KEY_DEVELOPER_MODE, false)
+                
+                initialNotifCardExpiry = securePreferences.getBoolean(SecurePreferences.KEY_NOTIF_CARD_EXPIRY, true)
+                initialNotifWeakPasswords = securePreferences.getBoolean(SecurePreferences.KEY_NOTIF_WEAK_PASSWORDS, true)
+                initialNotifAutoBackup = securePreferences.getBoolean(SecurePreferences.KEY_NOTIF_AUTO_BACKUP, true)
+                initialNotifExpiryThreshold = securePreferences.getInt(SecurePreferences.KEY_NOTIF_EXPIRY_THRESHOLD, 30)
             }
         } catch (e: Exception) {
             // Fallback to defaults if runBlocking fails
@@ -76,7 +90,11 @@ class AppConfigViewModel @Inject constructor(
             isPremium = initialPremium,
             supportEmail = initialSupportEmail ?: "hazemelhosary3@gmail.com",
             supportPhone = initialSupportPhone ?: "+201234567890",
-            isDeveloperMode = initialDevMode
+            isDeveloperMode = initialDevMode,
+            notifCardExpiry = initialNotifCardExpiry,
+            notifWeakPasswords = initialNotifWeakPasswords,
+            notifAutoBackup = initialNotifAutoBackup,
+            notifExpiryThreshold = initialNotifExpiryThreshold
         )
 
         loadConfig()
@@ -92,7 +110,11 @@ class AppConfigViewModel @Inject constructor(
                 securePreferences.getPlainStringFlow(SecurePreferences.KEY_FONT_SIZE_SCALE),
                 securePreferences.getPlainStringFlow(SecurePreferences.KEY_SUPPORT_EMAIL),
                 securePreferences.getPlainStringFlow(SecurePreferences.KEY_SUPPORT_PHONE),
-                securePreferences.getBooleanFlow(SecurePreferences.KEY_DEVELOPER_MODE, false)
+                securePreferences.getBooleanFlow(SecurePreferences.KEY_DEVELOPER_MODE, false),
+                securePreferences.getBooleanFlow(SecurePreferences.KEY_NOTIF_CARD_EXPIRY, true),
+                securePreferences.getBooleanFlow(SecurePreferences.KEY_NOTIF_WEAK_PASSWORDS, true),
+                securePreferences.getBooleanFlow(SecurePreferences.KEY_NOTIF_AUTO_BACKUP, true),
+                securePreferences.getIntFlow(SecurePreferences.KEY_NOTIF_EXPIRY_THRESHOLD, 30)
             ) { values ->
                 val theme = values[0] as? String
                 val color = values[1] as? String
@@ -102,15 +124,24 @@ class AppConfigViewModel @Inject constructor(
                 val email = values[5] as? String
                 val phone = values[6] as? String
                 val devMode = values[7] as? Boolean ?: false
+                val cardExpiry = values[8] as? Boolean ?: true
+                val weakPwds = values[9] as? Boolean ?: true
+                val autoBkp = values[10] as? Boolean ?: true
+                val threshold = values[11] as? Int ?: 30
+                
                 AppConfigState(
-                    themeMode = theme?.let { ThemeMode.valueOf(it) } ?: ThemeMode.SYSTEM,
+                    themeMode = theme?.let { runCatching { ThemeMode.valueOf(it) }.getOrNull() } ?: ThemeMode.SYSTEM,
                     accentColorHex = color ?: "#FF9800",
                     language = lang ?: "en",
                     fontSizeScale = fontScale?.let { runCatching { FontSizeScale.valueOf(it) }.getOrNull() } ?: FontSizeScale.MEDIUM,
                     isPremium = isPremium,
                     supportEmail = email ?: "hazemelhosary3@gmail.com",
                     supportPhone = phone ?: "+201234567890",
-                    isDeveloperMode = devMode
+                    isDeveloperMode = devMode,
+                    notifCardExpiry = cardExpiry,
+                    notifWeakPasswords = weakPwds,
+                    notifAutoBackup = autoBkp,
+                    notifExpiryThreshold = threshold
                 )
             }.collect {
                 _configState.value = it
@@ -163,6 +194,30 @@ class AppConfigViewModel @Inject constructor(
     fun setDeveloperMode(enabled: Boolean) {
         viewModelScope.launch {
             securePreferences.putBoolean(SecurePreferences.KEY_DEVELOPER_MODE, enabled)
+        }
+    }
+
+    fun setNotifCardExpiry(enabled: Boolean) {
+        viewModelScope.launch {
+            securePreferences.putBoolean(SecurePreferences.KEY_NOTIF_CARD_EXPIRY, enabled)
+        }
+    }
+
+    fun setNotifWeakPasswords(enabled: Boolean) {
+        viewModelScope.launch {
+            securePreferences.putBoolean(SecurePreferences.KEY_NOTIF_WEAK_PASSWORDS, enabled)
+        }
+    }
+
+    fun setNotifAutoBackup(enabled: Boolean) {
+        viewModelScope.launch {
+            securePreferences.putBoolean(SecurePreferences.KEY_NOTIF_AUTO_BACKUP, enabled)
+        }
+    }
+
+    fun setNotifExpiryThreshold(days: Int) {
+        viewModelScope.launch {
+            securePreferences.putInt(SecurePreferences.KEY_NOTIF_EXPIRY_THRESHOLD, days)
         }
     }
 }

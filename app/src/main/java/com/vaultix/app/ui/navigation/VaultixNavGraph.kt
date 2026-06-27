@@ -76,13 +76,10 @@ fun VaultixNavGraph(
             )
             if (currentRoute !in bypassScreens && currentRoute != null) {
                 authViewModel.setPendingShortcutAction(null)
-                val targetType = when (action) {
-                    "com.vaultix.app.ACTION_ADD_PASSWORD" -> "passwords"
-                    "com.vaultix.app.ACTION_ADD_NOTE" -> "notes"
-                    else -> null
-                }
-                if (targetType != null) {
-                    navController.navigate(Screen.AddEdit.createRoute(targetType))
+                when (action) {
+                    "com.vaultix.app.ACTION_ADD_PASSWORD" -> navController.navigate(Screen.AddEdit.createRoute("passwords"))
+                    "com.vaultix.app.ACTION_ADD_NOTE" -> navController.navigate(Screen.AddEdit.createRoute("notes"))
+                    "com.vaultix.app.ACTION_GENERATE_PASSWORD" -> navController.navigate(Screen.PasswordGenerator.route)
                 }
             }
         }

@@ -17,5 +17,7 @@ data class NoteEntity(
     val createdAt: Long,
     val updatedAt: Long,
     val keyVersion: Int = 1,
+    val tags: String = "", // Encrypted list of tags (comma-separated)
+    val folderId: String? = null, // Nullable folder link
     val isFake: Boolean = false
 )

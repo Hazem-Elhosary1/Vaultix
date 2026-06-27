@@ -25,6 +25,9 @@ data class Password(
     val passwordStrength: Int,
     val isFavorite: Boolean,
     val passwordHistory: List<CharArray> = emptyList(),
+    val tags: List<String> = emptyList(),
+    val totpSecret: CharArray? = null,
+    val folderId: String? = null,
     val createdAt: Long,
     val updatedAt: Long,
     val expiresAt: Long? = null,
@@ -45,6 +48,8 @@ data class Card(
     val cardType: String,
     val notes: String,
     val isFavorite: Boolean,
+    val tags: List<String> = emptyList(),
+    val folderId: String? = null,
     val createdAt: Long,
     val updatedAt: Long,
     val keyVersion: Int = 1
@@ -76,6 +81,8 @@ data class Note(
     val color: String,
     val isFavorite: Boolean,
     val isPinned: Boolean = false,
+    val tags: List<String> = emptyList(),
+    val folderId: String? = null,
     val createdAt: Long,
     val updatedAt: Long,
     val keyVersion: Int = 1
@@ -126,6 +133,8 @@ data class Identity(
     val notes: String,
     val imagePaths: List<String> = emptyList(),
     val isFavorite: Boolean,
+    val tags: List<String> = emptyList(),
+    val folderId: String? = null,
     val createdAt: Long,
     val updatedAt: Long,
     val keyVersion: Int = 1

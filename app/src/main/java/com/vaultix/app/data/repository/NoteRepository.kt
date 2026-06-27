@@ -61,6 +61,10 @@ class NoteRepository @Inject constructor(
                 color = color,
                 isFavorite = isFavorite,
                 isPinned = isPinned,
+                tags = if (tags.isEmpty()) emptyList() else {
+                    cryptoManager.decrypt(tags, key).split(",").filter { it.isNotEmpty() }
+                },
+                folderId = folderId,
                 createdAt = createdAt,
                 updatedAt = updatedAt,
                 keyVersion = keyVersion
@@ -77,6 +81,10 @@ class NoteRepository @Inject constructor(
         color = color,
         isFavorite = isFavorite,
         isPinned = isPinned,
+        tags = if (tags.isEmpty()) "" else {
+            cryptoManager.encrypt(tags.joinToString(","), key)
+        },
+        folderId = folderId,
         createdAt = createdAt,
         updatedAt = updatedAt,
         keyVersion = keyVersion,

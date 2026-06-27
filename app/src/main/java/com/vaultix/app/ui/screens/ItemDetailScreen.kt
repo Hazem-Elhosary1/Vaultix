@@ -24,11 +24,20 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.content.Intent
+import android.graphics.Bitmap
+import androidx.compose.foundation.Image
+import androidx.compose.ui.graphics.asImageBitmap
+import com.vaultix.app.util.WifiQRGenerator
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.res.stringResource
 import com.vaultix.app.R
 import com.vaultix.app.ui.theme.*
+import android.widget.Toast
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.horizontalScroll
 import com.vaultix.app.ui.viewmodel.AuthViewModel
 import com.vaultix.app.ui.viewmodel.CardViewModel
 import com.vaultix.app.ui.viewmodel.IdentityViewModel
@@ -76,6 +85,7 @@ private fun IdentityDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var copyMessage by remember { mutableStateOf<String?>(null) }
+    var showShareDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         containerColor = VaultBlack,
@@ -85,6 +95,9 @@ private fun IdentityDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () 
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back), tint = VaultTextPrimary) } },
                 actions = {
                     identity?.let { id ->
+                        IconButton(onClick = { showShareDialog = true }) {
+                            Icon(Icons.Default.Share, "Share", tint = VaultOrange)
+                        }
                         IconButton(onClick = { viewModel.toggleFavorite(id) }) {
                             Icon(
                                 if (id.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
@@ -103,6 +116,14 @@ private fun IdentityDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () 
         }
     ) { paddingValues ->
         identity?.let { id ->
+            if (showShareDialog) {
+                ShareExportDialog(
+                    onDismissRequest = { showShareDialog = false },
+                    title = id.documentName,
+                    shareText = "Document: ${id.documentName} (${id.documentType})\nNumber: ${id.documentNumber}\nFull Name: ${id.fullName}\nDOB: ${id.dateOfBirth}\nExpiry: ${id.expiryDate}",
+                    qrText = "Document: ${id.documentName}\nNumber: ${id.documentNumber}"
+                )
+            }
             Column(
                 modifier = Modifier.fillMaxSize().padding(paddingValues).verticalScroll(rememberScrollState()).padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -135,7 +156,7 @@ private fun IdentityDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () 
                                 }
                             }
                         }
-                        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Row(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
                             Box(Modifier.size(56.dp).background(CategoryIDs.copy(0.15f), RoundedCornerShape(14.dp)), contentAlignment = Alignment.Center) {
                                 Icon(Icons.Default.Badge, null, tint = CategoryIDs, modifier = Modifier.size(28.dp))
                             }
@@ -143,6 +164,25 @@ private fun IdentityDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () 
                             Column {
                                 Text(id.documentName, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = VaultTextPrimary)
                                 Text(id.documentType, fontSize = 13.sp, color = VaultTextSecondary)
+                            }
+                        }
+                        
+                        if (id.tags.isNotEmpty()) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp).horizontalScroll(rememberScrollState()),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                id.tags.forEach { tag ->
+                                    SuggestionChip(
+                                        onClick = {},
+                                        label = { Text(tag, fontSize = 11.sp, fontWeight = FontWeight.Bold) },
+                                        colors = SuggestionChipDefaults.suggestionChipColors(
+                                            labelColor = VaultOrange,
+                                            containerColor = VaultOrange.copy(alpha = 0.1f)
+                                        )
+                                    )
+                                }
                             }
                         }
                     }
@@ -231,6 +271,7 @@ private fun PasswordDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () 
     var copyMessage by remember { mutableStateOf<String?>(null) }
     var showPassword by remember { mutableStateOf(false) }
     var revealJob by remember { mutableStateOf<Job?>(null) }
+    val showHistoryPasswords = remember { mutableStateMapOf<Int, Boolean>() }
 
     // Auto-blur/hide when app is backgrounded
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -245,8 +286,15 @@ private fun PasswordDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () 
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    // Strict Secure Reveal: No temporary reveal.
-    // Passwords are only shown while actively holding the button.
+    var showHistory by remember { mutableStateOf(false) }
+    var showShareDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(copyMessage) {
+        copyMessage?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            copyMessage = null
+        }
+    }
 
     Scaffold(
         containerColor = VaultBlack,
@@ -256,6 +304,9 @@ private fun PasswordDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () 
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back), tint = VaultTextPrimary) } },
                 actions = {
                     password?.let { pwd ->
+                        IconButton(onClick = { showShareDialog = true }) {
+                            Icon(Icons.Default.Share, "Share", tint = VaultOrange)
+                        }
                         IconButton(onClick = { viewModel.toggleFavorite(pwd) }) {
                             Icon(
                                 if (pwd.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
@@ -263,8 +314,6 @@ private fun PasswordDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () 
                                 tint = if (pwd.isFavorite) VaultError else VaultOrange
                             )
                         }
-                    }
-                    password?.let { pwd ->
                         IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, stringResource(R.string.edit), tint = VaultOrange) }
                         IconButton(onClick = { viewModel.deletePassword(pwd.id); onBack() }) {
                             Icon(Icons.Default.Delete, stringResource(R.string.delete), tint = VaultError)
@@ -276,6 +325,14 @@ private fun PasswordDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () 
         }
     ) { paddingValues ->
         password?.let { pwd ->
+            if (showShareDialog) {
+                ShareExportDialog(
+                    onDismissRequest = { showShareDialog = false },
+                    title = pwd.title,
+                    shareText = "Title: ${pwd.title}\nUsername: ${pwd.username}\nPassword: ${pwd.password.concatToString()}\nWebsite: ${pwd.website}\nNotes: ${pwd.notes}",
+                    qrText = pwd.password.concatToString()
+                )
+            }
             Column(
                 modifier = Modifier.fillMaxSize().padding(paddingValues).verticalScroll(rememberScrollState()).padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -293,6 +350,25 @@ private fun PasswordDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () 
                             val pfmt = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
                             Text(stringResource(R.string.created_at, pfmt.format(Date(pwd.createdAt))), fontSize = 11.sp, color = VaultTextSecondary.copy(alpha = 0.8f))
                             Text(stringResource(R.string.updated_at, pfmt.format(Date(pwd.updatedAt))), fontSize = 11.sp, color = VaultTextSecondary.copy(alpha = 0.8f))
+                        }
+                    }
+                }
+
+                if (pwd.tags.isNotEmpty()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        pwd.tags.forEach { tag ->
+                            SuggestionChip(
+                                onClick = {},
+                                label = { Text(tag, fontSize = 11.sp, fontWeight = FontWeight.Bold) },
+                                colors = SuggestionChipDefaults.suggestionChipColors(
+                                    labelColor = VaultOrange,
+                                    containerColor = VaultOrange.copy(alpha = 0.1f)
+                                )
+                            )
                         }
                     }
                 }
@@ -337,6 +413,68 @@ private fun PasswordDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () 
                     }
                 }
 
+                if (pwd.totpSecret != null && pwd.totpSecret.isNotEmpty()) {
+                    var currentTime by remember { mutableStateOf(System.currentTimeMillis()) }
+                    LaunchedEffect(Unit) {
+                        while (true) {
+                            kotlinx.coroutines.delay(1000)
+                            currentTime = System.currentTimeMillis()
+                        }
+                    }
+                    val secretStr = remember(pwd.totpSecret) { pwd.totpSecret.concatToString() }
+                    val totpCode = remember(secretStr, currentTime) {
+                        com.vaultix.app.security.TotpGenerator.generateTotp(secretStr, currentTime) ?: "------"
+                    }
+                    val secondsLeft = remember(currentTime) {
+                        com.vaultix.app.security.TotpGenerator.getSecondsRemaining(currentTime)
+                    }
+
+                    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp), colors = CardDefaults.cardColors(containerColor = VaultSurface)) {
+                        Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Column(Modifier.weight(1f)) {
+                                Text("2FA / Authenticator Code", fontSize = 11.sp, color = VaultTextSecondary, letterSpacing = 1.sp)
+                                Spacer(Modifier.height(4.dp))
+                                Text(
+                                    text = totpCode.chunked(3).joinToString(" "),
+                                    fontSize = 22.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = VaultOrange,
+                                    letterSpacing = 2.sp
+                                )
+                            }
+                            
+                            // Remaining seconds ticking indicator
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.padding(horizontal = 8.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    CircularProgressIndicator(
+                                        progress = secondsLeft.toFloat() / 30f,
+                                        color = if (secondsLeft <= 5) VaultError else VaultOrange,
+                                        trackColor = VaultBorder,
+                                        strokeWidth = 3.dp,
+                                        modifier = Modifier.size(28.dp)
+                                    )
+                                    Text(
+                                        text = "$secondsLeft",
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = VaultTextPrimary
+                                    )
+                                }
+                            }
+
+                            IconButton(onClick = {
+                                copyToClipboard(context, "TOTP Code", totpCode)
+                                scope.launch { copyMessage = "Authenticator code copied"; delay(2000); copyMessage = null }
+                            }) {
+                                Icon(Icons.Default.ContentCopy, null, tint = VaultOrange)
+                            }
+                        }
+                    }
+                }
+
                 if (pwd.passwordHistory.isNotEmpty()) {
                     var showHistory by remember { mutableStateOf(false) }
                     Column {
@@ -352,15 +490,47 @@ private fun PasswordDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () 
                         if (showHistory) {
                             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 pwd.passwordHistory.forEachIndexed { index, oldPwd ->
+                                    val visible = showHistoryPasswords[index] ?: false
+                                    val strength = remember(oldPwd) { viewModel.calculateStrength(oldPwd) }
+                                    val strengthColor = when (strength) {
+                                        com.vaultix.app.data.model.PasswordStrength.VERY_WEAK -> StrengthVeryWeak
+                                        com.vaultix.app.data.model.PasswordStrength.WEAK -> StrengthWeak
+                                        com.vaultix.app.data.model.PasswordStrength.FAIR -> StrengthFair
+                                        com.vaultix.app.data.model.PasswordStrength.STRONG -> StrengthStrong
+                                        com.vaultix.app.data.model.PasswordStrength.VERY_STRONG -> StrengthVeryStrong
+                                    }
+                                    
                                     Card(
                                         modifier = Modifier.fillMaxWidth(),
                                         shape = RoundedCornerShape(10.dp),
                                         colors = CardDefaults.cardColors(containerColor = VaultSurface.copy(alpha = 0.5f))
                                     ) {
-                                        Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                                        Row(
+                                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
                                             Column(Modifier.weight(1f)) {
-                                                Text(stringResource(R.string.old_password_label, index + 1), fontSize = 9.sp, color = VaultTextDisabled, letterSpacing = 1.sp)
-                                                Text("••••••••", fontSize = 14.sp, color = VaultTextSecondary)
+                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                    Text(stringResource(R.string.old_password_label, index + 1), fontSize = 9.sp, color = VaultTextDisabled, letterSpacing = 1.sp)
+                                                    Spacer(Modifier.width(6.dp))
+                                                    Box(Modifier.size(6.dp).background(strengthColor, androidx.compose.foundation.shape.CircleShape))
+                                                    Spacer(Modifier.width(4.dp))
+                                                    Text(strength.label, fontSize = 9.sp, color = strengthColor, fontWeight = FontWeight.Bold)
+                                                }
+                                                Spacer(Modifier.height(2.dp))
+                                                Text(
+                                                    if (visible) oldPwd.concatToString() else "••••••••",
+                                                    fontSize = 14.sp,
+                                                    color = VaultTextSecondary
+                                                )
+                                            }
+                                            IconButton(onClick = { showHistoryPasswords[index] = !visible }) {
+                                                Icon(
+                                                    if (visible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                                    null,
+                                                    tint = if (visible) VaultOrange else VaultTextSecondary,
+                                                    modifier = Modifier.size(18.dp)
+                                                )
                                             }
                                             IconButton(onClick = {
                                                 copyToClipboard(context, "Old Password", oldPwd)
@@ -414,6 +584,7 @@ private fun CardDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () -> U
 
     var showCardNumber by remember { mutableStateOf(false) }
     var showCvv by remember { mutableStateOf(false) }
+    var showShareDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         containerColor = VaultBlack,
@@ -423,6 +594,9 @@ private fun CardDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () -> U
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back), tint = VaultTextPrimary) } },
                 actions = {
                     card?.let { c ->
+                        IconButton(onClick = { showShareDialog = true }) {
+                            Icon(Icons.Default.Share, "Share", tint = VaultOrange)
+                        }
                         IconButton(onClick = { viewModel.toggleFavorite(c) }) {
                             Icon(
                                 if (c.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
@@ -441,6 +615,14 @@ private fun CardDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () -> U
         }
     ) { paddingValues ->
         card?.let { c ->
+            if (showShareDialog) {
+                ShareExportDialog(
+                    onDismissRequest = { showShareDialog = false },
+                    title = c.cardName,
+                    shareText = "Card Name: ${c.cardName}\nHolder: ${c.holderName}\nNumber: ${c.cardNumber}\nExpiry: ${c.expiryMonth}/${c.expiryYear}\nCVV: ${c.cvv}",
+                    qrText = c.cardNumber
+                )
+            }
             Column(modifier = Modifier.fillMaxSize().padding(paddingValues).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Card(modifier = Modifier.fillMaxWidth().height(200.dp), shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = VaultNavy)) {
                     Box(Modifier.fillMaxSize().background(androidx.compose.ui.graphics.Brush.horizontalGradient(listOf(VaultNavy, VaultNavyLight))).padding(24.dp)) {
@@ -547,6 +729,25 @@ private fun CardDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () -> U
                         }
                     }
                 }
+
+                if (c.tags.isNotEmpty()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        c.tags.forEach { tag ->
+                            SuggestionChip(
+                                onClick = {},
+                                label = { Text(tag, fontSize = 11.sp, fontWeight = FontWeight.Bold) },
+                                colors = SuggestionChipDefaults.suggestionChipColors(
+                                    labelColor = VaultOrange,
+                                    containerColor = VaultOrange.copy(alpha = 0.1f)
+                                )
+                            )
+                        }
+                    }
+                }
             }
         } ?: Box(Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
             Text(stringResource(R.string.item_not_found), color = VaultTextSecondary)
@@ -562,6 +763,7 @@ private fun NoteDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () -> U
     val context = LocalContext.current
 
     var showDeleteConfirm by remember { mutableStateOf(false) }
+    var showShareDialog by remember { mutableStateOf(false) }
 
     val noteAccentColor = remember(note?.color) {
         try { Color(android.graphics.Color.parseColor(note?.color ?: "#1A3A5C")) }
@@ -581,6 +783,10 @@ private fun NoteDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () -> U
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back), tint = VaultTextPrimary) } },
                 actions = {
                     note?.let { n ->
+                        // Share
+                        IconButton(onClick = { showShareDialog = true }) {
+                            Icon(Icons.Default.Share, "Share", tint = VaultOrange)
+                        }
                         // Copy content
                         IconButton(onClick = {
                             copyToClipboard(context, "Note Content", n.content)
@@ -608,6 +814,14 @@ private fun NoteDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () -> U
         }
     ) { paddingValues ->
         note?.let { n ->
+            if (showShareDialog) {
+                ShareExportDialog(
+                    onDismissRequest = { showShareDialog = false },
+                    title = n.title,
+                    shareText = "Title: ${n.title}\n\n${n.content}",
+                    qrText = n.content
+                )
+            }
             val wordCount = remember(n.content) { n.content.trim().split("\\s+".toRegex()).filter { it.isNotBlank() }.size }
             val charCount = remember(n.content) { n.content.length }
             val pattern = stringResource(R.string.note_date_format)
@@ -681,6 +895,26 @@ private fun NoteDetailScreen(itemId: String, onEdit: () -> Unit, onBack: () -> U
                         fontSize = 11.sp,
                         color = VaultTextSecondary.copy(alpha = 0.5f)
                     )
+
+                    if (n.tags.isNotEmpty()) {
+                        Spacer(Modifier.height(10.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            n.tags.forEach { tag ->
+                                SuggestionChip(
+                                    onClick = {},
+                                    label = { Text(tag, fontSize = 11.sp, fontWeight = FontWeight.Bold) },
+                                    colors = SuggestionChipDefaults.suggestionChipColors(
+                                        labelColor = VaultOrange,
+                                        containerColor = VaultOrange.copy(alpha = 0.1f)
+                                    )
+                                )
+                            }
+                        }
+                    }
 
                     Spacer(Modifier.height(20.dp))
                     HorizontalDivider(color = noteAccentColor.copy(alpha = 0.15f), thickness = 1.dp)
@@ -995,3 +1229,105 @@ private fun copyToClipboard(context: Context, label: String, value: Any) {
         android.widget.Toast.makeText(context, context.getString(R.string.copied_auto_clear_toast, label), android.widget.Toast.LENGTH_SHORT).show()
     }
 }
+
+@Composable
+fun ShareExportDialog(
+    onDismissRequest: () -> Unit,
+    title: String,
+    shareText: String,
+    qrText: String
+) {
+    val context = LocalContext.current
+    val qrBitmap = remember(qrText) { WifiQRGenerator.generateSimpleQr(qrText) }
+    var showWarning by remember { mutableStateOf(false) }
+
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        containerColor = VaultSurface,
+        title = { Text("Share / Export", fontWeight = FontWeight.Bold, color = VaultTextPrimary) },
+        text = {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Share credentials securely using a temporary QR code, or export as text.", fontSize = 13.sp, color = VaultTextSecondary, textAlign = TextAlign.Center)
+
+                if (qrBitmap != null) {
+                    Card(
+                        modifier = Modifier.size(170.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, VaultBorder)
+                    ) {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Image(
+                                bitmap = qrBitmap.asImageBitmap(),
+                                contentDescription = "Credential QR Code",
+                                modifier = Modifier.size(150.dp)
+                            )
+                        }
+                    }
+                    Text("Scan to copy credential directly", fontSize = 11.sp, color = VaultTextSecondary)
+                }
+
+                if (showWarning) {
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = VaultError.copy(alpha = 0.15f)),
+                        shape = RoundedCornerShape(8.dp),
+                        border = BorderStroke(1.dp, VaultError.copy(alpha = 0.3f))
+                    ) {
+                        Text(
+                            text = "WARNING: Sharing unencrypted plain text credentials via other apps is highly discouraged and insecure. Proceed at your own risk.",
+                            color = VaultError,
+                            fontSize = 11.sp,
+                            modifier = Modifier.padding(10.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                if (!showWarning) {
+                    Button(
+                        onClick = { showWarning = true },
+                        colors = ButtonDefaults.buttonColors(containerColor = VaultOrange),
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text("Export as Plain Text", color = VaultBlack, fontWeight = FontWeight.Bold)
+                    }
+                } else {
+                    Button(
+                        onClick = {
+                            val intent = Intent(Intent.ACTION_SEND).apply {
+                                type = "text/plain"
+                                putExtra(Intent.EXTRA_SUBJECT, title)
+                                putExtra(Intent.EXTRA_TEXT, shareText)
+                            }
+                            context.startActivity(Intent.createChooser(intent, "Share via"))
+                            onDismissRequest()
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = VaultError),
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text("I Understand, Share Now", color = Color.White, fontWeight = FontWeight.Bold)
+                    }
+                }
+                TextButton(
+                    onClick = onDismissRequest,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Close", color = VaultTextSecondary)
+                }
+            }
+        }
+    )
+}
+

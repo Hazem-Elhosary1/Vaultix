@@ -22,5 +22,7 @@ data class CardEntity(
     val updatedAt: Long,
     val keyVersion: Int = 1,
     val expiryTimestamp: Long? = null, // Unencrypted for background alerts
+    val tags: String = "", // Encrypted list of tags (comma-separated)
+    val folderId: String? = null, // Nullable folder link
     val isFake: Boolean = false
 )

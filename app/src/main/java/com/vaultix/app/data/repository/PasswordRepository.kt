@@ -101,6 +101,13 @@ class PasswordRepository @Inject constructor(
                 passwordHistory = if (passwordHistory.isEmpty()) emptyList() else {
                     cryptoManager.decrypt(passwordHistory, key).split("|").filter { it.isNotEmpty() }.map { it.toCharArray() }
                 },
+                tags = if (tags.isEmpty()) emptyList() else {
+                    cryptoManager.decrypt(tags, key).split(",").filter { it.isNotEmpty() }
+                },
+                totpSecret = if (totpSecret.isEmpty()) null else {
+                    cryptoManager.decryptToChars(totpSecret, key)
+                },
+                folderId = folderId,
                 createdAt = createdAt,
                 updatedAt = updatedAt,
                 expiresAt = expiresAt,
@@ -124,6 +131,13 @@ class PasswordRepository @Inject constructor(
         passwordHistory = if (passwordHistory.isEmpty()) "" else {
             cryptoManager.encrypt(passwordHistory.joinToString("|") { it.concatToString() }, key)
         },
+        tags = if (tags.isEmpty()) "" else {
+            cryptoManager.encrypt(tags.joinToString(","), key)
+        },
+        totpSecret = if (totpSecret == null || totpSecret.isEmpty()) "" else {
+            cryptoManager.encrypt(totpSecret, key)
+        },
+        folderId = folderId,
         createdAt = createdAt,
         updatedAt = updatedAt,
         expiresAt = expiresAt,

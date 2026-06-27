@@ -75,6 +75,12 @@ class SecurePreferences @Inject constructor(
         val KEY_SUPPORT_EMAIL = stringPreferencesKey("support_email")
         val KEY_SUPPORT_PHONE = stringPreferencesKey("support_phone")
         val KEY_DEVELOPER_MODE = booleanPreferencesKey("developer_mode")
+
+        // Notification Configuration
+        val KEY_NOTIF_CARD_EXPIRY = booleanPreferencesKey("notif_card_expiry")
+        val KEY_NOTIF_WEAK_PASSWORDS = booleanPreferencesKey("notif_weak_passwords")
+        val KEY_NOTIF_AUTO_BACKUP = booleanPreferencesKey("notif_auto_backup")
+        val KEY_NOTIF_EXPIRY_THRESHOLD = intPreferencesKey("notif_expiry_threshold")
     }
 
     private val secretKey: SecretKey

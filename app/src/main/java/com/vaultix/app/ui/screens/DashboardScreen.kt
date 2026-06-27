@@ -154,20 +154,18 @@ fun DashboardScreen(
                 QuickSearchBar(onClick = onNavigateToGlobalSearch)
             }
 
-            // 2. Stats overview & Security Health
+            // 2. Vault Overview — Stats + Security Health unified
             item {
-                DashboardStatsCard(
+                VaultOverviewCard(
                     passwordCount = passwordState.passwords.size,
                     cardCount = cardState.cards.size,
                     noteCount = noteState.notes.size,
                     idCount = identityState.size,
                     fileCount = fileState.size,
-                    wifiCount = passwordState.wifiPasswords.size
+                    wifiCount = passwordState.wifiPasswords.size,
+                    healthState = healthState,
+                    onSecurityClick = onNavigateToSecurityAudit
                 )
-            }
-
-            item {
-                SecurityHealthCard(healthState, onClick = onNavigateToSecurityAudit)
             }
 
             // 3. Favorites Carousel — quick access to starred items
@@ -292,21 +290,28 @@ fun DashboardScreen(
 }
 
 @Composable
-private fun DashboardStatsCard(
+private fun VaultOverviewCard(
     passwordCount: Int,
     cardCount: Int,
     noteCount: Int,
     idCount: Int,
     fileCount: Int,
-    wifiCount: Int
+    wifiCount: Int,
+    healthState: com.vaultix.app.ui.viewmodel.SecurityHealthState,
+    onSecurityClick: () -> Unit
 ) {
     val totalCount = passwordCount + cardCount + noteCount + idCount + fileCount + wifiCount
-    
+    val scoreColor = when {
+        healthState.score >= 80 -> VaultSuccess
+        healthState.score >= 50 -> VaultWarning
+        else -> VaultError
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = VaultSurface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
             modifier = Modifier
@@ -314,100 +319,137 @@ private fun DashboardStatsCard(
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                            VaultSurface
+                            VaultOrange.copy(alpha = 0.08f),
+                            Color.Transparent
                         )
                     )
                 )
-                .padding(20.dp)
+                .padding(16.dp)
         ) {
+            // ── Header: Total Count + Security Score ──
             Row(
-                Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
-                    Text(
-                        stringResource(R.string.vault_overview),
-                        fontSize = 14.sp,
-                        color = VaultTextSecondary,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Text(
-                        "$totalCount ${stringResource(R.string.items_secured)}",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = VaultTextPrimary
-                    )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .background(VaultOrange.copy(alpha = 0.12f), RoundedCornerShape(10.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Icons.Default.Shield, null, tint = VaultOrange, modifier = Modifier.size(18.dp))
+                    }
+                    Spacer(Modifier.width(10.dp))
+                    Column {
+                        Text(
+                            "$totalCount ${stringResource(R.string.items_secured)}",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = VaultTextPrimary
+                        )
+                        Text(
+                            stringResource(R.string.vault_overview),
+                            fontSize = 11.sp,
+                            color = VaultTextSecondary
+                        )
+                    }
                 }
+
+                // Security score circle — clickable
                 Box(
                     modifier = Modifier
-                        .size(48.dp)
-                        .background(VaultOrange.copy(alpha = 0.15f), RoundedCornerShape(12.dp)),
+                        .size(42.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable(onClick = onSecurityClick),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Analytics, null, tint = VaultOrange)
+                    CircularProgressIndicator(
+                        progress = { healthState.score / 100f },
+                        modifier = Modifier.fillMaxSize(),
+                        color = scoreColor,
+                        strokeWidth = 3.dp,
+                        trackColor = scoreColor.copy(alpha = 0.1f)
+                    )
+                    Text(
+                        "${healthState.score}",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = scoreColor
+                    )
                 }
             }
 
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(14.dp))
 
-            // Proportional Distribution Bar
-            if (totalCount > 0) {
+            // ── Category Stats Grid: 3 columns × 2 rows ──
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                OverviewStatItem(passwordCount, stringResource(R.string.passwords), Icons.Default.Key, CategoryPasswords, Modifier.weight(1f))
+                OverviewStatItem(cardCount, stringResource(R.string.cards), Icons.Default.CreditCard, CategoryCards, Modifier.weight(1f))
+                OverviewStatItem(noteCount, stringResource(R.string.notes), Icons.Default.Note, CategoryNotes, Modifier.weight(1f))
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                OverviewStatItem(idCount, stringResource(R.string.identities), Icons.Default.Badge, CategoryIDs, Modifier.weight(1f))
+                OverviewStatItem(fileCount, stringResource(R.string.files), Icons.Default.Folder, CategoryFiles, Modifier.weight(1f))
+                OverviewStatItem(wifiCount, "Wi-Fi", Icons.Default.Wifi, CategoryWifi, Modifier.weight(1f))
+            }
+
+            // ── Security Alerts (if any) ──
+            val hasAlerts = healthState.weakPasswordsCount > 0 || healthState.weakWifiCount > 0 || healthState.expiredItemsCount > 0
+            if (hasAlerts) {
+                Spacer(Modifier.height(12.dp))
+                HorizontalDivider(color = VaultBorder.copy(alpha = 0.4f))
+                Spacer(Modifier.height(10.dp))
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(8.dp)
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(VaultBlack.copy(0.3f))
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(scoreColor.copy(alpha = 0.06f))
+                        .clickable(onClick = onSecurityClick)
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    val pWeight = (passwordCount.toFloat() / totalCount).coerceAtLeast(0.01f)
-                    val cWeight = (cardCount.toFloat() / totalCount).coerceAtLeast(0.01f)
-                    val nWeight = (noteCount.toFloat() / totalCount).coerceAtLeast(0.01f)
-                    val iWeight = (idCount.toFloat() / totalCount).coerceAtLeast(0.01f)
-                    val fWeight = (fileCount.toFloat() / totalCount).coerceAtLeast(0.01f)
-                    val wWeight = (wifiCount.toFloat() / totalCount).coerceAtLeast(0.01f)
-
-                    Box(Modifier.fillMaxHeight().weight(pWeight).background(CategoryPasswords))
-                    Box(Modifier.fillMaxHeight().weight(cWeight).background(CategoryCards))
-                    Box(Modifier.fillMaxHeight().weight(nWeight).background(CategoryNotes))
-                    Box(Modifier.fillMaxHeight().weight(iWeight).background(CategoryIDs))
-                    Box(Modifier.fillMaxHeight().weight(fWeight).background(CategoryFiles))
-                    Box(Modifier.fillMaxHeight().weight(wWeight).background(CategoryWifi))
-                }
-                Spacer(Modifier.height(16.dp))
-            }
-
-            Row(
-                Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                StatMiniItem(count = passwordCount, label = stringResource(R.string.passwords), color = CategoryPasswords)
-                StatMiniItem(count = cardCount, label = stringResource(R.string.cards), color = CategoryCards)
-                StatMiniItem(count = noteCount, label = stringResource(R.string.notes), color = CategoryNotes)
-                StatMiniItem(count = idCount, label = stringResource(R.string.identities), color = CategoryIDs)
-                StatMiniItem(count = fileCount, label = stringResource(R.string.files), color = CategoryFiles)
-                StatMiniItem(count = wifiCount, label = "Wi-Fi", color = CategoryWifi)
-            }
-
-            Spacer(Modifier.height(20.dp))
-            HorizontalDivider(color = VaultBorder.copy(alpha = 0.5f))
-            Spacer(Modifier.height(16.dp))
-
-            Row(
-                Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(Modifier.size(8.dp).background(VaultSuccess, androidx.compose.foundation.shape.CircleShape))
+                    Icon(
+                        Icons.Default.Info,
+                        null,
+                        tint = scoreColor,
+                        modifier = Modifier.size(16.dp)
+                    )
                     Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.all_data_encrypted), fontSize = 12.sp, color = VaultSuccess)
-                }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.VerifiedUser, null, tint = VaultOrange, modifier = Modifier.size(14.dp))
-                    Spacer(Modifier.width(4.dp))
-                    Text(stringResource(R.string.offline_100), fontSize = 12.sp, color = VaultOrange)
+                    val alertParts = mutableListOf<String>()
+                    if (healthState.weakPasswordsCount > 0) {
+                        alertParts.add(stringResource(R.string.weak_passwords_alert, healthState.weakPasswordsCount))
+                    }
+                    if (healthState.weakWifiCount > 0) {
+                        alertParts.add(stringResource(R.string.insecure_wifi_alert, healthState.weakWifiCount))
+                    }
+                    if (healthState.expiredItemsCount > 0) {
+                        alertParts.add(stringResource(R.string.expired_items_alert, healthState.expiredItemsCount))
+                    }
+                    Text(
+                        alertParts.joinToString(" · "),
+                        fontSize = 11.sp,
+                        color = VaultTextSecondary,
+                        modifier = Modifier.weight(1f),
+                        maxLines = 2
+                    )
+                    Icon(
+                        Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        null,
+                        tint = VaultTextDisabled,
+                        modifier = Modifier.size(16.dp)
+                    )
                 }
             }
         }
@@ -415,30 +457,39 @@ private fun DashboardStatsCard(
 }
 
 @Composable
-private fun StatMiniItem(count: Int, label: String, color: Color) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+private fun OverviewStatItem(
+    count: Int,
+    label: String,
+    icon: ImageVector,
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(26.dp)
+                .background(color.copy(alpha = 0.12f), RoundedCornerShape(7.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(icon, null, tint = color, modifier = Modifier.size(14.dp))
+        }
+        Spacer(Modifier.width(6.dp))
         Text(
             count.toString(),
-            fontSize = 18.sp,
+            fontSize = 15.sp,
             fontWeight = FontWeight.Bold,
             color = VaultTextPrimary
         )
-        Box(Modifier.size(width = 20.dp, height = 2.dp).background(color, RoundedCornerShape(1.dp)))
-        Spacer(Modifier.height(4.dp))
-        Text(label.take(4), fontSize = 10.sp, color = VaultTextSecondary)
-    }
-}
-
-@Composable
-private fun StatItem(count: Int, label: String, color: Color) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Spacer(Modifier.width(4.dp))
         Text(
-            count.toString(),
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            color = color
+            label,
+            fontSize = 11.sp,
+            color = VaultTextSecondary,
+            maxLines = 1
         )
-        Text(label, fontSize = 12.sp, color = VaultTextSecondary)
     }
 }
 

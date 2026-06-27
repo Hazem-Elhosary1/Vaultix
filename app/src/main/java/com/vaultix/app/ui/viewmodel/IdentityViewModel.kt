@@ -112,6 +112,14 @@ class IdentityViewModel @Inject constructor(
         _identity.value = _identity.value.copy(notes = value)
     }
 
+    fun updateTags(value: List<String>) {
+        _identity.value = _identity.value.copy(tags = value)
+    }
+
+    fun updateFolderId(value: String?) {
+        _identity.value = _identity.value.copy(folderId = value)
+    }
+
     /**
      * Save (insert or update) the identity.
      * If an imageUri is provided, the image is encrypted and stored

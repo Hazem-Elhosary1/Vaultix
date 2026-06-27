@@ -282,6 +282,58 @@ fun SettingsScreen(
                 }
             }
 
+            // Customizable Notifications Section
+            SettingsSection(title = "Notifications Settings") {
+                SettingsToggleItem(
+                    icon = Icons.Default.NotificationsActive,
+                    title = "Card Expiry Alerts",
+                    subtitle = "Notify when registered credit/debit cards are close to expiring",
+                    checked = configState.notifCardExpiry,
+                    onToggle = { appConfigViewModel.setNotifCardExpiry(it) }
+                )
+                SettingsDivider()
+                SettingsToggleItem(
+                    icon = Icons.Default.Warning,
+                    title = "Weak Password Reminders",
+                    subtitle = "Notify when stored passwords are weak or compromised",
+                    checked = configState.notifWeakPasswords,
+                    onToggle = { appConfigViewModel.setNotifWeakPasswords(it) }
+                )
+                SettingsDivider()
+                SettingsToggleItem(
+                    icon = Icons.Default.CloudUpload,
+                    title = "Backup Failure Alerts",
+                    subtitle = "Notify when automatic database backups fail",
+                    checked = configState.notifAutoBackup,
+                    onToggle = { appConfigViewModel.setNotifAutoBackup(it) }
+                )
+                SettingsDivider()
+                Column(Modifier.padding(16.dp)) {
+                    Text("Card Expiry Threshold", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
+                    Text("Trigger warning notifications when card is expiring within this timeframe:", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(Modifier.height(8.dp))
+                    Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        val thresholdOptions = listOf(
+                            Pair("15 Days", 15),
+                            Pair("30 Days", 30),
+                            Pair("60 Days", 60),
+                            Pair("90 Days", 90)
+                        )
+                        thresholdOptions.forEach { (label, days) ->
+                            FilterChip(
+                                selected = configState.notifExpiryThreshold == days,
+                                onClick = { appConfigViewModel.setNotifExpiryThreshold(days) },
+                                label = { Text(label, fontSize = 12.sp) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primary.copy(0.2f),
+                                    selectedLabelColor = MaterialTheme.colorScheme.primary
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+
             SettingsSection(title = stringResource(R.string.data_protection)) {
 
                 // ── 1. Auto Backup Status ──

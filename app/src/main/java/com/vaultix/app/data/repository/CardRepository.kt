@@ -65,6 +65,10 @@ class CardRepository @Inject constructor(
                 cardType = cryptoManager.decrypt(cardType, key),
                 notes = cryptoManager.decrypt(notes, key),
                 isFavorite = isFavorite,
+                tags = if (tags.isEmpty()) emptyList() else {
+                    cryptoManager.decrypt(tags, key).split(",").filter { it.isNotEmpty() }
+                },
+                folderId = folderId,
                 createdAt = createdAt,
                 updatedAt = updatedAt,
                 keyVersion = keyVersion
@@ -85,6 +89,10 @@ class CardRepository @Inject constructor(
         cardType = cryptoManager.encrypt(cardType, key),
         notes = cryptoManager.encrypt(notes, key),
         isFavorite = isFavorite,
+        tags = if (tags.isEmpty()) "" else {
+            cryptoManager.encrypt(tags.joinToString(","), key)
+        },
+        folderId = folderId,
         createdAt = createdAt,
         updatedAt = updatedAt,
         keyVersion = keyVersion,

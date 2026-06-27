@@ -72,6 +72,10 @@ class IdentityRepository @Inject constructor(
                 notes = cryptoManager.decrypt(notes, databaseKey),
                 imagePaths = imagePaths?.split(",")?.filter { it.isNotBlank() } ?: emptyList(),
                 isFavorite = isFavorite,
+                tags = if (tags.isEmpty()) emptyList() else {
+                    cryptoManager.decrypt(tags, databaseKey).split(",").filter { it.isNotEmpty() }
+                },
+                folderId = folderId,
                 createdAt = createdAt,
                 updatedAt = updatedAt,
                 keyVersion = keyVersion
@@ -95,6 +99,10 @@ class IdentityRepository @Inject constructor(
         notes = cryptoManager.encrypt(notes, key ?: throw IllegalStateException("Database key unavailable")),
         imagePaths = imagePaths.joinToString(","),
         isFavorite = isFavorite,
+        tags = if (tags.isEmpty()) "" else {
+            cryptoManager.encrypt(tags.joinToString(","), key ?: throw IllegalStateException("Database key unavailable"))
+        },
+        folderId = folderId,
         createdAt = createdAt,
         updatedAt = updatedAt,
         keyVersion = keyVersion,

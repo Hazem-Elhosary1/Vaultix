@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_widget"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="12dp">
+
+    <!-- Left side: App Logo and Title -->
+    <LinearLayout
+        android:id="@+id/widget_logo_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:background="@android:color/transparent"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingEnd="12dp"
+        android:paddingStart="8dp">
+
+        <ImageView
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:contentDescription="Vaultix Logo"
+            android:src="@drawable/ic_vaultix_logo" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="Vaultix"
+            android:textColor="#FF9800"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Divider Line: Using ImageView instead of View (View is not supported in RemoteViews) -->
+    <ImageView
+        android:layout_width="1dp"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="6dp"
+        android:layout_marginTop="6dp"
+        android:contentDescription="divider"
+        android:background="#1F2937" />
+
+    <!-- Right side: Quick Action Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <!-- Add Password Button -->
+        <ImageButton
+            android:id="@+id/btn_widget_add_pwd"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:contentDescription="Add Password"
+            android:padding="8dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_shortcut_password" />
+
+        <!-- Add Note Button -->
+        <ImageButton
+            android:id="@+id/btn_widget_add_note"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:contentDescription="Add Note"
+            android:padding="8dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_shortcut_note" />
+
+        <!-- Password Generator Button -->
+        <ImageButton
+            android:id="@+id/btn_widget_generate"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:contentDescription="Generate Password"
+            android:padding="8dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_widget_generator" />
+    </LinearLayout>
+</LinearLayout>

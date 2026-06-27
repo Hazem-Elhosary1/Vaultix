@@ -31,6 +31,11 @@ import androidx.compose.ui.graphics.Color
 import com.vaultix.app.ui.theme.*
 import com.vaultix.app.ui.viewmodel.AuthViewModel
 import com.vaultix.app.ui.viewmodel.IdentityViewModel
+import com.vaultix.app.ui.viewmodel.FileViewModel
+import com.vaultix.app.ui.components.TagsInputSection
+import com.vaultix.app.ui.components.FolderSelectSection
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vaultix.app.util.DocumentScannerHelper
 import androidx.compose.ui.res.stringResource
 import com.vaultix.app.R
@@ -307,6 +312,9 @@ fun IdentityEditScreen(
                 maxLines = 4,
                 colors = identityFieldColors()
             )
+
+            FolderSelectSection(selectedFolderId = identityState.folderId, onFolderSelect = { identityViewModel.updateFolderId(it) })
+            TagsInputSection(tags = identityState.tags, onTagsChange = { identityViewModel.updateTags(it) })
 
             Spacer(Modifier.height(8.dp))
 

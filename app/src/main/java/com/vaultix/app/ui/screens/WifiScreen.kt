@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -57,6 +58,10 @@ import com.vaultix.app.R
 import com.vaultix.app.data.model.Password
 import com.vaultix.app.ui.theme.*
 import com.vaultix.app.ui.viewmodel.PasswordViewModel
+import com.vaultix.app.ui.viewmodel.FileViewModel
+import com.vaultix.app.ui.components.TagsInputSection
+import com.vaultix.app.ui.components.FolderSelectSection
+import com.vaultix.app.ui.screens.ShareExportDialog
 import com.vaultix.app.util.WifiQRGenerator
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -108,7 +113,8 @@ fun WifiList(
     sortKey: String,
     isAscending: Boolean,
     onItemClick: (String) -> Unit,
-    accentColor: Color
+    accentColor: Color,
+    selectedFolderId: String? = null
 ) {
     val viewModel: PasswordViewModel = hiltViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -122,6 +128,21 @@ fun WifiList(
             else -> if (!isAscending) state.wifiPasswords.sortedByDescending { it.updatedAt } else state.wifiPasswords.sortedBy { it.updatedAt }
         }
         base.sortedByDescending { parseWifiNotes(it.notes).isPinned }
+    }
+
+    var selectedTag by remember { mutableStateOf<String?>(null) }
+    val allTags = remember(state.wifiPasswords) {
+        state.wifiPasswords.flatMap { it.tags }.distinct().sorted()
+    }
+    val filtered = remember(sortedWifi, selectedTag, selectedFolderId) {
+        var result = sortedWifi
+        if (selectedTag != null) {
+            result = result.filter { it.tags.contains(selectedTag) }
+        }
+        if (selectedFolderId != null) {
+            result = result.filter { it.folderId == selectedFolderId }
+        }
+        result
     }
 
     if (sortedWifi.isEmpty()) {
@@ -161,7 +182,39 @@ fun WifiList(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        items(sortedWifi, key = { it.id }) { wifi ->
+        if (allTags.isNotEmpty()) {
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    InputChip(
+                        selected = selectedTag == null,
+                        onClick = { selectedTag = null },
+                        label = { Text("All") },
+                        colors = InputChipDefaults.inputChipColors(
+                            selectedContainerColor = accentColor.copy(alpha = 0.2f),
+                            selectedLabelColor = accentColor
+                        )
+                    )
+                    allTags.forEach { tag ->
+                        InputChip(
+                            selected = selectedTag == tag,
+                            onClick = { selectedTag = tag },
+                            label = { Text(tag) },
+                            colors = InputChipDefaults.inputChipColors(
+                                selectedContainerColor = accentColor.copy(alpha = 0.2f),
+                                selectedLabelColor = accentColor
+                            )
+                        )
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+            }
+        }
+
+        items(filtered, key = { it.id }) { wifi ->
             WifiListItem(
                 password = wifi,
                 accentColor = accentColor,
@@ -374,6 +427,8 @@ fun WifiListItem(
                                     modifier = Modifier.size(16.dp)
                                 )
                             }
+                            Spacer(Modifier.width(6.dp))
+                            PasswordAgeBadge(updatedAt = password.updatedAt)
                         }
 
                         Spacer(Modifier.height(4.dp))
@@ -520,6 +575,9 @@ fun AddEditWifiScreen(
         }
     }
 
+    var tags by remember { mutableStateOf(existingItem?.tags ?: emptyList<String>()) }
+    var selectedFolderId by remember { mutableStateOf(existingItem?.folderId) }
+
     // Sync state with existing items once loaded
     var hasInitialized by remember { mutableStateOf(false) }
     LaunchedEffect(existingItem) {
@@ -535,6 +593,8 @@ fun AddEditWifiScreen(
             routerPassword = details.routerPassword
             wifiNotes = details.generalNotes
             isPinned = details.isPinned
+            tags = existingItem.tags
+            selectedFolderId = existingItem.folderId
             
             if (routerIp.isNotBlank() || routerUsername.isNotBlank() || routerPassword.isNotBlank()) {
                 routerAdminExpanded = true
@@ -583,6 +643,8 @@ fun AddEditWifiScreen(
                                 notes = combinedNotes,
                                 passwordStrength = 0, // Auto calculated inside ViewModel
                                 isFavorite = existingItem?.isFavorite ?: false,
+                                tags = tags,
+                                folderId = selectedFolderId,
                                 createdAt = existingItem?.createdAt ?: now,
                                 updatedAt = now
                             )
@@ -824,6 +886,9 @@ fun AddEditWifiScreen(
                     )
                 }
             }
+
+            FolderSelectSection(selectedFolderId = selectedFolderId, onFolderSelect = { selectedFolderId = it })
+            TagsInputSection(tags = tags, onTagsChange = { tags = it })
         }
     }
 
@@ -918,6 +983,7 @@ fun WifiDetailScreen(
     var showRouterPassword by remember { mutableStateOf(false) }
     var showQrDialog by remember { mutableStateOf(false) }
     var copyMessage by remember { mutableStateOf<String?>(null) }
+    var showShareDialog by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
@@ -970,6 +1036,9 @@ fun WifiDetailScreen(
                 title = { Text(wifi.title, fontWeight = FontWeight.Bold, color = VaultTextPrimary) },
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = VaultTextPrimary) } },
                 actions = {
+                    IconButton(onClick = { showShareDialog = true }) {
+                        Icon(Icons.Default.Share, "Share", tint = accentColor)
+                    }
                     IconButton(onClick = { viewModel.toggleFavorite(wifi) }) {
                         Icon(
                             if (wifi.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
@@ -988,6 +1057,15 @@ fun WifiDetailScreen(
             )
         }
     ) { paddingValues ->
+        if (showShareDialog) {
+            val wifiFormat = "WIFI:S:${wifi.username};T:${wifi.appPackageName};P:${wifi.password.concatToString()};;"
+            ShareExportDialog(
+                onDismissRequest = { showShareDialog = false },
+                title = wifi.title,
+                shareText = "SSID: ${wifi.username}\nPassword: ${wifi.password.concatToString()}\nSecurity: ${wifi.appPackageName}",
+                qrText = wifiFormat
+            )
+        }
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -1063,6 +1141,25 @@ fun WifiDetailScreen(
                         Icon(Icons.Default.QrCode, null, tint = VaultBlack)
                         Spacer(Modifier.width(8.dp))
                         Text(stringResource(R.string.share_via_qr), color = VaultBlack, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+
+            if (wifi.tags.isNotEmpty()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    wifi.tags.forEach { tag ->
+                        SuggestionChip(
+                            onClick = {},
+                            label = { Text(tag, fontSize = 11.sp, fontWeight = FontWeight.Bold) },
+                            colors = SuggestionChipDefaults.suggestionChipColors(
+                                labelColor = VaultOrange,
+                                containerColor = VaultOrange.copy(alpha = 0.1f)
+                            )
+                        )
                     }
                 }
             }
@@ -1298,5 +1395,31 @@ private fun DetailItem(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun PasswordAgeBadge(updatedAt: Long) {
+    val diff = System.currentTimeMillis() - updatedAt
+    val days = diff / (1000 * 60 * 60 * 24)
+    val (label, color) = when {
+        days < 30 -> stringResource(R.string.frequency_daily).take(3) to VaultSuccess
+        days < 90 -> "${days / 30}m" to VaultWarning
+        else -> "${days / 30}m" to VaultError
+    }
+    val displayText = if (days < 30) "New" else label
+    
+    Surface(
+        color = color.copy(alpha = 0.15f),
+        shape = RoundedCornerShape(4.dp),
+        modifier = Modifier.padding(horizontal = 2.dp)
+    ) {
+        Text(
+            text = displayText,
+            color = color,
+            fontSize = 9.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
+        )
     }
 }

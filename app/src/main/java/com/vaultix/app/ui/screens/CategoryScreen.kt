@@ -4,6 +4,8 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -60,6 +62,11 @@ fun CategoryScreen(
         else -> stringResource(R.string.app_name)
     }
     val accentColor = MaterialTheme.colorScheme.primary
+
+    val fileViewModel: FileViewModel = hiltViewModel()
+    val folders by fileViewModel.folders.collectAsStateWithLifecycle(emptyList())
+    var selectedFolderId by remember { mutableStateOf<String?>(null) }
+    var folderDropdownExpanded by remember { mutableStateOf(false) }
 
     var searchQuery by remember { mutableStateOf("") }
     var currentSort by remember { mutableStateOf("date") }
@@ -122,6 +129,49 @@ fun CategoryScreen(
                     onToggleOrder = { isAscending = !isAscending },
                     accentColor = accentColor
                 )
+
+                if (folders.isNotEmpty()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        val currentFolderName = folders.find { it.id == selectedFolderId }?.name ?: "All Folders"
+                        Box {
+                            FilterChip(
+                                selected = selectedFolderId != null,
+                                onClick = { folderDropdownExpanded = true },
+                                label = { Text("Folder: $currentFolderName") },
+                                trailingIcon = { Icon(Icons.Default.ArrowDropDown, null) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = accentColor.copy(0.2f),
+                                    selectedLabelColor = accentColor
+                                )
+                            )
+                            DropdownMenu(
+                                expanded = folderDropdownExpanded,
+                                onDismissRequest = { folderDropdownExpanded = false },
+                                modifier = Modifier.background(VaultSurface)
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text("All Folders", color = VaultTextPrimary) },
+                                    onClick = {
+                                        selectedFolderId = null
+                                        folderDropdownExpanded = false
+                                    }
+                                )
+                                folders.forEach { folder ->
+                                    DropdownMenuItem(
+                                        text = { Text(folder.name, color = VaultTextPrimary) },
+                                        onClick = {
+                                            selectedFolderId = folder.id
+                                            folderDropdownExpanded = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
         floatingActionButton = {
@@ -187,21 +237,24 @@ fun CategoryScreen(
                     sortKey = currentSort,
                     isAscending = isAscending,
                     onItemClick = onNavigateToDetail,
-                    accentColor = accentColor
+                    accentColor = accentColor,
+                    selectedFolderId = selectedFolderId
                 )
                 "cards" -> CardList(
                     searchQuery = searchQuery,
                     sortKey = currentSort,
                     isAscending = isAscending,
                     onItemClick = onNavigateToDetail,
-                    accentColor = accentColor
+                    accentColor = accentColor,
+                    selectedFolderId = selectedFolderId
                 )
                 "notes" -> NoteList(
                     searchQuery = searchQuery,
                     sortKey = currentSort,
                     isAscending = isAscending,
                     onItemClick = onNavigateToDetail,
-                    accentColor = accentColor
+                    accentColor = accentColor,
+                    selectedFolderId = selectedFolderId
                 )
                 "files" -> FileList(
                     searchQuery = searchQuery,
@@ -214,7 +267,8 @@ fun CategoryScreen(
                     sortKey = currentSort,
                     isAscending = isAscending,
                     accentColor = accentColor,
-                    onItemClick = { id -> onNavigateToDetail(id) }
+                    onItemClick = { id -> onNavigateToDetail(id) },
+                    selectedFolderId = selectedFolderId
                 )
                 "wifi" -> WifiList(
                     searchQuery = searchQuery,
@@ -235,7 +289,8 @@ private fun PasswordList(
     sortKey: String,
     isAscending: Boolean,
     onItemClick: (String) -> Unit,
-    accentColor: Color
+    accentColor: Color,
+    selectedFolderId: String?
 ) {
     val viewModel: PasswordViewModel = hiltViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -250,6 +305,21 @@ private fun PasswordList(
         }
     }
 
+    var selectedTag by remember { mutableStateOf<String?>(null) }
+    val allTags = remember(state.passwords) {
+        state.passwords.flatMap { it.tags }.distinct().sorted()
+    }
+    val filtered = remember(sorted, selectedTag, selectedFolderId) {
+        var result = sorted
+        if (selectedTag != null) {
+            result = result.filter { it.tags.contains(selectedTag) }
+        }
+        if (selectedFolderId != null) {
+            result = result.filter { it.folderId == selectedFolderId }
+        }
+        result
+    }
+
     if (sorted.isEmpty()) {
         EmptyState(stringResource(R.string.passwords), Icons.Default.VpnKey, accentColor)
         return
@@ -259,7 +329,39 @@ private fun PasswordList(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(sorted, key = { it.id }) { password ->
+        if (allTags.isNotEmpty()) {
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    InputChip(
+                        selected = selectedTag == null,
+                        onClick = { selectedTag = null },
+                        label = { Text("All") },
+                        colors = InputChipDefaults.inputChipColors(
+                            selectedContainerColor = accentColor.copy(alpha = 0.2f),
+                            selectedLabelColor = accentColor
+                        )
+                    )
+                    allTags.forEach { tag ->
+                        InputChip(
+                            selected = selectedTag == tag,
+                            onClick = { selectedTag = tag },
+                            label = { Text(tag) },
+                            colors = InputChipDefaults.inputChipColors(
+                                selectedContainerColor = accentColor.copy(alpha = 0.2f),
+                                selectedLabelColor = accentColor
+                            )
+                        )
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+            }
+        }
+
+        items(filtered, key = { it.id }) { password ->
             PasswordListItem(
                 password = password,
                 accentColor = accentColor,
@@ -398,6 +500,8 @@ private fun PasswordListItem(
                             Spacer(Modifier.width(6.dp))
                             Icon(Icons.Default.Star, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
                         }
+                        Spacer(Modifier.width(6.dp))
+                        PasswordAgeBadge(updatedAt = password.updatedAt)
                     }
                     Text(password.username, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     if (password.website.isNotEmpty()) {
@@ -452,12 +556,40 @@ private fun StrengthDot(strength: Int) {
 }
 
 @Composable
+private fun PasswordAgeBadge(updatedAt: Long) {
+    val diff = System.currentTimeMillis() - updatedAt
+    val days = diff / (1000 * 60 * 60 * 24)
+    val (label, color) = when {
+        days < 30 -> stringResource(R.string.frequency_daily).take(3) to VaultSuccess // "Dai" / Custom label or raw
+        days < 90 -> "${days / 30}m" to VaultWarning
+        else -> "${days / 30}m" to VaultError
+    }
+    // For "New" vs older month counts
+    val displayText = if (days < 30) "New" else label
+    
+    Surface(
+        color = color.copy(alpha = 0.15f),
+        shape = RoundedCornerShape(4.dp),
+        modifier = Modifier.padding(horizontal = 2.dp)
+    ) {
+        Text(
+            text = displayText,
+            color = color,
+            fontSize = 9.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
+        )
+    }
+}
+
+@Composable
 private fun CardList(
     searchQuery: String,
     sortKey: String,
     isAscending: Boolean,
     onItemClick: (String) -> Unit,
-    accentColor: Color
+    accentColor: Color,
+    selectedFolderId: String?
 ) {
     val viewModel: CardViewModel = hiltViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -475,6 +607,21 @@ private fun CardList(
         }
     }
 
+    var selectedTag by remember { mutableStateOf<String?>(null) }
+    val allTags = remember(state.cards) {
+        state.cards.flatMap { it.tags }.distinct().sorted()
+    }
+    val finalFiltered = remember(filtered, selectedTag, selectedFolderId) {
+        var result = filtered
+        if (selectedTag != null) {
+            result = result.filter { it.tags.contains(selectedTag) }
+        }
+        if (selectedFolderId != null) {
+            result = result.filter { it.folderId == selectedFolderId }
+        }
+        result
+    }
+
     if (filtered.isEmpty()) {
         EmptyState(stringResource(R.string.cards), Icons.Default.CreditCard, accentColor)
         return
@@ -484,7 +631,39 @@ private fun CardList(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        items(filtered, key = { it.id }) { card ->
+        if (allTags.isNotEmpty()) {
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    InputChip(
+                        selected = selectedTag == null,
+                        onClick = { selectedTag = null },
+                        label = { Text("All") },
+                        colors = InputChipDefaults.inputChipColors(
+                            selectedContainerColor = accentColor.copy(alpha = 0.2f),
+                            selectedLabelColor = accentColor
+                        )
+                    )
+                    allTags.forEach { tag ->
+                        InputChip(
+                            selected = selectedTag == tag,
+                            onClick = { selectedTag = tag },
+                            label = { Text(tag) },
+                            colors = InputChipDefaults.inputChipColors(
+                                selectedContainerColor = accentColor.copy(alpha = 0.2f),
+                                selectedLabelColor = accentColor
+                            )
+                        )
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+            }
+        }
+
+        items(finalFiltered, key = { it.id }) { card ->
             CardListItem(
                 card = card,
                 onClick = { onItemClick(card.id) },
@@ -659,7 +838,8 @@ private fun NoteList(
     sortKey: String,
     isAscending: Boolean,
     onItemClick: (String) -> Unit,
-    accentColor: Color
+    accentColor: Color,
+    selectedFolderId: String?
 ) {
     val viewModel: NoteViewModel = hiltViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -676,6 +856,21 @@ private fun NoteList(
         pinned.sortedByDescending { it.updatedAt } + sortedUnpinned
     }
 
+    var selectedTag by remember { mutableStateOf<String?>(null) }
+    val allTags = remember(state.notes) {
+        state.notes.flatMap { it.tags }.distinct().sorted()
+    }
+    val filtered = remember(sorted, selectedTag, selectedFolderId) {
+        var result = sorted
+        if (selectedTag != null) {
+            result = result.filter { it.tags.contains(selectedTag) }
+        }
+        if (selectedFolderId != null) {
+            result = result.filter { it.folderId == selectedFolderId }
+        }
+        result
+    }
+
     if (sorted.isEmpty()) {
         EmptyState(stringResource(R.string.notes), Icons.Default.Description, accentColor)
         return
@@ -685,7 +880,39 @@ private fun NoteList(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        items(sorted, key = { it.id }) { note ->
+        if (allTags.isNotEmpty()) {
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    InputChip(
+                        selected = selectedTag == null,
+                        onClick = { selectedTag = null },
+                        label = { Text("All") },
+                        colors = InputChipDefaults.inputChipColors(
+                            selectedContainerColor = accentColor.copy(alpha = 0.2f),
+                            selectedLabelColor = accentColor
+                        )
+                    )
+                    allTags.forEach { tag ->
+                        InputChip(
+                            selected = selectedTag == tag,
+                            onClick = { selectedTag = tag },
+                            label = { Text(tag) },
+                            colors = InputChipDefaults.inputChipColors(
+                                selectedContainerColor = accentColor.copy(alpha = 0.2f),
+                                selectedLabelColor = accentColor
+                            )
+                        )
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+            }
+        }
+
+        items(filtered, key = { it.id }) { note ->
             NoteListItem(
                 note = note,
                 onClick = { onItemClick(note.id) },
@@ -1262,7 +1489,8 @@ private fun IdentityList(
     sortKey: String,
     isAscending: Boolean,
     accentColor: Color,
-    onItemClick: (String) -> Unit
+    onItemClick: (String) -> Unit,
+    selectedFolderId: String?
 ) {
     val viewModel: IdentityViewModel = hiltViewModel()
     val identities by viewModel.allIdentities.collectAsStateWithLifecycle()
@@ -1282,6 +1510,21 @@ private fun IdentityList(
         }
     }
 
+    var selectedTag by remember { mutableStateOf<String?>(null) }
+    val allTags = remember(identities) {
+        identities.flatMap { it.tags }.distinct().sorted()
+    }
+    val finalFiltered = remember(filtered, selectedTag, selectedFolderId) {
+        var result = filtered
+        if (selectedTag != null) {
+            result = result.filter { it.tags.contains(selectedTag) }
+        }
+        if (selectedFolderId != null) {
+            result = result.filter { it.folderId == selectedFolderId }
+        }
+        result
+    }
+
     if (filtered.isEmpty()) {
         EmptyState(stringResource(R.string.identities), Icons.Default.Badge, accentColor)
         return
@@ -1291,7 +1534,39 @@ private fun IdentityList(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(filtered, key = { it.id }) { identity ->
+        if (allTags.isNotEmpty()) {
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    InputChip(
+                        selected = selectedTag == null,
+                        onClick = { selectedTag = null },
+                        label = { Text("All") },
+                        colors = InputChipDefaults.inputChipColors(
+                            selectedContainerColor = accentColor.copy(alpha = 0.2f),
+                            selectedLabelColor = accentColor
+                        )
+                    )
+                    allTags.forEach { tag ->
+                        InputChip(
+                            selected = selectedTag == tag,
+                            onClick = { selectedTag = tag },
+                            label = { Text(tag) },
+                            colors = InputChipDefaults.inputChipColors(
+                                selectedContainerColor = accentColor.copy(alpha = 0.2f),
+                                selectedLabelColor = accentColor
+                            )
+                        )
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+            }
+        }
+
+        items(finalFiltered, key = { it.id }) { identity ->
             IdentityListItem(
                 identity = identity,
                 accentColor = accentColor,

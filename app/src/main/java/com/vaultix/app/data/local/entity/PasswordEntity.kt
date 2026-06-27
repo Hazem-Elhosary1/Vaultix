@@ -18,6 +18,9 @@ data class PasswordEntity(
     val passwordStrength: Int,   // 0-4 (unencrypted metric)
     val isFavorite: Boolean = false,
     val passwordHistory: String = "", // Encrypted list of old passwords
+    val tags: String = "", // Encrypted list of tags (comma-separated)
+    val totpSecret: String = "", // Encrypted TOTP secret key
+    val folderId: String? = null, // Nullable folder link
     val createdAt: Long,
     val updatedAt: Long,
     val expiresAt: Long? = null,

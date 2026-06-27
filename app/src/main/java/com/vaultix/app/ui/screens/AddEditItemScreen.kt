@@ -45,6 +45,9 @@ import com.vaultix.app.ui.viewmodel.CardViewModel
 import com.vaultix.app.ui.viewmodel.NoteViewModel
 import com.vaultix.app.ui.viewmodel.PasswordViewModel
 import com.vaultix.app.ui.viewmodel.AuthViewModel
+import com.vaultix.app.ui.viewmodel.FileViewModel
+import com.vaultix.app.ui.components.TagsInputSection
+import com.vaultix.app.ui.components.FolderSelectSection
 import java.util.UUID
 import org.json.JSONObject
 import java.text.SimpleDateFormat
@@ -106,6 +109,9 @@ private fun AddEditPasswordScreen(itemId: String?, onSaved: () -> Unit, onBack: 
     var notes by remember { mutableStateOf(existingItem?.notes ?: "") }
     var showPassword by remember { mutableStateOf(false) }
     var showGeneratorDialog by remember { mutableStateOf(false) }
+    var tags by remember { mutableStateOf(existingItem?.tags ?: emptyList<String>()) }
+    var totpSecret by remember { mutableStateOf(existingItem?.totpSecret?.concatToString() ?: "") }
+    var selectedFolderId by remember { mutableStateOf(existingItem?.folderId) }
 
     val strength = remember(password) { viewModel.calculateStrength(password.toCharArray()) }
 
@@ -119,6 +125,9 @@ private fun AddEditPasswordScreen(itemId: String?, onSaved: () -> Unit, onBack: 
             website = existingItem.website
             appPackageName = existingItem.appPackageName
             notes = existingItem.notes
+            tags = existingItem.tags
+            totpSecret = existingItem.totpSecret?.concatToString() ?: ""
+            selectedFolderId = existingItem.folderId
             hasInitialized = true
         }
     }
@@ -138,7 +147,11 @@ private fun AddEditPasswordScreen(itemId: String?, onSaved: () -> Unit, onBack: 
                                 title = title, username = username, password = password.toCharArray(),
                                 website = website, appPackageName = appPackageName, notes = notes, 
                                 passwordStrength = strength.level,
-                                isFavorite = false, createdAt = existingItem?.createdAt ?: now, updatedAt = now
+                                isFavorite = existingItem?.isFavorite ?: false,
+                                tags = tags,
+                                totpSecret = if (totpSecret.isBlank()) null else totpSecret.uppercase().replace(" ", "").toCharArray(),
+                                folderId = selectedFolderId,
+                                createdAt = existingItem?.createdAt ?: now, updatedAt = now
                             )
                             if (itemId == null) viewModel.insertPassword(item) else viewModel.updatePassword(item)
                             onSaved()
@@ -197,6 +210,12 @@ private fun AddEditPasswordScreen(itemId: String?, onSaved: () -> Unit, onBack: 
             VaultTextField(stringResource(R.string.website), website, { website = it }, Icons.Default.Language, keyboardType = KeyboardType.Uri)
             VaultTextField(stringResource(R.string.app_package_hint), appPackageName, { appPackageName = it }, Icons.Default.Android)
             VaultTextField(stringResource(R.string.notes_label), notes, { notes = it }, Icons.Default.Note, singleLine = false, minLines = 3)
+
+            VaultTextField("TOTP Secret (Base32 2FA Key)", totpSecret, { totpSecret = it }, Icons.Default.QrCode)
+            
+            FolderSelectSection(selectedFolderId = selectedFolderId, onFolderSelect = { selectedFolderId = it })
+            
+            TagsInputSection(tags = tags, onTagsChange = { tags = it })
 
             // Show timestamps when editing an existing item
             existingItem?.let { itItem ->
@@ -344,6 +363,9 @@ private fun AddEditCardScreen(itemId: String?, startNfcScanning: Boolean, onNavi
         }
     }
 
+    var tags by remember { mutableStateOf(existingItem?.tags ?: emptyList<String>()) }
+    var selectedFolderId by remember { mutableStateOf(existingItem?.folderId) }
+
     // Sync with existing item only ONCE when it's first loaded
     var hasInitialized by remember { mutableStateOf(false) }
     LaunchedEffect(existingItem) {
@@ -355,6 +377,8 @@ private fun AddEditCardScreen(itemId: String?, startNfcScanning: Boolean, onNavi
             expiryYear = existingItem.expiryYear
             cvv = existingItem.cvv
             cardType = existingItem.cardType
+            tags = existingItem.tags
+            selectedFolderId = existingItem.folderId
             hasInitialized = true
         }
     }
@@ -373,7 +397,9 @@ private fun AddEditCardScreen(itemId: String?, startNfcScanning: Boolean, onNavi
                                 id = existingItem?.id ?: UUID.randomUUID().toString(),
                                 cardName = cardName, holderName = holderName, cardNumber = cardNumber,
                                 expiryMonth = expiryMonth, expiryYear = expiryYear, cvv = cvv,
-                                cardType = cardType, notes = "", isFavorite = false,
+                                cardType = cardType, notes = "", isFavorite = existingItem?.isFavorite ?: false,
+                                tags = tags,
+                                folderId = selectedFolderId,
                                 createdAt = existingItem?.createdAt ?: now, updatedAt = now
                             )
                             if (itemId == null) viewModel.insertCard(item) else viewModel.updateCard(item)
@@ -467,6 +493,10 @@ private fun AddEditCardScreen(itemId: String?, startNfcScanning: Boolean, onNavi
                     Text(stringResource(R.string.stop_scan))
                 }
             }
+
+            Spacer(Modifier.height(8.dp))
+            FolderSelectSection(selectedFolderId = selectedFolderId, onFolderSelect = { selectedFolderId = it })
+            TagsInputSection(tags = tags, onTagsChange = { tags = it })
         }
     }
 }
@@ -496,6 +526,9 @@ private fun AddEditNoteScreen(itemId: String?, onSaved: () -> Unit, onBack: () -
         "#4A4A1A"  // Olive Gold
     )
 
+    var tags by remember { mutableStateOf(existingItem?.tags ?: emptyList<String>()) }
+    var selectedFolderId by remember { mutableStateOf(existingItem?.folderId) }
+
     // Sync initialization
     var hasInitialized by remember { mutableStateOf(false) }
     LaunchedEffect(existingItem) {
@@ -503,6 +536,8 @@ private fun AddEditNoteScreen(itemId: String?, onSaved: () -> Unit, onBack: () -
             title = existingItem.title
             contentValue = androidx.compose.ui.text.input.TextFieldValue(existingItem.content)
             selectedColor = existingItem.color
+            tags = existingItem.tags
+            selectedFolderId = existingItem.folderId
             hasInitialized = true
         }
     }
@@ -526,6 +561,9 @@ private fun AddEditNoteScreen(itemId: String?, onSaved: () -> Unit, onBack: () -
                                 id = existingItem?.id ?: UUID.randomUUID().toString(),
                                 title = title, content = contentValue.text, color = selectedColor,
                                 isFavorite = existingItem?.isFavorite ?: false, 
+                                isPinned = existingItem?.isPinned ?: false,
+                                tags = tags,
+                                folderId = selectedFolderId,
                                 createdAt = existingItem?.createdAt ?: now, updatedAt = now
                             )
                             if (itemId == null) viewModel.insertNote(item) else viewModel.updateNote(item)
@@ -543,7 +581,15 @@ private fun AddEditNoteScreen(itemId: String?, onSaved: () -> Unit, onBack: () -
                 .padding(paddingValues)
                 .background(VaultBlack)
         ) {
-            // Theme Selector
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                FolderSelectSection(selectedFolderId = selectedFolderId, onFolderSelect = { selectedFolderId = it })
+                TagsInputSection(tags = tags, onTagsChange = { tags = it })
+            }
+            
+            // Note theme selector row
             Row(
                 modifier = Modifier
                     .fillMaxWidth()

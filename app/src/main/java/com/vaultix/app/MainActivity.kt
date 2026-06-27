@@ -114,7 +114,9 @@ class MainActivity : FragmentActivity() {
         }
 
         // Check for App Shortcut launch
-        if (intent?.action == "com.vaultix.app.ACTION_ADD_PASSWORD" || intent?.action == "com.vaultix.app.ACTION_ADD_NOTE") {
+        if (intent?.action == "com.vaultix.app.ACTION_ADD_PASSWORD" || 
+            intent?.action == "com.vaultix.app.ACTION_ADD_NOTE" ||
+            intent?.action == "com.vaultix.app.ACTION_GENERATE_PASSWORD") {
             authViewModel.setPendingShortcutAction(intent.action)
         }
 
@@ -168,7 +170,9 @@ class MainActivity : FragmentActivity() {
     override fun onNewIntent(intent: android.content.Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        if (intent.action == "com.vaultix.app.ACTION_ADD_PASSWORD" || intent.action == "com.vaultix.app.ACTION_ADD_NOTE") {
+        if (intent.action == "com.vaultix.app.ACTION_ADD_PASSWORD" || 
+            intent.action == "com.vaultix.app.ACTION_ADD_NOTE" ||
+            intent.action == "com.vaultix.app.ACTION_GENERATE_PASSWORD") {
             authViewModel.setPendingShortcutAction(intent.action)
         }
     }
